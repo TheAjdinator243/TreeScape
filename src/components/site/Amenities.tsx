@@ -7,7 +7,7 @@ import { Reveal } from './Reveal';
  * naspram još jedne zavisnosti u package.json-u.
  */
 const AMENITIES = [
-  { icon: 'wifi', label: 'Brzi internet', note: 'Optika, dovoljno i za rad' },
+  { icon: 'wifi', label: 'Internet', note: 'Bežični, u cijeloj kući' },
   { icon: 'kitchen', label: 'Opremljena kuhinja', note: 'Sve posuđe i aparati' },
   { icon: 'fire', label: 'Kamin', note: 'Drva su obezbijeđena' },
   { icon: 'grill', label: 'Roštilj i vrtna garnitura', note: 'Za duge ljetne večeri' },

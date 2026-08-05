@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 
 import { Reveal } from '@/components/site/Reveal';
-import { formatLong, nightsBetween, toDateStr } from '@/lib/dates';
+import { addDaysStr, daysBetween, formatLong, toDateStr } from '@/lib/dates';
 import { formatMoney, quoteStay, rangeHasConflict, validateStay } from '@/lib/pricing';
 import { t } from '@/lib/strings';
 import type { BookingContext, PaymentMethod } from '@/lib/types';
@@ -36,8 +36,20 @@ export function BookingSection({ context }: { context: BookingContext }) {
   const [error, setError] = useState<string | null>(null);
 
   const start = range?.from ? toDateStr(range.from) : null;
-  const end = range?.to ? toDateStr(range.to) : null;
-  const complete = Boolean(start && end && start !== end);
+
+  /**
+   * Kraj boravka je uvijek ISKLJUČIV — baš kao `daterange(..., '[)')` u bazi.
+   *
+   * Zato se za odabir jednog jedinog dana (od = do) kraj pomjeri za jedan dan
+   * naprijed: tako taj dan stvarno bude zauzet, a rezervacija bez noćenja
+   * postane moguća. Za višednevni boravak kraj ostaje kakav je odabran, pa
+   * dan odlaska ostaje slobodan sljedećem gostu (odjava u 09:00, prijava u 11:00).
+   */
+  const lastSelected = range?.to ? toDateStr(range.to) : null;
+  const singleDay = Boolean(start && lastSelected && start === lastSelected);
+  const end = lastSelected ? (singleDay ? addDaysStr(lastSelected, 1) : lastSelected) : null;
+
+  const complete = Boolean(start && end);
 
   const quote = useMemo(
     () => (complete && start && end ? quoteStay(start, end, periods, settings) : null),
@@ -143,14 +155,20 @@ export function BookingSection({ context }: { context: BookingContext }) {
                 <div className="flex items-baseline justify-between gap-4">
                   <dt className="text-ink-500">{t.booking.checkOut}</dt>
                   <dd className="text-right font-medium text-ink-900">
-                    {end && start !== end ? (
-                      formatLong(end)
-                    ) : (
-                      <span className="text-ink-400">—</span>
-                    )}
+                    {end ? formatLong(end) : <span className="text-ink-400">—</span>}
                   </dd>
                 </div>
               </dl>
+
+              {singleDay && (
+                <p className="mt-3 rounded-lg bg-moss-100 px-3 py-2 text-xs text-forest-800">
+                  {t.booking.singleDayNote}
+                </p>
+              )}
+
+              {!range?.from && (
+                <p className="mt-3 text-xs text-ink-400">{t.booking.singleDayHint}</p>
+              )}
 
               {range?.from && (
                 <button
@@ -166,15 +184,11 @@ export function BookingSection({ context }: { context: BookingContext }) {
                 <div className="mt-5 border-t border-sand-200 pt-5">
                   <div className="space-y-2.5 text-sm">
                     <Row
-                      label={`${t.booking.nightsLabel(quote.nightCount)} × ${formatMoney(
-                        quote.averageNightlyCents,
+                      label={`${t.booking.daysLabel(quote.dayCount)} × ${formatMoney(
+                        quote.averageDailyCents,
                         quote.currencySymbol
                       )}`}
-                      value={formatMoney(quote.subtotalCents, quote.currencySymbol)}
-                    />
-                    <Row
-                      label={t.booking.cleaningFee}
-                      value={formatMoney(quote.cleaningFeeCents, quote.currencySymbol)}
+                      value={formatMoney(quote.totalCents, quote.currencySymbol)}
                     />
                   </div>
 
@@ -185,8 +199,8 @@ export function BookingSection({ context }: { context: BookingContext }) {
                     </span>
                   </div>
 
-                  {/* Ako sve noći nisu iste cijene, gost zaslužuje objašnjenje. */}
-                  {new Set(quote.nights.map((n) => n.cents)).size > 1 && (
+                  {/* Ako svi dani nisu iste cijene, gost zaslužuje objašnjenje. */}
+                  {new Set(quote.days.map((d) => d.cents)).size > 1 && (
                     <p className="mt-2 text-xs text-ink-400">{t.booking.seasonalNote}</p>
                   )}
                 </div>
@@ -339,7 +353,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="truncate text-xs text-ink-500">
-                {start && end ? `${nightsBetween(start, end)} × ${t.common.night}` : ''}
+                {start && end ? t.common.daysCount(daysBetween(start, end)) : ''}
               </p>
               <p className="font-display text-lg text-forest-800">
                 {formatMoney(quote.totalCents, quote.currencySymbol)}

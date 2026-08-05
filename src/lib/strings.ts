@@ -43,7 +43,6 @@ export const t = {
       guests: 'gostiju',
       bedrooms: 'spavaće sobe',
       bathrooms: 'kupatila',
-      area: 'm² prostora',
     },
   },
 
@@ -75,7 +74,7 @@ export const t = {
 
   booking: {
     heading: 'Rezervišite svoj termin',
-    lead: 'Odaberite datume u kalendaru. Zauzeti termini su prikazani sivo i ne mogu se odabrati.',
+    lead: 'Kliknite jedan datum za boravak bez noćenja, ili dva za duži boravak. Zauzeti termini su prikazani sivo i ne mogu se odabrati.',
 
     pickDates: 'Odaberite datume',
     checkIn: 'Dolazak',
@@ -99,12 +98,11 @@ export const t = {
     optional: 'opcionalno',
 
     summaryTitle: 'Pregled rezervacije',
-    nightsLabel: (n: number) => `${n} ${plural(n, 'noć', 'noći', 'noći')}`,
-    perNight: 'po noćenju',
-    cleaningFee: 'Čišćenje',
+    daysLabel: (n: number) => `${n} ${plural(n, 'dan', 'dana', 'dana')}`,
+    perDay: 'po danu',
     total: 'Ukupno',
-    averagePerNight: 'prosječno po noćenju',
-    seasonalNote: 'Cijena po noćenju zavisi od sezone.',
+    seasonalNote: 'Cijena po danu zavisi od sezone.',
+    singleDayNote: 'Rezervacija za jedan dan, bez noćenja.',
 
     payMethodTitle: 'Način plaćanja',
 
@@ -124,22 +122,27 @@ export const t = {
 
     submitting: 'Trenutak…',
 
-    minNightsNotice: (n: number) =>
-      `Za odabrane datume minimalan boravak je ${n} ${plural(n, 'noćenje', 'noćenja', 'noćenja')}.`,
-    selectDatesFirst: 'Prvo odaberite datume dolaska i odlaska.',
+    selectDatesFirst: 'Prvo odaberite datum u kalendaru.',
+    singleDayHint:
+      'Kliknite jedan datum za boravak bez noćenja, ili još jedan za duži boravak.',
     unavailableRange:
       'U odabranom rasponu ima već rezervisanih dana. Odaberite termin bez zauzetih datuma.',
   },
 
   confirmation: {
-    cardTitle: 'Rezervacija je potvrđena',
-    cardLead: 'Hvala vam! Vaš termin je zaključan i vidljiv je kao zauzet svim ostalim gostima.',
-    cashTitle: 'Zahtjev je zaprimljen',
-    cashLead:
-      'Termin držimo za vas dok ga domaćin ne potvrdi. Javićemo vam se emailom u najkraćem roku.',
+    // "Uspješna" se kaže SAMO kad je rezervacija stvarno prihvaćena.
+    // Dok se čeka, termin jeste zauzet, ali gost ne smije misliti da je gotovo.
+    confirmedTitle: 'Rezervacija je uspješna',
+    confirmedLead:
+      'Domaćin je potvrdio vašu rezervaciju. Termin je vaš i drugim gostima je prikazan kao zauzet.',
+
+    pendingTitle: 'Termin je rezervisan za vas',
+    pendingLead:
+      'Termin držimo za vas i drugim gostima je već prikazan kao zauzet. Rezervacija je konačna tek kad je domaćin prihvati — javljamo vam se emailom u najkraćem roku.',
+
     transferTitle: 'Termin je rezervisan za vas',
     transferLead:
-      'Preostaje još samo uplata. Termin držimo za vas do isteka roka ispod — čim uplata stigne, rezervacija je potvrđena.',
+      'Preostaje još uplata. Termin držimo za vas do isteka roka ispod. Rezervacija je konačna tek kad uplata bude provjerena.',
 
     transferHeading: 'Podaci za uplatu',
     transferRecipient: 'Primalac',
@@ -153,9 +156,10 @@ export const t = {
     copy: 'Kopiraj',
     copied: 'Kopirano',
 
-    pendingBadge: 'Čeka potvrdu domaćina',
-    awaitingTransfer: 'Čeka uplatu',
+    pendingBadge: 'Rezervisano — čeka potvrdu',
+    awaitingTransfer: 'Rezervisano — čeka uplatu',
     confirmedBadge: 'Potvrđeno',
+    heldNote: 'Termin je već zauzet za vas — niko drugi ga ne može uzeti u međuvremenu.',
     reference: 'Broj rezervacije',
     stay: 'Vaš boravak',
     guestsLabel: 'Gostiju',
@@ -175,10 +179,8 @@ export const t = {
     DATES_TAKEN: 'Ovi datumi su upravo rezervisani. Molimo odaberite druge.',
     INVALID_RANGE: 'Datum odlaska mora biti nakon datuma dolaska.',
     PAST_DATE: 'Ne možete rezervisati datum u prošlosti.',
-    MIN_NIGHTS: (n: number) =>
-      `Minimalan boravak za odabrane datume je ${n} ${plural(n, 'noćenje', 'noćenja', 'noćenja')}.`,
-    MAX_NIGHTS: (n: number) =>
-      `Maksimalan boravak je ${n} ${plural(n, 'noćenje', 'noćenja', 'noćenja')}.`,
+    MAX_DAYS: (n: number) =>
+      `Maksimalan boravak je ${n} ${plural(n, 'dan', 'dana', 'dana')}.`,
     TOO_MANY_GUESTS: (n: number) =>
       `Maksimalan broj gostiju je ${n} ${plural(n, 'gost', 'gosta', 'gostiju')}.`,
     INVALID_INPUT: 'Provjerite unesene podatke i pokušajte ponovo.',
@@ -229,10 +231,8 @@ export const t = {
 
     pricingHeading: 'Osnovne cijene',
     pricingLead: 'Vrijede za svaki datum koji ne pripada nijednoj sezoni.',
-    defaultNightly: 'Osnovna cijena po noćenju',
-    cleaningFee: 'Naknada za čišćenje',
-    minNights: 'Minimalan broj noćenja',
-    maxNights: 'Maksimalan broj noćenja',
+    defaultNightly: 'Osnovna cijena po danu',
+    maxNights: 'Maksimalan broj dana',
     maxGuests: 'Maksimalan broj gostiju',
     holdMinutes: 'Trajanje rezervacije termina tokom plaćanja (min)',
     save: 'Sačuvaj',
@@ -240,12 +240,11 @@ export const t = {
 
     seasonsHeading: 'Sezonske cijene',
     seasonsLead:
-      'Ako se dvije sezone preklapaju, vrijedi ona s većim prioritetom. Datum odlaska se ne naplaćuje.',
+      'Ako se dvije sezone preklapaju, vrijedi ona s većim prioritetom. Dan odlaska se ne naplaćuje.',
     seasonName: 'Naziv sezone',
     seasonFrom: 'Od',
     seasonTo: 'Do',
-    seasonPrice: 'Cijena po noćenju',
-    seasonMinNights: 'Min. noćenja',
+    seasonPrice: 'Cijena po danu',
     seasonPriority: 'Prioritet',
     seasonAdd: 'Dodaj sezonu',
     seasonDelete: 'Obriši',
@@ -288,11 +287,11 @@ export const t = {
 
   common: {
     from: 'od',
-    night: 'noćenje',
+    day: 'dan',
     loading: 'Učitavanje…',
     tryAgain: 'Pokušaj ponovo',
     guestsCount: (n: number) => `${n} ${plural(n, 'gost', 'gosta', 'gostiju')}`,
-    nightsCount: (n: number) => `${n} ${plural(n, 'noćenje', 'noćenja', 'noćenja')}`,
+    daysCount: (n: number) => `${n} ${plural(n, 'dan', 'dana', 'dana')}`,
   },
 
   footer: {

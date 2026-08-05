@@ -1,26 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import { addDaysStr, eachNight, nightsBetween, rangesOverlap, todayStr } from './dates';
-import {
-  formatMoney,
-  quoteStay,
-  rangeHasConflict,
-  takenDayMap,
-  validateStay,
-} from './pricing';
+import { addDaysStr, daysBetween, eachDay, rangesOverlap, todayStr } from './dates';
+import { formatMoney, quoteStay, rangeHasConflict, takenDayMap, validateStay } from './pricing';
 import type { AvailabilitySlot, RatePeriod, Settings } from './types';
 
 const settings: Settings = {
   id: 1,
-  default_nightly_cents: 10000, // 100 €
-  cleaning_fee_cents: 3000, // 30 €
-  currency: 'EUR',
-  currency_symbol: '€',
-  min_nights: 2,
+  default_nightly_cents: 25000, // 250 KM po danu
+  cleaning_fee_cents: 0, // naknade za čišćenje više nema
+  currency: 'BAM',
+  currency_symbol: 'KM',
+  min_nights: 1,
   max_nights: 30,
   max_guests: 8,
-  checkin_time: '15:00',
-  checkout_time: '11:00',
+  checkin_time: '11:00',
+  checkout_time: '09:00',
   hold_minutes: 15,
   bank_account_name: 'Test Vlasnik',
   bank_name: 'Test banka',
@@ -33,19 +27,9 @@ const summer: RatePeriod = {
   name: 'Ljeto',
   start_date: '2027-06-15',
   end_date: '2027-09-16',
-  nightly_price_cents: 18000, // 180 €
-  min_nights: 3,
+  nightly_price_cents: 18000,
+  min_nights: null,
   priority: 10,
-};
-
-const newYear: RatePeriod = {
-  id: 'nye',
-  name: 'Nova godina',
-  start_date: '2027-12-29',
-  end_date: '2028-01-03',
-  nightly_price_cents: 26000,
-  min_nights: 4,
-  priority: 20,
 };
 
 /** Preklapa se s ljetom, ali ima veći prioritet — mora pobijediti. */
@@ -55,104 +39,127 @@ const augustPeak: RatePeriod = {
   start_date: '2027-08-01',
   end_date: '2027-08-16',
   nightly_price_cents: 22000,
-  min_nights: 5,
+  min_nights: null,
   priority: 30,
 };
 
-describe('nightsBetween — dan odlaska se ne naplaćuje', () => {
-  it('01.08 → 05.08 je 4 noćenja, ne 5', () => {
-    expect(nightsBetween('2027-08-01', '2027-08-05')).toBe(4);
+describe('daysBetween — dan odlaska se ne naplaćuje', () => {
+  it('01.08 → 05.08 su 4 dana', () => {
+    expect(daysBetween('2027-08-01', '2027-08-05')).toBe(4);
   });
 
-  it('jedna noć', () => {
-    expect(nightsBetween('2027-08-01', '2027-08-02')).toBe(1);
+  it('jedan dan', () => {
+    expect(daysBetween('2027-08-01', '2027-08-02')).toBe(1);
   });
 
-  it('radi i preko prijelaza mjeseca', () => {
-    expect(nightsBetween('2027-01-30', '2027-02-02')).toBe(3);
+  it('radi preko prijelaza mjeseca', () => {
+    expect(daysBetween('2027-01-30', '2027-02-02')).toBe(3);
   });
 
-  it('radi i preko prijestupnog dana', () => {
-    expect(nightsBetween('2028-02-28', '2028-03-01')).toBe(2);
+  it('radi preko prijestupnog dana', () => {
+    expect(daysBetween('2028-02-28', '2028-03-01')).toBe(2);
   });
 });
 
-describe('eachNight', () => {
+describe('eachDay', () => {
   it('vraća datume [start, end) — bez dana odlaska', () => {
-    expect(eachNight('2027-08-01', '2027-08-04')).toEqual([
+    expect(eachDay('2027-08-01', '2027-08-04')).toEqual([
       '2027-08-01',
       '2027-08-02',
       '2027-08-03',
     ]);
   });
 
-  it('prazan raspon nema noćenja', () => {
-    expect(eachNight('2027-08-01', '2027-08-01')).toEqual([]);
+  it('prazan raspon nema dana', () => {
+    expect(eachDay('2027-08-01', '2027-08-01')).toEqual([]);
+  });
+});
+
+describe('rezervacija bez noćenja', () => {
+  it('jedan dan se naplaćuje kao jedan dan', () => {
+    // Odabir jednog dana u sučelju daje [10.08, 11.08).
+    const q = quoteStay('2027-08-10', '2027-08-11', [], settings);
+    expect(q.dayCount).toBe(1);
+    expect(q.totalCents).toBe(25000);
+  });
+
+  it('jedan dan prolazi provjeru — nema minimalnog boravka', () => {
+    const day = addDaysStr(todayStr(), 30);
+    const r = validateStay(day, addDaysStr(day, 1), 2, [], settings);
+    expect(r.ok).toBe(true);
+  });
+
+  it('jedan dan stvarno zauzima taj datum', () => {
+    const map = takenDayMap([
+      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
+    ]);
+    expect([...map.keys()]).toEqual(['2027-08-10']);
+  });
+
+  it('dva gosta ne mogu uzeti isti jedan dan', () => {
+    const slots: AvailabilitySlot[] = [
+      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
+    ];
+    expect(rangeHasConflict('2027-08-10', '2027-08-11', slots)).toBe(true);
+  });
+
+  it('sljedeći dan je i dalje slobodan', () => {
+    const slots: AvailabilitySlot[] = [
+      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
+    ];
+    expect(rangeHasConflict('2027-08-11', '2027-08-12', slots)).toBe(false);
   });
 });
 
 describe('quoteStay', () => {
   it('koristi osnovnu cijenu izvan svih sezona', () => {
     const q = quoteStay('2027-03-01', '2027-03-05', [summer], settings);
-    expect(q.nightCount).toBe(4);
-    expect(q.subtotalCents).toBe(40000);
-    expect(q.cleaningFeeCents).toBe(3000);
-    expect(q.totalCents).toBe(43000);
-    expect(q.nights.every((n) => n.periodName === null)).toBe(true);
+    expect(q.dayCount).toBe(4);
+    expect(q.totalCents).toBe(100000);
+    expect(q.days.every((d) => d.periodName === null)).toBe(true);
+  });
+
+  it('nema naknade za čišćenje u iznosu', () => {
+    const q = quoteStay('2027-03-01', '2027-03-03', [], settings);
+    // Točno 2 × 250 KM, ni fening više.
+    expect(q.totalCents).toBe(50000);
   });
 
   it('koristi sezonsku cijenu unutar sezone', () => {
     const q = quoteStay('2027-07-01', '2027-07-04', [summer], settings);
-    expect(q.subtotalCents).toBe(54000); // 3 × 180 €
-    expect(q.totalCents).toBe(57000);
-    expect(q.nights[0]?.periodName).toBe('Ljeto');
+    expect(q.totalCents).toBe(54000); // 3 × 180 KM
+    expect(q.days[0]?.periodName).toBe('Ljeto');
   });
 
   it('kod preklapanja pobjeđuje veći prioritet', () => {
     const q = quoteStay('2027-08-05', '2027-08-08', [summer, augustPeak], settings);
-    expect(q.subtotalCents).toBe(66000); // 3 × 220 €, ne 3 × 180 €
-    expect(q.nights[0]?.periodName).toBe('Vrhunac sezone');
+    expect(q.totalCents).toBe(66000); // 3 × 220 KM, ne 3 × 180 KM
+    expect(q.days[0]?.periodName).toBe('Vrhunac sezone');
   });
 
-  it('miješani boravak naplaćuje svaku noć po svojoj cijeni', () => {
-    // 13.06 i 14.06 su van sezone (100 €), 15.06 i 16.06 u ljetu (180 €)
+  it('miješani boravak naplaćuje svaki dan po svojoj cijeni', () => {
+    // 13.06 i 14.06 su van sezone (250 KM), 15.06 i 16.06 u ljetu (180 KM)
     const q = quoteStay('2027-06-13', '2027-06-17', [summer], settings);
-    expect(q.nightCount).toBe(4);
-    expect(q.subtotalCents).toBe(10000 + 10000 + 18000 + 18000);
-    expect(q.nights.map((n) => n.periodName)).toEqual([null, null, 'Ljeto', 'Ljeto']);
+    expect(q.dayCount).toBe(4);
+    expect(q.totalCents).toBe(25000 + 25000 + 18000 + 18000);
+    expect(q.days.map((d) => d.periodName)).toEqual([null, null, 'Ljeto', 'Ljeto']);
   });
 
   it('posljednji dan sezone se ne naplaćuje po sezonskoj cijeni', () => {
-    // Sezona traje do 16.09 (isključivo) → noć 15.09 je sezonska, 16.09 nije.
+    // Sezona traje do 16.09 (isključivo) → 15.09 je sezonski, 16.09 nije.
     const q = quoteStay('2027-09-15', '2027-09-17', [summer], settings);
-    expect(q.nights[0]?.periodName).toBe('Ljeto');
-    expect(q.nights[1]?.periodName).toBe(null);
+    expect(q.days[0]?.periodName).toBe('Ljeto');
+    expect(q.days[1]?.periodName).toBe(null);
   });
 
-  it('uzima najstroži minimum među dodirnutim sezonama', () => {
+  it('računa prosjek po danu', () => {
     const q = quoteStay('2027-06-13', '2027-06-17', [summer], settings);
-    expect(q.effectiveMinNights).toBe(3); // ljeto traži 3, osnovno 2
+    expect(q.averageDailyCents).toBe(21500);
   });
 
-  it('bez sezone vrijedi minimum iz postavki', () => {
-    const q = quoteStay('2027-03-01', '2027-03-05', [summer], settings);
-    expect(q.effectiveMinNights).toBe(2);
-  });
-
-  it('računa prosjek po noćenju', () => {
-    const q = quoteStay('2027-06-13', '2027-06-17', [summer], settings);
-    expect(q.averageNightlyCents).toBe(14000);
-  });
-
-  it('bez noćenja nema ni naknade za čišćenje', () => {
+  it('prazan raspon nema iznos', () => {
     const q = quoteStay('2027-03-01', '2027-03-01', [], settings);
     expect(q.totalCents).toBe(0);
-  });
-
-  it('Nova godina nadjačava zimu i traži 4 noćenja', () => {
-    const q = quoteStay('2027-12-30', '2028-01-02', [newYear], settings);
-    expect(q.subtotalCents).toBe(78000); // 3 × 260 €
-    expect(q.effectiveMinNights).toBe(4);
   });
 });
 
@@ -169,7 +176,7 @@ describe('validateStay', () => {
     expect(r).toMatchObject({ ok: false, code: 'INVALID_RANGE' });
   });
 
-  it('odbija isti dan dolaska i odlaska', () => {
+  it('odbija prazan raspon', () => {
     const r = validateStay(future, future, 2, [], settings);
     expect(r).toMatchObject({ ok: false, code: 'INVALID_RANGE' });
   });
@@ -180,23 +187,9 @@ describe('validateStay', () => {
     expect(r).toMatchObject({ ok: false, code: 'PAST_DATE' });
   });
 
-  it('odbija boravak kraći od minimuma', () => {
-    const r = validateStay(future, addDaysStr(future, 1), 2, [], settings);
-    expect(r).toMatchObject({ ok: false, code: 'MIN_NIGHTS' });
-  });
-
-  it('primjenjuje strožiji sezonski minimum', () => {
-    // 3 noćenja u ljetu su ok za osnovni minimum (2), ali ljeto traži 3.
-    const ok = validateStay('2027-07-01', '2027-07-04', 2, [summer], settings);
-    expect(ok.ok).toBe(true);
-
-    const tooShort = validateStay('2027-07-01', '2027-07-03', 2, [summer], settings);
-    expect(tooShort).toMatchObject({ ok: false, code: 'MIN_NIGHTS' });
-  });
-
   it('odbija predugačak boravak', () => {
     const r = validateStay(future, addDaysStr(future, 45), 2, [], settings);
-    expect(r).toMatchObject({ ok: false, code: 'MAX_NIGHTS' });
+    expect(r).toMatchObject({ ok: false, code: 'MAX_DAYS' });
   });
 
   it('odbija previše gostiju', () => {
@@ -216,7 +209,7 @@ describe('preklapanje termina', () => {
   ];
 
   it('dolazak na dan tuđeg odlaska NIJE sudar', () => {
-    // Gost A odlazi 15.08, gost B dolazi 15.08 — potpuno legitimno.
+    // Gost A odlazi 15.08 u 09:00, gost B dolazi 15.08 u 11:00.
     expect(rangeHasConflict('2027-08-15', '2027-08-18', slots)).toBe(false);
     expect(rangesOverlap('2027-08-10', '2027-08-15', '2027-08-15', '2027-08-18')).toBe(false);
   });
@@ -247,7 +240,7 @@ describe('preklapanje termina', () => {
 });
 
 describe('takenDayMap', () => {
-  it('označava svaku noć termina, ali ne i dan odlaska', () => {
+  it('označava svaki dan termina, ali ne i dan odlaska', () => {
     const map = takenDayMap([
       { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-13', kind: 'booked' },
     ]);
@@ -275,15 +268,14 @@ describe('takenDayMap', () => {
 
 describe('formatMoney', () => {
   it('izostavlja decimale kad su nule', () => {
-    expect(formatMoney(18000, '€')).toBe('180 €');
+    expect(formatMoney(25000, 'KM')).toBe('250 KM');
   });
 
   it('prikazuje obje decimale kad iznos nije okrugao', () => {
-    expect(formatMoney(18050, '€')).toBe('180,50 €');
-    expect(formatMoney(18099, '€')).toBe('180,99 €');
+    expect(formatMoney(18050, 'KM')).toBe('180,50 KM');
   });
 
   it('podržava drugu valutu', () => {
-    expect(formatMoney(35000, 'KM')).toBe('350 KM');
+    expect(formatMoney(35000, '€')).toBe('350 €');
   });
 });

@@ -2,7 +2,7 @@ import 'server-only';
 
 import { randomBytes } from 'node:crypto';
 
-import { addDaysStr, nightsBetween, todayStr } from './dates';
+import { addDaysStr, daysBetween, todayStr } from './dates';
 import { getRatePeriods, getSettings, releaseExpiredHolds } from './data';
 import { env } from './env';
 import { methodInfo } from './payments';
@@ -123,8 +123,8 @@ export async function blockDates(
     return { ok: false, status: 400, message: t.errors.INVALID_RANGE };
   }
 
-  if (nightsBetween(startDate, endDate) > 365) {
-    return { ok: false, status: 400, message: t.errors.MAX_NIGHTS(365) };
+  if (daysBetween(startDate, endDate) > 365) {
+    return { ok: false, status: 400, message: t.errors.MAX_DAYS(365) };
   }
 
   const { error } = await supabaseAdmin().from('bookings').insert({

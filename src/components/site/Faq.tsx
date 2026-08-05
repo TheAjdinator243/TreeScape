@@ -14,8 +14,8 @@ export function Faq({ settings }: { settings: Settings }) {
       a: `Prijava je od ${settings.checkin_time}, a odjava do ${settings.checkout_time}. Ako vam treba raniji dolazak ili kasniji odlazak, javite se — obično se može dogovoriti.`,
     },
     {
-      q: 'Kako funkcioniše plaćanje?',
-      a: 'Možete platiti odmah karticom (Visa, Mastercard) i termin je istog trena potvrđen, ili poslati zahtjev za plaćanje u gotovini po dolasku. Kod gotovine termin držimo za vas dok ga domaćin ne potvrdi.',
+      q: 'Kako funkcioniše rezervacija?',
+      a: 'Odaberete termin i pošaljete rezervaciju. Termin odmah držimo za vas i drugim gostima je prikazan kao zauzet. Rezervacija je konačno potvrđena tek kad je domaćin prihvati — o tome vas obavještavamo emailom.',
     },
     {
       q: 'Mogu li otkazati rezervaciju?',
@@ -27,7 +27,7 @@ export function Faq({ settings }: { settings: Settings }) {
     },
     {
       q: 'Da li je posteljina uključena?',
-      a: `Jeste. Posteljina, peškiri i osnovna sredstva za higijenu su uključeni, kao i završno čišćenje kroz jednokratnu naknadu.`,
+      a: 'Jeste. Posteljina, peškiri i osnovna sredstva za higijenu su uključeni u cijenu — nema dodatnih naknada.',
     },
     {
       q: 'Koliko osoba može boraviti u kući?',
@@ -35,7 +35,7 @@ export function Faq({ settings }: { settings: Settings }) {
     },
     {
       q: 'Ima li interneta i mobilnog signala?',
-      a: 'Ima — optički internet pokriva cijelu kuću i terasu, a mobilni signal je stabilan. Mnogi gosti kod nas rade na daljinu.',
+      a: 'Ima — bežični internet pokriva cijelu kuću, a mobilni signal je stabilan.',
     },
     {
       q: 'Kako dobijam adresu i ključ?',

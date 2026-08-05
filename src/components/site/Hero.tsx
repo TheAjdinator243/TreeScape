@@ -56,7 +56,7 @@ export function Hero({ fromCents, symbol }: { fromCents: number; symbol: string 
             <span className="text-lg font-semibold text-white">
               {formatMoney(fromCents, symbol)}
             </span>{' '}
-            <span className="text-sand-200">/ {t.common.night}</span>
+            <span className="text-sand-200">/ {t.common.day}</span>
           </p>
         </div>
       </div>

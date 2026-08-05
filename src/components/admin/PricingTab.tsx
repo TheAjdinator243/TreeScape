@@ -26,8 +26,6 @@ export function PricingTab({
 }) {
   const [form, setForm] = useState({
     default_nightly: toMajor(settings.default_nightly_cents),
-    cleaning_fee: toMajor(settings.cleaning_fee_cents),
-    min_nights: String(settings.min_nights),
     max_nights: String(settings.max_nights),
     max_guests: String(settings.max_guests),
     hold_minutes: String(settings.hold_minutes),
@@ -47,7 +45,6 @@ export function PricingTab({
     start_date: '',
     end_date: '',
     price: '',
-    min_nights: '',
     priority: '10',
   });
 
@@ -59,8 +56,10 @@ export function PricingTab({
       method: 'PUT',
       body: JSON.stringify({
         default_nightly_cents: toCents(form.default_nightly),
-        cleaning_fee_cents: toCents(form.cleaning_fee),
-        min_nights: Number(form.min_nights),
+        // Naknade za čišćenje i minimalnog boravka više nema — u bazi ostaju
+        // kolone (da ne treba nova migracija), ali se drže na neutralnoj vrijednosti.
+        cleaning_fee_cents: 0,
+        min_nights: 1,
         max_nights: Number(form.max_nights),
         max_guests: Number(form.max_guests),
         hold_minutes: Number(form.hold_minutes),
@@ -92,13 +91,13 @@ export function PricingTab({
         start_date: season.start_date,
         end_date: season.end_date,
         nightly_price_cents: toCents(season.price),
-        min_nights: season.min_nights ? Number(season.min_nights) : null,
+        min_nights: null,
         priority: Number(season.priority),
       }),
     });
 
     if (ok) {
-      setSeason({ name: '', start_date: '', end_date: '', price: '', min_nights: '', priority: '10' });
+      setSeason({ name: '', start_date: '', end_date: '', price: '', priority: '10' });
     }
   }
 
@@ -125,14 +124,6 @@ export function PricingTab({
             onChange={set('default_nightly')}
             step="0.01"
           />
-          <Num
-            id="cleaning_fee"
-            label={`${t.admin.cleaningFee} (${settings.currency_symbol})`}
-            value={form.cleaning_fee}
-            onChange={set('cleaning_fee')}
-            step="0.01"
-          />
-          <Num id="min_nights" label={t.admin.minNights} value={form.min_nights} onChange={set('min_nights')} />
           <Num id="max_nights" label={t.admin.maxNights} value={form.max_nights} onChange={set('max_nights')} />
           <Num id="max_guests" label={t.admin.maxGuests} value={form.max_guests} onChange={set('max_guests')} />
           <Num
@@ -281,7 +272,6 @@ export function PricingTab({
                   <th className="px-5 py-3 font-medium">{t.admin.seasonName}</th>
                   <th className="px-5 py-3 font-medium">Period</th>
                   <th className="px-5 py-3 text-right font-medium">{t.admin.seasonPrice}</th>
-                  <th className="px-5 py-3 text-right font-medium">Min.</th>
                   <th className="px-5 py-3 text-right font-medium">{t.admin.seasonPriority}</th>
                   <th className="px-5 py-3" />
                 </tr>
@@ -295,9 +285,6 @@ export function PricingTab({
                     </td>
                     <td className="px-5 py-3.5 text-right tabular-nums text-ink-900">
                       {formatMoney(period.nightly_price_cents, settings.currency_symbol)}
-                    </td>
-                    <td className="px-5 py-3.5 text-right text-ink-500">
-                      {period.min_nights ?? '—'}
                     </td>
                     <td className="px-5 py-3.5 text-right text-ink-500">{period.priority}</td>
                     <td className="px-5 py-3.5 text-right">
@@ -375,19 +362,6 @@ export function PricingTab({
             />
           </div>
 
-          <div>
-            <label htmlFor="season-min" className="field-label">
-              {t.admin.seasonMinNights} <span className="font-normal text-ink-400">(opcionalno)</span>
-            </label>
-            <input
-              id="season-min"
-              type="number"
-              min="1"
-              value={season.min_nights}
-              onChange={(e) => setSeason((s) => ({ ...s, min_nights: e.target.value }))}
-              className="field-input"
-            />
-          </div>
           <div>
             <label htmlFor="season-priority" className="field-label">
               {t.admin.seasonPriority}

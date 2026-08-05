@@ -1,15 +1,15 @@
 import Image from 'next/image';
 
 import kucaUSumi from '@/assets/gallery/03-kuca-u-sumi.jpg';
+
 import { t } from '@/lib/strings';
 
 import { Reveal } from './Reveal';
 
 const STATS = [
   { value: '8', label: t.about.stats.guests },
-  { value: '4', label: t.about.stats.bedrooms },
+  { value: '2', label: t.about.stats.bedrooms },
   { value: '2', label: t.about.stats.bathrooms },
-  { value: '180', label: t.about.stats.area },
 ];
 
 export function About() {
@@ -27,7 +27,7 @@ export function About() {
             ))}
           </div>
 
-          <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
+          <dl className="mt-10 grid grid-cols-3 gap-x-6 gap-y-8">
             {STATS.map((stat) => (
               // flex-col-reverse: u kodu prvo ide <dt> (kako HTML i traži),
               // a na ekranu se broj vidi iznad opisa.

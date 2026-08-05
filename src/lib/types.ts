@@ -85,7 +85,7 @@ export interface Booking {
   updated_at: string;
 }
 
-export interface NightPrice {
+export interface DayPrice {
   date: DateStr;
   cents: number;
   /** Naziv sezone koja je odredila cijenu, ili null za osnovnu cijenu. */
@@ -93,16 +93,12 @@ export interface NightPrice {
 }
 
 export interface PriceBreakdown {
-  nights: NightPrice[];
-  nightCount: number;
-  subtotalCents: number;
-  cleaningFeeCents: number;
+  days: DayPrice[];
+  dayCount: number;
   totalCents: number;
-  averageNightlyCents: number;
+  averageDailyCents: number;
   currency: string;
   currencySymbol: string;
-  /** Najstroži minimum među sezonama koje dodiruje ovaj boravak. */
-  effectiveMinNights: number;
 }
 
 /** Podaci koje početna stranica dobije sa servera pri prvom učitavanju. */

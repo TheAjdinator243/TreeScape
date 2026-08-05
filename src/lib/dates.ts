@@ -45,8 +45,8 @@ export function addDaysStr(value: DateStr, days: number): DateStr {
   return toDateStr(d);
 }
 
-/** Broj noćenja između dolaska i odlaska. 01.08 → 05.08 = 4. */
-export function nightsBetween(start: DateStr, end: DateStr): number {
+/** Broj dana koje boravak zauzima. 01.08 → 05.08 = 4; 01.08 → 02.08 = 1. */
+export function daysBetween(start: DateStr, end: DateStr): number {
   const ms = fromDateStr(end).getTime() - fromDateStr(start).getTime();
   return Math.round(ms / 86_400_000);
 }
@@ -55,16 +55,16 @@ export function nightsBetween(start: DateStr, end: DateStr): number {
  * Datumi koji se stvarno naplaćuju: [start, end) — dan odlaska ne ulazi.
  * Isti dogovor koji koristi i `daterange(..., '[)')` u bazi.
  */
-export function eachNight(start: DateStr, end: DateStr): DateStr[] {
-  const nights: DateStr[] = [];
+export function eachDay(start: DateStr, end: DateStr): DateStr[] {
+  const days: DateStr[] = [];
   let cursor = start;
   // Zaštita od beskonačne petlje ako neko pošalje end < start.
   let guard = 0;
   while (cursor < end && guard++ < 3650) {
-    nights.push(cursor);
+    days.push(cursor);
     cursor = addDaysStr(cursor, 1);
   }
-  return nights;
+  return days;
 }
 
 /** Da li se dva raspona [aStart, aEnd) i [bStart, bEnd) preklapaju. */

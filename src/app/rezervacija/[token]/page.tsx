@@ -77,27 +77,30 @@ export default async function ConfirmationPage({
             {isDead
               ? 'Rezervacija više nije aktivna'
               : isConfirmed
-                ? t.confirmation.cardTitle
+                ? t.confirmation.confirmedTitle
                 : awaitingTransfer
                   ? t.confirmation.transferTitle
-                  : t.confirmation.cashTitle}
+                  : t.confirmation.pendingTitle}
           </h1>
 
           <p className="mt-3 text-base leading-relaxed text-ink-500">
             {isDead
               ? 'Ovaj termin je oslobođen i ponovo je dostupan drugim gostima.'
               : isConfirmed
-                ? t.confirmation.cardLead
+                ? t.confirmation.confirmedLead
                 : awaitingTransfer
                   ? t.confirmation.transferLead
-                  : t.confirmation.cashLead}
+                  : t.confirmation.pendingLead}
           </p>
 
           {(isPending || awaitingTransfer) && (
-            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-warn-600/10 px-4 py-1.5 text-sm font-medium text-warn-600">
-              <span className="h-2 w-2 rounded-full bg-warn-600" aria-hidden="true" />
-              {awaitingTransfer ? t.confirmation.awaitingTransfer : t.confirmation.pendingBadge}
-            </p>
+            <>
+              <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-warn-600/10 px-4 py-1.5 text-sm font-medium text-warn-600">
+                <span className="h-2 w-2 rounded-full bg-warn-600" aria-hidden="true" />
+                {awaitingTransfer ? t.confirmation.awaitingTransfer : t.confirmation.pendingBadge}
+              </p>
+              <p className="mt-3 text-sm text-ink-500">{t.confirmation.heldNote}</p>
+            </>
           )}
 
           {/* Podaci za uplatu idu ODMAH ispod naslova — to je jedino što

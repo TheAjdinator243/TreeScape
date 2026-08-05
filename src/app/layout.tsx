@@ -71,7 +71,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <style>{`.reveal { opacity: 1 !important; transform: none !important; }`}</style>
         </noscript>
       </head>
-      <body className="min-h-dvh antialiased">{children}</body>
+      {/*
+        `suppressHydrationWarning` stoji SAMO na <body>, i to namjerno.
+
+        Proširenja u pregledniku (antivirusi, upravljači lozinkama) ubacuju svoje
+        atribute u <body> prije nego React stigne da poveže stranicu, pa React
+        prijavi da se server i klijent ne slažu. To nije greška u kodu i ne može
+        se popraviti s naše strane — jedino se može reći Reactu da atribute na
+        ovom jednom elementu ne poredi. Djeca se i dalje provjeravaju normalno.
+      */}
+      <body className="min-h-dvh antialiased" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
