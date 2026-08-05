@@ -21,6 +21,11 @@ export const DEMO_SETTINGS: Settings = {
   checkin_time: '15:00',
   checkout_time: '11:00',
   hold_minutes: 15,
+  // Demo IBAN — dovoljno da se vidi kako izgleda stranica s podacima za uplatu.
+  bank_account_name: 'TreeScape (demo)',
+  bank_name: 'Demo banka d.d.',
+  bank_iban: 'BA391234567890123456',
+  transfer_days: 3,
 };
 
 export function demoPeriods(): RatePeriod[] {

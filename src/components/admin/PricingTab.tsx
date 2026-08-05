@@ -35,6 +35,10 @@ export function PricingTab({
     currency_symbol: settings.currency_symbol,
     checkin_time: settings.checkin_time,
     checkout_time: settings.checkout_time,
+    bank_account_name: settings.bank_account_name,
+    bank_name: settings.bank_name,
+    bank_iban: settings.bank_iban,
+    transfer_days: String(settings.transfer_days),
   });
   const [saved, setSaved] = useState(false);
 
@@ -64,6 +68,11 @@ export function PricingTab({
         currency_symbol: form.currency_symbol,
         checkin_time: form.checkin_time,
         checkout_time: form.checkout_time,
+        bank_account_name: form.bank_account_name.trim(),
+        bank_name: form.bank_name.trim(),
+        // Razmaci u IBAN-u su uobičajeni pri prepisivanju, ali u bazu ide čist.
+        bank_iban: form.bank_iban.replace(/\s/g, '').toUpperCase(),
+        transfer_days: Number(form.transfer_days),
       }),
     });
 
@@ -184,6 +193,65 @@ export function PricingTab({
               className="field-input"
             />
           </div>
+
+          {/* ── Bankovni podaci ── */}
+          <div className="sm:col-span-2">
+            <div className="mt-2 border-t border-sand-200 pt-6">
+              <h3 className="font-display text-lg text-forest-900">{t.admin.bankHeading}</h3>
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-ink-500">
+                {t.admin.bankLead}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="bank_account_name" className="field-label">
+              {t.admin.bankAccountName}
+            </label>
+            <input
+              id="bank_account_name"
+              type="text"
+              value={form.bank_account_name}
+              onChange={set('bank_account_name')}
+              placeholder="Ime i prezime ili naziv firme"
+              className="field-input"
+            />
+          </div>
+          <div>
+            <label htmlFor="bank_name" className="field-label">
+              {t.admin.bankName}
+            </label>
+            <input
+              id="bank_name"
+              type="text"
+              value={form.bank_name}
+              onChange={set('bank_name')}
+              placeholder="npr. Raiffeisen Bank d.d. BiH"
+              className="field-input"
+            />
+          </div>
+          <div>
+            <label htmlFor="bank_iban" className="field-label">
+              {t.admin.bankIban}
+            </label>
+            <input
+              id="bank_iban"
+              type="text"
+              value={form.bank_iban}
+              onChange={set('bank_iban')}
+              placeholder="BA39 1234 5678 9012 3456"
+              className="field-input font-mono"
+            />
+            <p className="mt-1.5 text-xs text-ink-400">
+              Ostavi prazno da se plaćanje na račun uopšte ne nudi gostima.
+            </p>
+          </div>
+          <Num
+            id="transfer_days"
+            label={t.admin.transferDays}
+            value={form.transfer_days}
+            onChange={set('transfer_days')}
+          />
 
           <div className="flex items-center gap-4 sm:col-span-2">
             <button type="submit" className="btn-primary px-6 py-2.5 text-xs">

@@ -2,11 +2,12 @@ import 'server-only';
 
 import { Resend } from 'resend';
 
-import { formatRange } from './dates';
+import { formatDateTime, formatRange } from './dates';
 import { env, isEmailConfigured } from './env';
+import { transferInstructions } from './payments';
 import { formatMoney } from './pricing';
 import { t } from './strings';
-import type { Booking } from './types';
+import type { Booking, Settings } from './types';
 
 /**
  * Mailovi su NEOBAVEZNI. Bez RESEND_API_KEY aplikacija radi potpuno normalno —
@@ -74,6 +75,49 @@ export async function sendGuestConfirmation(booking: Booking): Promise<void> {
   );
 }
 
+/** Gostu — podaci za uplatu na račun. Ovo je mail koji stvarno mora stići. */
+export async function sendGuestTransferInstructions(
+  booking: Booking,
+  settings: Settings
+): Promise<void> {
+  if (!booking.guest_email) return;
+
+  const p = transferInstructions(booking, settings);
+  const row = (label: string, value: string, big = false) =>
+    `<tr>
+       <td style="padding:10px 0;color:#6b6157;font-size:14px">${label}</td>
+       <td style="padding:10px 0;text-align:right;font-weight:600;font-size:${big ? '18px' : '14px'};font-family:${big ? 'monospace' : 'inherit'}">${value}</td>
+     </tr>`;
+
+  await send(
+    booking.guest_email,
+    `Podaci za uplatu — ${t.site.name}`,
+    layout(
+      'Termin je rezervisan — preostaje uplata',
+      `<p style="font-size:15px;line-height:1.6;color:#453d35;margin:0 0 20px">
+         Poštovani/a ${booking.guest_name ?? ''}, termin držimo za vas. Molimo uplatite iznos
+         po podacima ispod — čim uplata stigne, rezervacija je potvrđena.
+       </p>
+       ${detailRows(booking)}
+       <div style="background:#f4ede0;border-radius:12px;padding:18px;margin:20px 0 0">
+         <p style="margin:0 0 10px;font-weight:600;color:#1f4436;font-size:15px">Podaci za uplatu</p>
+         <table style="width:100%;border-collapse:collapse">
+           ${row('Primalac', p.accountName)}
+           ${p.bankName ? row('Banka', p.bankName) : ''}
+           ${row('IBAN', p.iban, true)}
+           ${row('Poziv na broj', p.reference, true)}
+           ${row('Iznos', formatMoney(p.amountCents, p.currencySymbol), true)}
+           ${p.deadline ? row('Uplatiti do', formatDateTime(p.deadline)) : ''}
+         </table>
+       </div>
+       <p style="font-size:13px;line-height:1.6;color:#b7791f;margin:16px 0 0">
+         Obavezno upišite poziv na broj — po njemu domaćin prepoznaje vašu uplatu.
+         Ako uplata ne stigne do navedenog roka, termin se oslobađa.
+       </p>`
+    )
+  );
+}
+
 /** Gostu — zahtjev za plaćanje gotovinom je zaprimljen. */
 export async function sendGuestCashRequest(booking: Booking): Promise<void> {
   if (!booking.guest_email) return;
@@ -134,23 +178,35 @@ export async function sendGuestCashRejected(booking: Booking): Promise<void> {
 }
 
 /** Vlasniku — stigla je nova rezervacija ili zahtjev. */
-export async function sendOwnerNotification(booking: Booking, kind: 'card' | 'cash'): Promise<void> {
+export async function sendOwnerNotification(
+  booking: Booking,
+  kind: 'cash' | 'bank_transfer' | 'card'
+): Promise<void> {
   if (!env.email.ownerEmail) return;
 
   const title =
-    kind === 'cash' ? 'Novi zahtjev za plaćanje gotovinom' : 'Nova plaćena rezervacija';
+    kind === 'cash'
+      ? 'Novi zahtjev za plaćanje gotovinom'
+      : kind === 'bank_transfer'
+        ? 'Nova rezervacija — čeka uplatu na račun'
+        : 'Nova plaćena rezervacija';
+
+  const hint =
+    kind === 'cash'
+      ? 'Termin je rezervisan i nevidljiv drugim gostima dok ne odlučite.'
+      : kind === 'bank_transfer'
+        ? 'Termin je rezervisan. Kad uplata legne na račun, potvrdite je u administraciji.'
+        : '';
 
   const action =
-    kind === 'cash'
-      ? `<p style="margin:20px 0 0">
+    kind === 'card'
+      ? ''
+      : `<p style="margin:20px 0 0">
            <a href="${env.siteUrl}/admin" style="display:inline-block;background:#2a5a47;color:#faf7f1;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
              Otvori administraciju
            </a>
          </p>
-         <p style="font-size:13px;color:#b7791f;margin:16px 0 0">
-           Termin je rezervisan i nevidljiv drugim gostima dok ne odlučite.
-         </p>`
-      : '';
+         <p style="font-size:13px;color:#b7791f;margin:16px 0 0">${hint}</p>`;
 
   await send(
     env.email.ownerEmail,

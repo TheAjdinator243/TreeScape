@@ -8,22 +8,20 @@ import { Reveal } from '@/components/site/Reveal';
 import { formatLong, nightsBetween, toDateStr } from '@/lib/dates';
 import { formatMoney, quoteStay, rangeHasConflict, validateStay } from '@/lib/pricing';
 import { t } from '@/lib/strings';
-import type { BookingContext } from '@/lib/types';
+import type { BookingContext, PaymentMethod } from '@/lib/types';
 
 import { StayCalendar } from './StayCalendar';
 import { useAvailability } from './useAvailability';
 
-type Submitting = 'card' | 'cash' | null;
+const METHOD_COPY: Record<string, { label: string; hint: string }> = {
+  bank_transfer: { label: t.booking.payTransfer, hint: t.booking.payTransferHint },
+  cash: { label: t.booking.payCash, hint: t.booking.payCashHint },
+  test: { label: t.booking.payTest, hint: t.booking.payTestHint },
+};
 
-export function BookingSection({
-  context,
-  stripeEnabled,
-}: {
-  context: BookingContext;
-  stripeEnabled: boolean;
-}) {
+export function BookingSection({ context }: { context: BookingContext }) {
   const router = useRouter();
-  const { periods, settings } = context;
+  const { periods, settings, paymentMethods } = context;
 
   const slots = useAvailability(context.slots);
 
@@ -33,7 +31,8 @@ export function BookingSection({
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
-  const [submitting, setSubmitting] = useState<Submitting>(null);
+  const [method, setMethod] = useState<PaymentMethod | null>(paymentMethods[0] ?? null);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const start = range?.from ? toDateStr(range.from) : null;
@@ -57,10 +56,11 @@ export function BookingSection({
     if (name.trim().length < 2) return t.errors.REQUIRED_NAME;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return t.errors.REQUIRED_EMAIL;
     if (phone.trim().length < 6) return t.errors.REQUIRED_PHONE;
+    if (!method) return t.errors.REQUIRED_METHOD;
     return stayError;
   }
 
-  async function submit(method: 'card' | 'cash') {
+  async function submit() {
     const problem = formError();
     if (problem) {
       setError(problem);
@@ -68,10 +68,10 @@ export function BookingSection({
     }
 
     setError(null);
-    setSubmitting(method);
+    setSubmitting(true);
 
     try {
-      const res = await fetch(method === 'card' ? '/api/booking/hold' : '/api/booking/cash', {
+      const res = await fetch('/api/booking/reserve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -83,36 +83,27 @@ export function BookingSection({
           guest_email: email.trim(),
           guest_phone: phone.trim(),
           note: note.trim() || null,
+          payment_method: method,
         }),
       });
 
-      const data = (await res.json()) as { url?: string; token?: string; error?: string };
+      const data = (await res.json()) as { token?: string; error?: string };
 
-      if (!res.ok) {
+      if (!res.ok || !data.token) {
         setError(data.error ?? t.errors.SERVER_ERROR);
-        setSubmitting(null);
+        setSubmitting(false);
         return;
       }
 
-      if (method === 'card' && data.url) {
-        window.location.href = data.url;
-        return; // Namjerno ne gasimo spinner — stranica odlazi na Stripe.
-      }
-
-      if (data.token) {
-        router.push(`/rezervacija/${data.token}`);
-        return;
-      }
-
-      setError(t.errors.SERVER_ERROR);
-      setSubmitting(null);
+      // Spinner namjerno ostaje upaljen — stranica odlazi na potvrdu.
+      router.push(`/rezervacija/${data.token}`);
     } catch {
       setError(t.errors.SERVER_ERROR);
-      setSubmitting(null);
+      setSubmitting(false);
     }
   }
 
-  const busy = submitting !== null;
+  const busy = submitting;
 
   return (
     <section id="rezervacija" className="bg-sand-100">
@@ -270,6 +261,56 @@ export function BookingSection({
                 </div>
               </div>
 
+              {/* ── Način plaćanja ── */}
+              <fieldset className="mt-6 border-t border-sand-200 pt-6">
+                <legend className="sr-only">{t.booking.payMethodTitle}</legend>
+                <p className="field-label">{t.booking.payMethodTitle}</p>
+
+                <div className="space-y-2.5">
+                  {paymentMethods.map((id) => {
+                    const copy = METHOD_COPY[id];
+                    if (!copy) return null;
+                    const selected = method === id;
+
+                    return (
+                      <label
+                        key={id}
+                        className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${
+                          selected
+                            ? 'border-forest-600 bg-forest-700/5 ring-2 ring-forest-600/20'
+                            : 'border-sand-300 hover:border-forest-600/40'
+                        } ${busy ? 'cursor-not-allowed opacity-60' : ''}`}
+                      >
+                        <input
+                          type="radio"
+                          name="payment_method"
+                          value={id}
+                          checked={selected}
+                          disabled={busy}
+                          onChange={() => {
+                            setMethod(id);
+                            setError(null);
+                          }}
+                          className="mt-1 h-4 w-4 shrink-0 accent-forest-700"
+                        />
+                        <span className="min-w-0">
+                          <span
+                            className={`block text-sm font-semibold ${
+                              id === 'test' ? 'text-warn-600' : 'text-ink-900'
+                            }`}
+                          >
+                            {copy.label}
+                          </span>
+                          <span className="mt-1 block text-xs leading-relaxed text-ink-500">
+                            {copy.hint}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+
               {(error || stayError) && (
                 <p
                   role="alert"
@@ -279,38 +320,14 @@ export function BookingSection({
                 </p>
               )}
 
-              {/* ── Plaćanje ── */}
-              <div className="mt-6 space-y-3">
-                {stripeEnabled && (
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => void submit('card')}
-                      disabled={busy}
-                      className="btn-accent w-full"
-                    >
-                      {submitting === 'card' ? t.booking.redirecting : t.booking.payCard}
-                    </button>
-                    <p className="mt-2 text-center text-xs leading-relaxed text-ink-400">
-                      {t.booking.payCardHint}
-                    </p>
-                  </div>
-                )}
-
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => void submit('cash')}
-                    disabled={busy}
-                    className={stripeEnabled ? 'btn-ghost w-full' : 'btn-primary w-full'}
-                  >
-                    {submitting === 'cash' ? t.booking.submitting : t.booking.payCash}
-                  </button>
-                  <p className="mt-2 text-center text-xs leading-relaxed text-ink-400">
-                    {t.booking.payCashHint}
-                  </p>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => void submit()}
+                disabled={busy || paymentMethods.length === 0}
+                className="btn-accent mt-6 w-full"
+              >
+                {busy ? t.booking.submitting : t.booking.reserve}
+              </button>
             </div>
           </Reveal>
         </div>

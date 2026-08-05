@@ -29,10 +29,11 @@ export const env = {
     anonKey: optional('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
     serviceRoleKey: optional('SUPABASE_SERVICE_ROLE_KEY'),
   },
-  stripe: {
-    secretKey: optional('STRIPE_SECRET_KEY'),
-    webhookSecret: optional('STRIPE_WEBHOOK_SECRET'),
-  },
+  /**
+   * Test način plaćanja — potvrđuje rezervaciju bez ijednog pravog centa.
+   * Postoji da se cijeli tok može isprobati. Uključuje se samo izričito.
+   */
+  enableTestPayments: optional('ENABLE_TEST_PAYMENTS') === 'true',
   admin: {
     accessCode: optional('ADMIN_ACCESS_CODE'),
     sessionSecret: optional('ADMIN_SESSION_SECRET'),
@@ -50,9 +51,6 @@ export const env = {
 export const isDatabaseConfigured = Boolean(
   env.supabase.url && env.supabase.anonKey && env.supabase.serviceRoleKey
 );
-
-/** Je li plaćanje karticom moguće? Ako nije, prikazuje se samo gotovina. */
-export const isStripeConfigured = Boolean(env.stripe.secretKey && env.stripe.webhookSecret);
 
 export const isEmailConfigured = Boolean(env.email.apiKey && env.email.ownerEmail);
 

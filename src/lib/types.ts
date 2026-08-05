@@ -3,14 +3,25 @@
 import type { DateStr } from './dates';
 
 export type BookingStatus =
-  | 'pending_payment'
-  | 'pending_cash'
+  | 'pending_payment' // čeka online uplatu (za budući domaći procesor)
+  | 'pending_cash' // gotovina, čeka odobrenje vlasnika
+  | 'pending_transfer' // čeka da uplata legne na račun vlasnika
   | 'confirmed'
   | 'expired'
   | 'cancelled'
   | 'blocked';
 
-export type PaymentMethod = 'card' | 'cash' | 'none';
+/** 'card' je rezervisan za budući domaći procesor (Monri, WSPay, PaySpot). */
+export type PaymentMethod = 'card' | 'cash' | 'bank_transfer' | 'test' | 'none';
+
+/** Statusi koji drže termin zauzetim. */
+export const BLOCKING_STATUSES: BookingStatus[] = [
+  'pending_payment',
+  'pending_cash',
+  'pending_transfer',
+  'confirmed',
+  'blocked',
+];
 
 export type SlotKind = 'booked' | 'pending' | 'blocked';
 
@@ -44,6 +55,11 @@ export interface Settings {
   checkin_time: string;
   checkout_time: string;
   hold_minutes: number;
+  // Bankovni podaci — gost ih vidi na potvrdi kad plaća na račun.
+  bank_account_name: string;
+  bank_name: string;
+  bank_iban: string;
+  transfer_days: number;
 }
 
 export interface Booking {
@@ -61,8 +77,8 @@ export interface Booking {
   total_cents: number;
   currency: string;
   price_breakdown: PriceBreakdown | null;
-  stripe_session_id: string | null;
-  stripe_payment_intent_id: string | null;
+  payment_reference: string | null;
+  payment_id: string | null;
   hold_expires_at: string | null;
   admin_note: string | null;
   created_at: string;
@@ -94,6 +110,8 @@ export interface BookingContext {
   slots: AvailabilitySlot[];
   periods: RatePeriod[];
   settings: Settings;
+  /** Načini plaćanja koje gost smije vidjeti. */
+  paymentMethods: PaymentMethod[];
 }
 
 export type ApiError = {

@@ -106,14 +106,23 @@ export const t = {
     averagePerNight: 'prosječno po noćenju',
     seasonalNote: 'Cijena po noćenju zavisi od sezone.',
 
-    payCard: 'Plati karticom',
+    payMethodTitle: 'Način plaćanja',
+
+    payTransfer: 'Plaćanje na račun',
+    payTransferHint:
+      'Dobijate broj računa i poziv na broj. Termin držimo za vas dok uplata ne stigne.',
+
     payCash: 'Plaćanje u gotovini',
-    payCardHint: 'Sigurno plaćanje preko Stripe-a. Termin je odmah potvrđen.',
     payCashHint:
       'Šaljete zahtjev domaćinu. Termin držimo za vas dok ga domaćin ne potvrdi — obično isti dan.',
 
+    payTest: 'TEST rezervacija',
+    payTestHint:
+      'Samo za isprobavanje — potvrđuje rezervaciju bez ikakvog plaćanja. Ne prikazuje se gostima.',
+
+    reserve: 'Rezerviši',
+
     submitting: 'Trenutak…',
-    redirecting: 'Vodimo vas na sigurno plaćanje…',
 
     minNightsNotice: (n: number) =>
       `Za odabrane datume minimalan boravak je ${n} ${plural(n, 'noćenje', 'noćenja', 'noćenja')}.`,
@@ -128,14 +137,32 @@ export const t = {
     cashTitle: 'Zahtjev je zaprimljen',
     cashLead:
       'Termin držimo za vas dok ga domaćin ne potvrdi. Javićemo vam se emailom u najkraćem roku.',
+    transferTitle: 'Termin je rezervisan za vas',
+    transferLead:
+      'Preostaje još samo uplata. Termin držimo za vas do isteka roka ispod — čim uplata stigne, rezervacija je potvrđena.',
+
+    transferHeading: 'Podaci za uplatu',
+    transferRecipient: 'Primalac',
+    transferBank: 'Banka',
+    transferIban: 'Broj računa (IBAN)',
+    transferReference: 'Poziv na broj',
+    transferAmount: 'Iznos za uplatu',
+    transferDeadline: 'Uplatiti do',
+    transferNote:
+      'Obavezno upišite poziv na broj — po njemu domaćin prepoznaje vašu uplatu. Ako uplata ne stigne do navedenog roka, termin se oslobađa.',
+    copy: 'Kopiraj',
+    copied: 'Kopirano',
+
     pendingBadge: 'Čeka potvrdu domaćina',
+    awaitingTransfer: 'Čeka uplatu',
     confirmedBadge: 'Potvrđeno',
     reference: 'Broj rezervacije',
     stay: 'Vaš boravak',
     guestsLabel: 'Gostiju',
     totalLabel: 'Ukupan iznos',
     payOnArrival: 'Iznos se plaća u gotovini po dolasku.',
-    paid: 'Plaćeno karticom.',
+    paid: 'Uplata je zaprimljena.',
+    testBooking: 'Ovo je TEST rezervacija — nikakav novac nije naplaćen.',
     whatNext: 'Šta dalje?',
     whatNextBody:
       'Poslali smo vam email s detaljima. Tačnu adresu, uputstva za dolazak i kontakt domaćina dobijate prije dolaska.',
@@ -158,7 +185,8 @@ export const t = {
     REQUIRED_NAME: 'Unesite ime i prezime.',
     REQUIRED_EMAIL: 'Unesite ispravnu email adresu.',
     REQUIRED_PHONE: 'Unesite broj telefona.',
-    PAYMENTS_DISABLED: 'Plaćanje karticom trenutno nije dostupno. Pokušajte plaćanje u gotovini.',
+    REQUIRED_METHOD: 'Odaberite način plaćanja.',
+    METHOD_UNAVAILABLE: 'Odabrani način plaćanja trenutno nije dostupan.',
     SERVER_ERROR: 'Došlo je do greške. Pokušajte ponovo za koji trenutak.',
     NOT_FOUND: 'Traženi sadržaj nije pronađen.',
   },
@@ -227,6 +255,7 @@ export const t = {
     statusLabels: {
       pending_payment: 'Čeka uplatu',
       pending_cash: 'Čeka odobrenje',
+      pending_transfer: 'Čeka uplatu na račun',
       confirmed: 'Potvrđeno',
       expired: 'Isteklo',
       cancelled: 'Otkazano',
@@ -236,8 +265,25 @@ export const t = {
     methodLabels: {
       card: 'Kartica',
       cash: 'Gotovina',
+      bank_transfer: 'Uplata na račun',
+      test: 'TEST',
       none: '—',
     } as Record<string, string>,
+
+    markPaid: 'Uplata stigla',
+    markPaidConfirm: 'Potvrditi da je uplata legla na račun?',
+    transfersHeading: 'Uplate na račun koje se čekaju',
+    transfersEmpty: 'Nema rezervacija koje čekaju uplatu.',
+    transferRef: 'Poziv na broj',
+    deadlineAt: 'Rok',
+
+    bankHeading: 'Podaci za uplatu na račun',
+    bankLead:
+      'Ovo gost vidi kad odabere plaćanje na račun. Dok je IBAN prazan, ta opcija se uopšte ne nudi.',
+    bankAccountName: 'Naziv primaoca',
+    bankName: 'Naziv banke',
+    bankIban: 'IBAN / broj računa',
+    transferDays: 'Rok za uplatu (dana)',
   },
 
   common: {

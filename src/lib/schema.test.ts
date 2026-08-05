@@ -14,7 +14,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
  * Ovdje se to provjeri za sekundu, bez ijednog otvorenog naloga.
  */
 
-const MIGRATION = path.resolve(import.meta.dirname, '../../supabase/migrations/0001_init.sql');
+const MIGRATIONS_DIR = path.resolve(import.meta.dirname, '../../supabase/migrations');
+const MIGRATIONS = ['0001_init.sql', '0002_bez_stripea.sql'];
 
 let db: PGlite;
 
@@ -23,7 +24,11 @@ function guest(
   token: string,
   start: string,
   end: string,
-  status: 'confirmed' | 'pending_payment' | 'pending_cash' = 'confirmed'
+  status:
+    | 'confirmed'
+    | 'pending_payment'
+    | 'pending_cash'
+    | 'pending_transfer' = 'confirmed'
 ) {
   return db.query<{ id: string }>(
     `insert into bookings
@@ -51,11 +56,16 @@ beforeAll(async () => {
   // PGlite nema Supabase-ove role (anon/authenticated) ni publikaciju
   // supabase_realtime. Ta dva mjesta izbacujemo; sve ostalo — tabele,
   // ograničenja, okidači, funkcije — testira se tačno onako kako će raditi.
-  const sql = readFileSync(MIGRATION, 'utf8')
-    .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
-    .replace(/^\s*to anon, authenticated\s*$/gim, '');
+  //
+  // Migracije se puštaju redom, kao na pravoj bazi, pa se usput provjerava
+  // i da 0002 uredno legne na shemu koju je ostavio 0001.
+  for (const file of MIGRATIONS) {
+    const sql = readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8')
+      .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
+      .replace(/^\s*to anon, authenticated\s*$/gim, '');
 
-  await db.exec(sql);
+    await db.exec(sql);
+  }
 }, 60_000);
 
 afterAll(async () => {
@@ -71,10 +81,26 @@ describe('migracija', () => {
     expect(rows.map((r) => r.table_name)).toEqual([
       'availability_slots',
       'bookings',
+      'payment_events',
       'rate_periods',
       'settings',
-      'stripe_events',
     ]);
+  });
+
+  it('nema više ničega vezanog za Stripe', async () => {
+    const { rows } = await db.query<{ column_name: string }>(
+      `select column_name from information_schema.columns
+        where table_schema = 'public' and column_name like '%stripe%'`
+    );
+    expect(rows).toHaveLength(0);
+  });
+
+  it('bankovni podaci su dio postavki', async () => {
+    const { rows } = await db.query<{ bank_iban: string; transfer_days: number }>(
+      'select bank_iban, transfer_days from settings where id = 1'
+    );
+    expect(rows[0]?.bank_iban).toBe('');
+    expect(rows[0]?.transfer_days).toBe(3);
   });
 
   it('upisuje početni red postavki', async () => {
@@ -108,6 +134,52 @@ describe('dvostruki booking je nemoguć', () => {
     expect(await isRejected(guest('uplata', '2027-08-12', '2027-08-14', 'pending_payment'))).toBe(
       true
     );
+  });
+
+  it('bankovni transfer koji se čeka takođe blokira termin', async () => {
+    expect(
+      await isRejected(guest('transfer', '2027-08-12', '2027-08-14', 'pending_transfer'))
+    ).toBe(true);
+  });
+});
+
+describe('bankovni transfer', () => {
+  it('rezervacija koja čeka uplatu odmah zauzima kalendar', async () => {
+    const { rows } = await guest('bt-1', '2028-03-01', '2028-03-05', 'pending_transfer');
+    const slot = await db.query<{ kind: string }>(
+      'select kind from availability_slots where booking_id = $1',
+      [rows[0]!.id]
+    );
+    expect(slot.rows[0]?.kind).toBe('pending');
+  });
+
+  it('neplaćen transfer istekne i oslobodi termin', async () => {
+    await db.query(
+      `insert into bookings
+         (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, hold_expires_at)
+       values ('bt-istekao','Spor','s@e.ba','2028-04-01','2028-04-05','pending_transfer','bank_transfer', now() - interval '1 day')`
+    );
+
+    await db.query('select release_expired_holds()');
+
+    const { rows } = await db.query<{ status: string }>(
+      `select status from bookings where public_token = 'bt-istekao'`
+    );
+    expect(rows[0]?.status).toBe('expired');
+
+    // …i termin je opet slobodan za nekog drugog
+    await expect(guest('bt-novi', '2028-04-01', '2028-04-05')).resolves.toBeDefined();
+  });
+
+  it('potvrda uplate mijenja termin u "booked"', async () => {
+    const { rows } = await guest('bt-2', '2028-05-01', '2028-05-05', 'pending_transfer');
+    await db.query(`update bookings set status='confirmed' where id=$1`, [rows[0]!.id]);
+
+    const slot = await db.query<{ kind: string }>(
+      'select kind from availability_slots where booking_id = $1',
+      [rows[0]!.id]
+    );
+    expect(slot.rows[0]?.kind).toBe('booked');
   });
 });
 

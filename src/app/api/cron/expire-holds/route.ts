@@ -7,7 +7,8 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 /**
- * Oslobađa termine koje su gosti napustili na Stripe stranici.
+ * Oslobađa termine kojima je istekao rok — nezavršene uplate i bankovne
+ * transfere koji nikad nisu legli na račun.
  *
  * Ovo je REZERVNA mreža, ne glavna odbrana: iste termine oslobađa i svako
  * čitanje dostupnosti (vidi `releaseExpiredHolds`). Zato zastoj crona ne može

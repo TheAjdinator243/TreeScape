@@ -22,6 +22,10 @@ const settings: Settings = {
   checkin_time: '15:00',
   checkout_time: '11:00',
   hold_minutes: 15,
+  bank_account_name: 'Test Vlasnik',
+  bank_name: 'Test banka',
+  bank_iban: 'BA391234567890123456',
+  transfer_days: 3,
 };
 
 const summer: RatePeriod = {

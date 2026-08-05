@@ -97,23 +97,50 @@ if (!url || !anonKey || !serviceKey) {
   // ── Migracija ─────────────────────────────────────────────────────────────
   section('Migracija baze');
 
-  const tables = ['bookings', 'availability_slots', 'rate_periods', 'settings', 'stripe_events'];
+  const tables = ['bookings', 'availability_slots', 'rate_periods', 'settings', 'payment_events'];
   let missing = [];
 
   for (const table of tables) {
-    const { error } = await db.from(table).select('*', { count: 'exact', head: true });
+    // NAMJERNO `.limit(1)`, a ne `{ head: true }`.
+    // Sa `head: true` PostgREST na nepostojeću tabelu ne vrati grešku, pa je
+    // doctor jednom prijavio da je migracija prošla iako nije bila ni pokrenuta.
+    const { error } = await db.from(table).select('*').limit(1);
     if (error) missing.push(table);
+  }
+
+  // Tabela može postojati, a da joj fali kolona iz kasnije migracije — npr.
+  // ako je 0002 pukla na pola. Zato se provjeravaju i pojedine kolone.
+  const columnChecks = [
+    { table: 'bookings', column: 'payment_reference', migration: '0002' },
+    { table: 'settings', column: 'bank_iban', migration: '0002' },
+  ];
+  const missingColumns = [];
+
+  for (const { table, column, migration } of columnChecks) {
+    if (missing.includes(table)) continue;
+    const { error } = await db.from(table).select(column).limit(1);
+    if (error) missingColumns.push(`${table}.${column} (migracija ${migration})`);
   }
 
   if (missing.length === tables.length) {
     bad(
-      'nijedna tabela ne postoji — migracija nije pokrenuta',
-      'Supabase → SQL Editor → zalijepi cijeli supabase/migrations/0001_init.sql → Run'
+      'nijedna tabela ne postoji — migracije nisu pokrenute',
+      'Supabase → SQL Editor → pokreni 0001_init.sql pa 0002_bez_stripea.sql'
+    );
+  } else if (missing.includes('payment_events') && missing.length === 1) {
+    bad(
+      'druga migracija nije pokrenuta',
+      'Supabase → SQL Editor → zalijepi supabase/migrations/0002_bez_stripea.sql → Run'
     );
   } else if (missing.length > 0) {
     bad(
       `nedostaju tabele: ${missing.join(', ')}`,
-      'ponovo pokreni supabase/migrations/0001_init.sql u SQL Editoru'
+      'pokreni migracije iz supabase/migrations redom, u SQL Editoru'
+    );
+  } else if (missingColumns.length > 0) {
+    bad(
+      `shema je zastarjela — nedostaje: ${missingColumns.join(', ')}`,
+      'Supabase → SQL Editor → pokreni supabase/migrations/0002_bez_stripea.sql → Run'
     );
   } else {
     ok('sve tabele postoje', tables.join(', '));
@@ -232,41 +259,49 @@ if (!url || !anonKey || !serviceKey) {
   }
 }
 
-// ── Stripe ──────────────────────────────────────────────────────────────────
-section('Stripe');
+// ── Plaćanje ────────────────────────────────────────────────────────────────
+section('Načini plaćanja');
 
-if (!env.STRIPE_SECRET_KEY) {
-  warn(
-    'Stripe nije podešen — plaćanje karticom se neće prikazati',
-    'to je u redu ako za sada želiš samo plaćanje gotovinom'
-  );
-} else {
-  const { default: Stripe } = await import('stripe');
-  try {
-    const stripe = new Stripe(env.STRIPE_SECRET_KEY, { apiVersion: '2026-07-29.dahlia' });
-    const balance = await stripe.balance.retrieve();
+const testOn = env.ENABLE_TEST_PAYMENTS === 'true';
+const live = Boolean(env.NEXT_PUBLIC_SITE_URL && !env.NEXT_PUBLIC_SITE_URL.includes('localhost'));
 
-    ok('ključ je ispravan', mask(env.STRIPE_SECRET_KEY));
+if (db) {
+  const { data: s } = await db
+    .from('settings')
+    .select('bank_iban, bank_account_name, bank_name, transfer_days')
+    .eq('id', 1)
+    .maybeSingle();
 
-    if (balance.livemode) {
-      warn('koristiš PRODUKCIJSKI ključ (sk_live_) — naplaćuju se pravi novci');
-    } else {
-      ok('test mod', 'kartica za probu: 4242 4242 4242 4242');
-    }
-  } catch (error) {
-    bad(`Stripe odbija ključ: ${error.message}`, 'Stripe → Developers → API keys');
-  }
+  const iban = (s?.bank_iban ?? '').replace(/\s/g, '');
 
-  if (!env.STRIPE_WEBHOOK_SECRET) {
-    bad(
-      'nedostaje STRIPE_WEBHOOK_SECRET — uplate se NIKAD neće potvrditi',
-      'lokalno: stripe listen --forward-to localhost:3000/api/stripe/webhook'
+  if (!iban) {
+    warn(
+      'plaćanje na račun se ne nudi — IBAN nije unesen',
+      'unesi ga u /admin → Cijene → "Podaci za uplatu na račun"'
     );
-  } else if (!env.STRIPE_WEBHOOK_SECRET.startsWith('whsec_')) {
-    bad('STRIPE_WEBHOOK_SECRET ne počinje sa whsec_', 'prekopiraj ga ponovo');
+  } else if (!/^[A-Z]{2}\d{2}[A-Z0-9]{8,30}$/.test(iban.toUpperCase())) {
+    bad(`IBAN nije ispravnog oblika: ${iban}`, 'npr. BA391234567890123456');
+  } else if (!s?.bank_account_name?.trim()) {
+    bad(
+      'IBAN je unesen, ali nema naziva primaoca',
+      'bez toga gost ne zna na čije ime uplaćuje — /admin → Cijene'
+    );
   } else {
-    ok('webhook tajna postavljena', mask(env.STRIPE_WEBHOOK_SECRET));
+    ok('plaćanje na račun radi', `${iban.slice(0, 6)}…${iban.slice(-4)}, rok ${s.transfer_days} dana`);
   }
+}
+
+ok('plaćanje u gotovini', 'uvijek dostupno, uz odobrenje vlasnika');
+
+if (testOn && live) {
+  bad(
+    'TEST način plaćanja je UKLJUČEN na pravom sajtu — svako može rezervisati besplatno!',
+    'postavi ENABLE_TEST_PAYMENTS=false i objavi ponovo'
+  );
+} else if (testOn) {
+  warn('TEST način plaćanja je uključen', 'u redu lokalno; na pravom sajtu mora biti false');
+} else {
+  ok('TEST način plaćanja isključen');
 }
 
 // ── Administracija ──────────────────────────────────────────────────────────
@@ -345,9 +380,6 @@ if (!site) {
   bad(`NEXT_PUBLIC_SITE_URL završava kosom crtom: ${site}`, 'ukloni / s kraja');
 } else {
   ok('adresa sajta', site);
-  if (site.includes('localhost') && env.STRIPE_SECRET_KEY?.startsWith('sk_live_')) {
-    warn('produkcijski Stripe ključ uz localhost adresu', 'to skoro sigurno nije namjerno');
-  }
 }
 
 if (!env.RESEND_API_KEY) {

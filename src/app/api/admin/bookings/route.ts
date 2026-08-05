@@ -30,9 +30,9 @@ export async function POST(request: Request) {
     .from('bookings')
     .update({ status: nextStatus, hold_expires_at: null })
     .eq('id', booking_id)
-    // Odlučuje se samo o zahtjevima koji zaista čekaju — ovo sprječava da
-    // dvostruki klik ili stara kartica ponovo "odobri" nešto već riješeno.
-    .eq('status', 'pending_cash')
+    // Odlučuje se samo o onome što zaista čeka — ovo sprječava da dvostruki
+    // klik ili stara otvorena kartica ponovo "odobri" nešto već riješeno.
+    .in('status', ['pending_cash', 'pending_transfer'])
     .select()
     .maybeSingle();
 
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     ? sendGuestCashApproved(booking)
     : sendGuestCashRejected(booking));
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, status: nextStatus });
 }
 
 /** Otkazivanje potvrđene rezervacije ili oslobađanje blokiranog termina. */

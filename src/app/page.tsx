@@ -8,7 +8,6 @@ import { Hero } from '@/components/site/Hero';
 import { Location } from '@/components/site/Location';
 import { Nav } from '@/components/site/Nav';
 import { getBookingContext } from '@/lib/data';
-import { isStripeConfigured } from '@/lib/env';
 import { lowestNightlyCents } from '@/lib/pricing';
 
 /**
@@ -29,7 +28,7 @@ export default async function HomePage() {
         <About />
         <Gallery />
         <Amenities />
-        <BookingSection context={context} stripeEnabled={isStripeConfigured} />
+        <BookingSection context={context} />
         <Location />
         <Faq settings={context.settings} />
       </main>

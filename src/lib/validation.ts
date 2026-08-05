@@ -16,6 +16,9 @@ export const bookingRequestSchema = z.object({
   guest_email: z.string().trim().email().max(200),
   guest_phone: z.string().trim().min(6).max(40),
   note: z.string().trim().max(500).nullable().optional(),
+  // Server ionako provjerava je li način stvarno ponuđen — ovdje samo
+  // odsijecamo očigledne gluposti prije nego dođu do baze.
+  payment_method: z.enum(['bank_transfer', 'cash', 'test']),
 });
 
 export type BookingRequest = z.infer<typeof bookingRequestSchema>;
@@ -46,6 +49,18 @@ export const settingsSchema = z.object({
   currency_symbol: z.string().trim().min(1).max(5),
   checkin_time: z.string().regex(/^\d{2}:\d{2}$/),
   checkout_time: z.string().regex(/^\d{2}:\d{2}$/),
+  bank_account_name: z.string().trim().max(140),
+  bank_name: z.string().trim().max(140),
+  // Prazan IBAN je dozvoljen i znači "ne nudi plaćanje na račun".
+  bank_iban: z
+    .string()
+    .trim()
+    .max(40)
+    .refine(
+      (v) => v === '' || /^[A-Z]{2}\d{2}[A-Z0-9]{8,30}$/.test(v.replace(/\s/g, '').toUpperCase()),
+      'IBAN nije ispravnog oblika (npr. BA391234567890123456)'
+    ),
+  transfer_days: z.number().int().min(1).max(30),
 });
 
 export const ratePeriodSchema = z.object({

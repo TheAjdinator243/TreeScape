@@ -96,18 +96,19 @@ values.SUPABASE_SERVICE_ROLE_KEY = await ask('SUPABASE_SERVICE_ROLE_KEY', {
   hint: 'TAJNA. Samo server. Nikome je ne šalji.',
 });
 
-console.log(c.cyan('\n─── 2. Stripe (plaćanje karticom) ───'));
-console.log(c.dim('    Preskoči sve ako za sada želiš samo plaćanje gotovinom.'));
-console.log(c.dim('    stripe.com → Developers → API keys (koristi TEST ključeve)'));
+console.log(c.cyan('\n─── 2. Plaćanje ───'));
+console.log(
+  c.dim(
+    '    Bankovni podaci (IBAN, primalac) se NE unose ovdje nego u\n' +
+      '    administraciji: /admin → Cijene → "Podaci za uplatu na račun".'
+  )
+);
 
-values.STRIPE_SECRET_KEY = await ask('STRIPE_SECRET_KEY', {
-  label: 'Tajni ključ',
-  hint: 'počinje sa sk_test_ (test) ili sk_live_ (produkcija)',
+values.ENABLE_TEST_PAYMENTS = await ask('ENABLE_TEST_PAYMENTS', {
+  label: 'Uključiti TEST način plaćanja?',
+  hint: 'upiši "true" da možeš isprobati cijeli tok bez pravog novca; na pravom sajtu mora ostati false',
 });
-values.STRIPE_WEBHOOK_SECRET = await ask('STRIPE_WEBHOOK_SECRET', {
-  label: 'Webhook tajna',
-  hint: 'dobiješ je iz: stripe listen --forward-to localhost:3000/api/stripe/webhook',
-});
+if (!values.ENABLE_TEST_PAYMENTS) values.ENABLE_TEST_PAYMENTS = 'false';
 
 console.log(c.cyan('\n─── 3. Administracija ───'));
 
@@ -155,9 +156,9 @@ NEXT_PUBLIC_SUPABASE_URL=${values.NEXT_PUBLIC_SUPABASE_URL}
 NEXT_PUBLIC_SUPABASE_ANON_KEY=${values.NEXT_PUBLIC_SUPABASE_ANON_KEY}
 SUPABASE_SERVICE_ROLE_KEY=${values.SUPABASE_SERVICE_ROLE_KEY}
 
-# ── Stripe ──
-STRIPE_SECRET_KEY=${values.STRIPE_SECRET_KEY}
-STRIPE_WEBHOOK_SECRET=${values.STRIPE_WEBHOOK_SECRET}
+# ── Plaćanje ──
+# Bankovni podaci se unose u /admin → Cijene, ne ovdje.
+ENABLE_TEST_PAYMENTS=${values.ENABLE_TEST_PAYMENTS}
 
 # ── Administracija ──
 ADMIN_ACCESS_CODE=${values.ADMIN_ACCESS_CODE}

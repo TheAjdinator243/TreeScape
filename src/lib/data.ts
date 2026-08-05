@@ -2,7 +2,8 @@ import 'server-only';
 
 import { addDaysStr, todayStr } from './dates';
 import { DEMO_SETTINGS, demoPeriods, demoSlots } from './demo-data';
-import { isDatabaseConfigured } from './env';
+import { env, isDatabaseConfigured } from './env';
+import { availableMethods } from './payments';
 import { supabaseAdmin } from './supabase/admin';
 import type { AvailabilitySlot, BookingContext, RatePeriod, Settings } from './types';
 
@@ -84,5 +85,9 @@ export async function getBookingContext(): Promise<BookingContext> {
     getSettings(),
   ]);
 
-  return { slots, periods, settings };
+  // Spisak načina plaćanja se pravi na SERVERU. Preglednik ga samo iscrtava,
+  // a koji je stvarno dozvoljen ponovo se provjerava pri upisu rezervacije.
+  const paymentMethods = availableMethods(settings, env.enableTestPayments).map((m) => m.id);
+
+  return { slots, periods, settings, paymentMethods };
 }

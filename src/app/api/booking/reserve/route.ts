@@ -1,0 +1,77 @@
+import { NextResponse } from 'next/server';
+
+import { invalidInput, readJson, requireDatabase } from '@/lib/api-helpers';
+import { createBooking } from '@/lib/booking-service';
+import {
+  sendGuestCashRequest,
+  sendGuestConfirmation,
+  sendGuestTransferInstructions,
+  sendOwnerNotification,
+} from '@/lib/email';
+import { bookingRequestSchema } from '@/lib/validation';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+/**
+ * Jedini put kojim gost pravi rezervaciju — bez obzira na način plaćanja.
+ *
+ * Ranije su za ovo postojale dvije rute (jedna za Stripe, jedna za gotovinu).
+ * Sada je jedna: šta se dešava nakon upisa određuje `lib/payments`, pa dodavanje
+ * novog načina plaćanja ne znači i novu API rutu koju treba zasebno čuvati.
+ */
+export async function POST(request: Request) {
+  const notReady = requireDatabase();
+  if (notReady) return notReady;
+
+  const parsed = bookingRequestSchema.safeParse(await readJson(request));
+  if (!parsed.success) return invalidInput();
+
+  const { payment_method, ...booking } = parsed.data;
+
+  const result = await createBooking(booking, payment_method);
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.message, code: result.code },
+      { status: result.status }
+    );
+  }
+
+  // Mailovi ne smiju blokirati odgovor gostu — termin je već siguran u bazi,
+  // a neuspio mail nije razlog da gost vidi grešku.
+  void notifyByMethod(result);
+
+  return NextResponse.json({
+    token: result.booking.public_token,
+    status: result.booking.status,
+  });
+}
+
+async function notifyByMethod(result: Extract<Awaited<ReturnType<typeof createBooking>>, { ok: true }>) {
+  const { booking, settings } = result;
+
+  switch (booking.payment_method) {
+    case 'bank_transfer':
+      await Promise.all([
+        sendGuestTransferInstructions(booking, settings),
+        sendOwnerNotification(booking, 'bank_transfer'),
+      ]);
+      break;
+
+    case 'cash':
+      await Promise.all([
+        sendGuestCashRequest(booking),
+        sendOwnerNotification(booking, 'cash'),
+      ]);
+      break;
+
+    case 'test':
+      // Test rezervacija je odmah potvrđena — vlasnik ne treba obavijest
+      // o novcu koji nikad nije stigao.
+      await sendGuestConfirmation(booking);
+      break;
+
+    default:
+      break;
+  }
+}
