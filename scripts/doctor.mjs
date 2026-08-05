@@ -272,19 +272,54 @@ if (!env.STRIPE_SECRET_KEY) {
 // ── Administracija ──────────────────────────────────────────────────────────
 section('Administracija');
 
+/**
+ * Dužina nije dovoljna mjera. Tajna koja je nekad bila primjer u uputstvu je
+ * javno poznata bez obzira koliko je duga — ko je zna, može sam potpisati
+ * kolačić i ući u administraciju bez pristupnog koda.
+ */
+const KNOWN_PLACEHOLDERS = [
+  'lokalna-tajna-za-razvoj-najmanje-32-znaka-duga',
+  'promijeni-me-najmanje-32-znaka-duga-tajna',
+  'promijeni-me-u-dug-nasumican-kod',
+  'promijeni-me',
+  'treescape-lokalni-test-kod',
+  'changeme',
+  'secret',
+];
+
+const isPlaceholder = (v) => KNOWN_PLACEHOLDERS.includes(v?.toLowerCase?.() ?? '');
+
 if (!env.ADMIN_ACCESS_CODE) {
   bad('nema ADMIN_ACCESS_CODE — /admin se ne može otvoriti', 'npm run setup');
-} else if (env.ADMIN_ACCESS_CODE.length < 12) {
+} else if (isPlaceholder(env.ADMIN_ACCESS_CODE)) {
+  bad(
+    'ADMIN_ACCESS_CODE je primjer iz uputstva — javno poznat',
+    'obriši tu liniju iz .env.local pa pokreni: npm run setup'
+  );
+} else if (env.ADMIN_ACCESS_CODE.length < 16) {
   warn(
-    `pristupni kod ima samo ${env.ADMIN_ACCESS_CODE.length} znakova`,
-    'neka bude bar 16 — ovo je jedina brava na administraciji'
+    `pristupni kod ima ${env.ADMIN_ACCESS_CODE.length} znakova`,
+    'neka bude bar 16 nasumičnih — ovo je jedina brava na administraciji'
   );
 } else {
   ok('pristupni kod postavljen', `${env.ADMIN_ACCESS_CODE.length} znakova`);
 }
 
+// Kod koji sadrži ime, godinu ili broj telefona pogađa se, ne razbija.
+if (env.ADMIN_ACCESS_CODE && /^[A-Za-zČĆŽŠĐčćžšđ]{3,}\d{4,}$/.test(env.ADMIN_ACCESS_CODE)) {
+  warn(
+    'pristupni kod izgleda kao ime + broj',
+    'takav kod pogađa svako ko te poznaje — bolje nasumičan niz'
+  );
+}
+
 if (!env.ADMIN_SESSION_SECRET) {
   bad('nema ADMIN_SESSION_SECRET', 'npm run setup');
+} else if (isPlaceholder(env.ADMIN_SESSION_SECRET)) {
+  bad(
+    'ADMIN_SESSION_SECRET je primjer iz uputstva — s njim se pristupni kod može ZAOBIĆI',
+    'obriši tu liniju iz .env.local pa pokreni: npm run setup'
+  );
 } else if (env.ADMIN_SESSION_SECRET.length < 32) {
   bad(
     `ADMIN_SESSION_SECRET ima ${env.ADMIN_SESSION_SECRET.length} znakova, treba najmanje 32`,
