@@ -4,6 +4,8 @@
   "private": true,
   "description": "TreeScape — web stranica za rezervaciju vile",
   "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "doctor": "node scripts/doctor.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

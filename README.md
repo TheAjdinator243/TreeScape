@@ -71,10 +71,6 @@ npm install
 ```
 
 ```bash
-cp .env.example .env.local
-```
-
-```bash
 npm run dev
 ```
 
@@ -83,6 +79,25 @@ Otvori <http://localhost:3000>.
 **Sajt radi odmah, bez ijednog naloga.** Dok Supabase nije podešen, kalendar koristi
 demo podatke (nekoliko izmišljenih zauzetih termina) da možeš vidjeti kako sve
 izgleda. Čim upišeš prave ključeve, demo podaci nestaju.
+
+### Dvije komande koje ti pomažu
+
+```bash
+npm run setup
+```
+
+Pita te ključ po ključ i sam napiše `.env.local`. Tajne za administraciju i cron
+generiše sam — dovoljno je pritisnuti Enter. Sve ostaje na tvom računaru.
+
+```bash
+npm run doctor
+```
+
+Provjeri da li je **sve** ispravno i javi tačno šta fali: da li je migracija
+pokrenuta, da li Stripe ključ radi, da li je pristupni kod dovoljno jak. Najvažnije
+— stvarno pokuša upisati dva preklapajuća termina u tvoju bazu i provjeri da ih
+odbije, pa počisti za sobom. Nijedan ključ se ne ispisuje, samo maskirano, pa izlaz
+te komande možeš slobodno nekome pokazati kad zatreba pomoć.
 
 ---
 
