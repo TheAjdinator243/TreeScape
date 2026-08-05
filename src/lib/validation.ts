@@ -1,0 +1,58 @@
+import { z } from 'zod';
+
+import { isDateStr } from './dates';
+
+/**
+ * Sve što stigne izvana prolazi kroz ovo prije nego dodirne bazu.
+ *
+ * Napomena: iznos NIJE dio sheme. Cijenu server računa sam, iz baze —
+ * da klijent ne bi mogao poslati "total_cents: 1".
+ */
+export const bookingRequestSchema = z.object({
+  start_date: z.string().refine(isDateStr, 'Neispravan datum dolaska'),
+  end_date: z.string().refine(isDateStr, 'Neispravan datum odlaska'),
+  guests: z.number().int().min(1).max(50),
+  guest_name: z.string().trim().min(2).max(120),
+  guest_email: z.string().trim().email().max(200),
+  guest_phone: z.string().trim().min(6).max(40),
+  note: z.string().trim().max(500).nullable().optional(),
+});
+
+export type BookingRequest = z.infer<typeof bookingRequestSchema>;
+
+export const adminLoginSchema = z.object({
+  code: z.string().min(1).max(200),
+});
+
+export const blockDatesSchema = z.object({
+  start_date: z.string().refine(isDateStr),
+  end_date: z.string().refine(isDateStr),
+  reason: z.string().trim().max(200).optional(),
+});
+
+export const bookingDecisionSchema = z.object({
+  booking_id: z.string().uuid(),
+  decision: z.enum(['approve', 'reject']),
+});
+
+export const settingsSchema = z.object({
+  default_nightly_cents: z.number().int().min(0).max(100_000_00),
+  cleaning_fee_cents: z.number().int().min(0).max(100_000_00),
+  min_nights: z.number().int().min(1).max(60),
+  max_nights: z.number().int().min(1).max(365),
+  max_guests: z.number().int().min(1).max(50),
+  hold_minutes: z.number().int().min(5).max(240),
+  currency: z.string().trim().length(3),
+  currency_symbol: z.string().trim().min(1).max(5),
+  checkin_time: z.string().regex(/^\d{2}:\d{2}$/),
+  checkout_time: z.string().regex(/^\d{2}:\d{2}$/),
+});
+
+export const ratePeriodSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  start_date: z.string().refine(isDateStr),
+  end_date: z.string().refine(isDateStr),
+  nightly_price_cents: z.number().int().min(0).max(100_000_00),
+  min_nights: z.number().int().min(1).max(60).nullable(),
+  priority: z.number().int().min(0).max(1000),
+});

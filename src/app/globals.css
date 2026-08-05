@@ -1,0 +1,270 @@
+@import 'tailwindcss';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Dizajn sistem — Tailwind v4 se konfiguriše ovdje, u CSS-u.
+   Nema tailwind.config.js; sve što je u @theme postaje Tailwind klasa
+   (npr. --color-forest-700 → `bg-forest-700`, `text-forest-700`).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* Šuma — glavna boja brenda */
+  --color-bark-950: #101a15;
+  --color-forest-900: #172f26;
+  --color-forest-800: #1f4436;
+  --color-forest-700: #2a5a47;
+  --color-forest-600: #37735b;
+  --color-forest-500: #4a8f72;
+  --color-moss-400: #6fae8f;
+  --color-moss-300: #9ccbb2;
+  --color-moss-100: #dcece3;
+
+  /* Pijesak i krem — pozadine i topli tonovi */
+  --color-sand-50: #faf7f1;
+  --color-sand-100: #f4ede0;
+  --color-sand-200: #e9dcc7;
+  --color-sand-300: #d9c6a6;
+
+  /* Žar — akcent za dugmad i naglaske */
+  --color-ember-400: #d99a6c;
+  --color-ember-500: #c47a45;
+  --color-ember-600: #a86232;
+
+  /* Tekst */
+  --color-ink-900: #221d18;
+  --color-ink-700: #453d35;
+  --color-ink-500: #6b6157;
+  --color-ink-400: #8d8377;
+
+  /* Statusi */
+  --color-success-600: #2f7d54;
+  --color-warn-600: #b7791f;
+  --color-danger-600: #b3402f;
+
+  /* Tipografija — varijable dolaze iz next/font (vidi layout.tsx) */
+  --font-display: var(--font-fraunces), Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+
+  /* Mekane sjene — topli ton umjesto sivog */
+  --shadow-soft: 0 1px 2px rgb(34 29 24 / 0.04), 0 8px 24px -8px rgb(34 29 24 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(34 29 24 / 0.06), 0 20px 40px -12px rgb(34 29 24 / 0.22);
+
+  --radius-xl2: 1.25rem;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Osnovni stilovi ─────────────────────────────────────────────────────── */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Da sidra (#rezervacija) ne završe ispod fiksne navigacije. */
+    scroll-padding-top: 5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-sand-50);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Vidljiv fokus za tastaturu — bez ovoga sajt nije upotrebljiv bez miša. */
+  :focus-visible {
+    outline: 2px solid var(--color-forest-600);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: var(--color-moss-300);
+    color: var(--color-forest-900);
+  }
+}
+
+/* ── Komponente koje se ponavljaju ───────────────────────────────────────── */
+
+/*
+ * `btn` je @utility, a ne obična klasa u @layer components — u Tailwindu v4
+ * `@apply` prihvata samo prave utility klase, pa bi ga `.btn-primary` inače
+ * odbio s greškom "unknown utility class".
+ */
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3
+         text-sm font-semibold tracking-wide transition-all duration-200
+         disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@layer components {
+  .btn-primary {
+    @apply btn bg-forest-700 text-sand-50 shadow-soft
+           hover:bg-forest-800 hover:shadow-lift active:scale-[0.98]
+           disabled:hover:bg-forest-700 disabled:hover:shadow-soft;
+  }
+
+  .btn-accent {
+    @apply btn bg-ember-500 text-white shadow-soft
+           hover:bg-ember-600 hover:shadow-lift active:scale-[0.98]
+           disabled:hover:bg-ember-500;
+  }
+
+  .btn-ghost {
+    @apply btn border border-forest-700/25 bg-transparent text-forest-800
+           hover:border-forest-700/50 hover:bg-forest-700/5 active:scale-[0.98];
+  }
+
+  .card {
+    @apply rounded-2xl border border-sand-200 bg-white shadow-soft;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-ink-700;
+  }
+
+  .field-input {
+    @apply w-full rounded-xl border border-sand-300 bg-white px-4 py-2.5 text-ink-900
+           transition-colors placeholder:text-ink-400
+           focus:border-forest-600 focus:outline-none
+           focus:ring-2 focus:ring-forest-600/20
+           disabled:bg-sand-100 disabled:text-ink-400;
+  }
+
+  .section {
+    @apply mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28;
+  }
+
+  .section-eyebrow {
+    @apply mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-forest-600;
+  }
+
+  .section-title {
+    @apply text-3xl leading-tight md:text-4xl lg:text-[2.75rem];
+  }
+
+  .section-lead {
+    @apply mt-4 max-w-2xl text-lg leading-relaxed text-ink-500;
+  }
+}
+
+/* ── Kalendar (react-day-picker) ─────────────────────────────────────────── */
+
+.rdp-root {
+  --rdp-accent-color: var(--color-forest-700);
+  --rdp-accent-background-color: var(--color-moss-100);
+  --rdp-day-height: 2.75rem;
+  --rdp-day-width: 2.75rem;
+  --rdp-day_button-height: 2.5rem;
+  --rdp-day_button-width: 2.5rem;
+  --rdp-day_button-border-radius: 9999px;
+  --rdp-outside-opacity: 0.35;
+  --rdp-font-family: var(--font-sans);
+  --rdp-nav_button-height: 2.25rem;
+  --rdp-nav_button-width: 2.25rem;
+  margin: 0;
+}
+
+.rdp-month_caption {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--color-forest-900);
+  text-transform: capitalize;
+}
+
+.rdp-weekday {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-400);
+}
+
+.rdp-day_button:hover:not([disabled]) {
+  background-color: var(--color-moss-100);
+}
+
+/* Zauzeti datumi — prekriženi i vizuelno "mrtvi". */
+.rdp-day.day-taken .rdp-day_button {
+  color: var(--color-ink-400);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  cursor: not-allowed;
+  background-color: var(--color-sand-100);
+}
+
+.rdp-day.day-taken-pending .rdp-day_button {
+  color: var(--color-warn-600);
+  text-decoration: line-through;
+  background-color: color-mix(in srgb, var(--color-warn-600) 10%, transparent);
+}
+
+.rdp-day[disabled] .rdp-day_button {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Odabrani raspon */
+.rdp-range_start .rdp-day_button,
+.rdp-range_end .rdp-day_button {
+  background-color: var(--color-forest-700) !important;
+  color: var(--color-sand-50) !important;
+  font-weight: 600;
+}
+
+.rdp-range_middle .rdp-day_button {
+  background-color: var(--color-moss-100) !important;
+  color: var(--color-forest-900) !important;
+  border-radius: 0 !important;
+}
+
+.rdp-today:not(.rdp-selected) .rdp-day_button {
+  font-weight: 700;
+  color: var(--color-ember-600);
+}
+
+/* ── Animacije ───────────────────────────────────────────────────────────── */
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-rise {
+  animation: fade-rise 0.7s var(--ease-out-soft) both;
+}
+
+/* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

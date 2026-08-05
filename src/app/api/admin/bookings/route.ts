@@ -1,0 +1,78 @@
+import { NextResponse } from 'next/server';
+
+import { invalidInput, readJson, requireDatabase, serverError } from '@/lib/api-helpers';
+import { sendGuestCashApproved, sendGuestCashRejected } from '@/lib/email';
+import { supabaseAdmin } from '@/lib/supabase/admin';
+import type { Booking } from '@/lib/types';
+import { bookingDecisionSchema } from '@/lib/validation';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+/**
+ * Odluka vlasnika o zahtjevu za plaćanje gotovinom.
+ *
+ * Odobreno → termin ostaje zauzet i postaje potvrđen.
+ * Odbijeno → termin se OSLOBAĐA i odmah je opet dostupan drugim gostima
+ *            (okidač u bazi sam briše red iz availability_slots).
+ */
+export async function POST(request: Request) {
+  const notReady = requireDatabase();
+  if (notReady) return notReady;
+
+  const parsed = bookingDecisionSchema.safeParse(await readJson(request));
+  if (!parsed.success) return invalidInput();
+
+  const { booking_id, decision } = parsed.data;
+  const nextStatus = decision === 'approve' ? 'confirmed' : 'cancelled';
+
+  const { data, error } = await supabaseAdmin()
+    .from('bookings')
+    .update({ status: nextStatus, hold_expires_at: null })
+    .eq('id', booking_id)
+    // Odlučuje se samo o zahtjevima koji zaista čekaju — ovo sprječava da
+    // dvostruki klik ili stara kartica ponovo "odobri" nešto već riješeno.
+    .eq('status', 'pending_cash')
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error('[treescape] odluka o rezervaciji nije upisana:', error.message);
+    return serverError();
+  }
+
+  if (!data) {
+    return NextResponse.json(
+      { error: 'Ovaj zahtjev je već riješen. Osvježite stranicu.' },
+      { status: 409 }
+    );
+  }
+
+  const booking = data as Booking;
+  void (decision === 'approve'
+    ? sendGuestCashApproved(booking)
+    : sendGuestCashRejected(booking));
+
+  return NextResponse.json({ ok: true });
+}
+
+/** Otkazivanje potvrđene rezervacije ili oslobađanje blokiranog termina. */
+export async function DELETE(request: Request) {
+  const notReady = requireDatabase();
+  if (notReady) return notReady;
+
+  const id = new URL(request.url).searchParams.get('id');
+  if (!id) return invalidInput();
+
+  const { error } = await supabaseAdmin()
+    .from('bookings')
+    .update({ status: 'cancelled' })
+    .eq('id', id);
+
+  if (error) {
+    console.error('[treescape] otkazivanje nije uspjelo:', error.message);
+    return serverError();
+  }
+
+  return NextResponse.json({ ok: true });
+}
