@@ -196,8 +196,13 @@ bez kose crte na kraju).
 Stripe će prikazati novi `whsec_...` — upiši ga u Vercel kao `STRIPE_WEBHOOK_SECRET`
 i ponovo objavi (redeploy).
 
-**5.** Cron posao iz `vercel.json` se uključi sam. Svakih 10 minuta oslobađa termine
-koje su gosti napustili na stranici za plaćanje.
+**5.** Cron posao iz `vercel.json` se uključi sam. Jednom dnevno oslobađa termine
+kojima je istekao rok za uplatu.
+
+> Zašto samo jednom dnevno: cron je rezervna mreža, ne glavna odbrana. Iste
+> termine oslobađa i svako učitavanje kalendara i svaka nova rezervacija, pa
+> zastoj crona ne može zaključati termin. Besplatni Vercel plan ionako dozvoljava
+> samo dnevni cron — ako ti zatreba češće, tu je Pro plan.
 
 ---
 

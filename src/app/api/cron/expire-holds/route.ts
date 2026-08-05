@@ -11,11 +11,12 @@ export const dynamic = 'force-dynamic';
  * transfere koji nikad nisu legli na račun.
  *
  * Ovo je REZERVNA mreža, ne glavna odbrana: iste termine oslobađa i svako
- * čitanje dostupnosti (vidi `releaseExpiredHolds`). Zato zastoj crona ne može
- * zaključati termin — najgore što se desi je da baza malo duže nosi redove
- * koje niko ne gleda.
+ * čitanje dostupnosti (vidi `releaseExpiredHolds`), pa i svaki upis nove
+ * rezervacije. Zato zastoj crona ne može zaključati termin — najgore što se
+ * desi je da baza nakratko nosi redove koje niko ne gleda.
  *
- * Raspored stoji u `vercel.json`.
+ * Zbog toga je i raspored u `vercel.json` samo jednom dnevno: češće nije
+ * potrebno, a Vercel na besplatnom planu ionako dozvoljava samo dnevni cron.
  */
 export async function GET(request: Request) {
   // Vercel Cron šalje `Authorization: Bearer <CRON_SECRET>`. Bez provjere bi
