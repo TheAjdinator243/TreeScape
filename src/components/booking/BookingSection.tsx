@@ -142,7 +142,13 @@ export function BookingSection({ context }: { context: BookingContext }) {
 
           {/* ── Sažetak i forma ── */}
           <Reveal delay={100} className="lg:sticky lg:top-24 lg:self-start">
-            <div className="card p-6">
+            {/* `id` je meta za dugme iz donje trake na mobitelu — gost je već
+                odabrao datum, pa ga vodimo pravo na pregled i formu, a ne na
+                vrh kalendara koji je upravo popunio. */}
+            {/* Bez `scroll-mt-*`: globalni `scroll-padding-top: 5rem` u
+                globals.css već sklanja fiksnu navigaciju. Da su oba, razmak
+                bi se udvostručio i pregled bi pao predaleko od vrha. */}
+            <div id="pregled" className="card p-6">
               <h3 className="font-display text-xl text-forest-900">{t.booking.summaryTitle}</h3>
 
               <dl className="mt-5 space-y-3 text-sm">
@@ -359,7 +365,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
                 {formatMoney(quote.totalCents, quote.currencySymbol)}
               </p>
             </div>
-            <a href="#rezervacija" className="btn-primary shrink-0 px-5 py-2.5">
+            <a href="#pregled" className="btn-primary shrink-0 px-5 py-2.5">
               {t.nav.book}
             </a>
           </div>

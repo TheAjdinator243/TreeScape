@@ -1,7 +1,6 @@
 import Image from 'next/image';
 
-import kucaUSumi from '@/assets/gallery/03-kuca-u-sumi.jpg';
-
+import { ABOUT_IMAGE } from '@/lib/gallery';
 import { t } from '@/lib/strings';
 
 import { Reveal } from './Reveal';
@@ -42,8 +41,8 @@ export function About() {
         <Reveal delay={120}>
           <div className="relative overflow-hidden rounded-2xl shadow-lift">
             <Image
-              src={kucaUSumi}
-              alt="Vila TreeScape sa terasom, okružena šumom"
+              src={ABOUT_IMAGE.image}
+              alt={ABOUT_IMAGE.alt}
               placeholder="blur"
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="h-full w-full object-cover"

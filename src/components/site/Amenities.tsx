@@ -7,6 +7,10 @@ import { Reveal } from './Reveal';
  * naspram još jedne zavisnosti u package.json-u.
  */
 const AMENITIES = [
+  // Ovo troje su najjači adut kuće, pa idu prvi — gost ih vidi bez skrolanja.
+  { icon: 'pool', label: 'Bazen', note: 'Grijan toplotnom pumpom' },
+  { icon: 'jacuzzi', label: 'Jacuzzi', note: 'Topla voda i masažne mlaznice' },
+  { icon: 'fountain', label: 'Šadrvan', note: 'U dvorištu, uz sjedište' },
   { icon: 'wifi', label: 'Internet', note: 'Bežični, u cijeloj kući' },
   { icon: 'kitchen', label: 'Opremljena kuhinja', note: 'Sve posuđe i aparati' },
   { icon: 'fire', label: 'Kamin', note: 'Drva su obezbijeđena' },
@@ -67,6 +71,35 @@ function Icon({ name }: { name: string }) {
   };
 
   switch (name) {
+    case 'pool':
+      return (
+        <svg {...common}>
+          {/* voda u valovima + ljestve bazena */}
+          <path d="M3 16c1.5 0 1.5 1.2 3 1.2s1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2" />
+          <path d="M3 20c1.5 0 1.5 1.2 3 1.2s1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2" />
+          <path d="M8 14V5.5A2.5 2.5 0 0 1 10.5 3M16 14V5.5A2.5 2.5 0 0 1 18.5 3M8 8h8" />
+        </svg>
+      );
+    case 'jacuzzi':
+      return (
+        <svg {...common}>
+          {/* kada s mjehurićima */}
+          <path d="M3 11h18v3a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5v-3Z" />
+          <path d="M6 11V6a2 2 0 0 1 2-2h1" />
+          <circle cx="8.5" cy="7.5" r=".8" fill="currentColor" stroke="none" />
+          <circle cx="13" cy="6" r=".8" fill="currentColor" stroke="none" />
+          <circle cx="17" cy="7.5" r=".8" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case 'fountain':
+      return (
+        <svg {...common}>
+          {/* mlaz vode iz šadrvana koji pada u bazenčić */}
+          <path d="M12 3v7M12 3c-1.4 0-2.5 1-2.5 2M12 3c1.4 0 2.5 1 2.5 2" />
+          <path d="M7 10h10l-1.2 5H8.2L7 10Z" />
+          <path d="M4 19c1.6 0 1.6 1.3 3.2 1.3S8.8 19 10.4 19s1.6 1.3 3.2 1.3S15.2 19 16.8 19s1.6 1.3 3.2 1.3" />
+        </svg>
+      );
     case 'wifi':
       return (
         <svg {...common}>

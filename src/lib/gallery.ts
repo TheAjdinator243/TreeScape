@@ -1,35 +1,40 @@
 import type { StaticImageData } from 'next/image';
 
-import vilaVece from '@/assets/gallery/01-vila-vece.jpg';
-import vilaDan from '@/assets/gallery/02-vila-dan.jpg';
-import kucaUSumi from '@/assets/gallery/03-kuca-u-sumi.jpg';
-import dnevniBoravak from '@/assets/gallery/04-dnevni-boravak.jpg';
-import dnevniKuhinja from '@/assets/gallery/05-dnevni-kuhinja.jpg';
-import kamin from '@/assets/gallery/06-kamin.jpg';
-import kuhinja from '@/assets/gallery/07-kuhinja.jpg';
-import spavacaSoba from '@/assets/gallery/08-spavaca-soba.jpg';
-import spavacaSoba2 from '@/assets/gallery/09-spavaca-soba-2.jpg';
-import kupatilo from '@/assets/gallery/10-kupatilo.jpg';
-import stazaKrozSumu from '@/assets/gallery/11-staza-kroz-sumu.jpg';
-import sumaIzZraka from '@/assets/gallery/12-suma-iz-zraka.jpg';
-import pogledNaDolinu from '@/assets/gallery/13-pogled-na-dolinu.jpg';
-import detalj from '@/assets/gallery/14-detalj.jpg';
+import slika01 from '@/assets/gallery/slika-01.jpg';
+import slika02 from '@/assets/gallery/slika-02.jpg';
+import slika03 from '@/assets/gallery/slika-03.jpg';
+import slika04 from '@/assets/gallery/slika-04.jpg';
+import slika05 from '@/assets/gallery/slika-05.jpg';
+import slika06 from '@/assets/gallery/slika-06.jpg';
+import slika07 from '@/assets/gallery/slika-07.jpg';
+import slika08 from '@/assets/gallery/slika-08.jpg';
+import slika09 from '@/assets/gallery/slika-09.jpg';
+import slika10 from '@/assets/gallery/slika-10.jpg';
+import slika11 from '@/assets/gallery/slika-11.jpg';
+import slika12 from '@/assets/gallery/slika-12.jpg';
+import slika13 from '@/assets/gallery/slika-13.jpg';
+import slika14 from '@/assets/gallery/slika-14.jpg';
 
 /**
  * ┌─────────────────────────────────────────────────────────────────────────┐
- * │  KAKO ZAMIJENITI FOTOGRAFIJE PRAVIM SLIKAMA TreeScape-a                 │
+ * │  KAKO UBACITI PRAVE SLIKE TreeScape-a                                   │
  * │                                                                          │
- * │  1. Ubaci svoje slike u `src/assets/gallery/`.                          │
- * │  2. Gore promijeni putanje u `import` linijama (ili samo nazovi svoje    │
- * │     datoteke isto kao postojeće i prepiši ih).                          │
- * │  3. Ispravi `alt` tekst ispod — to čitaju i Google i čitači ekrana.      │
+ * │  Sve slike su trenutno prazni okviri s natpisom SLIKA 1, SLIKA 2…        │
+ * │  Zamjena je jednostavna:                                                 │
+ * │                                                                          │
+ * │  1. Nazovi svoju sliku isto kao onu koju mijenjaš — npr. `slika-01.jpg`  │
+ * │  2. Prebaci je u `src/assets/gallery/` i prepiši postojeću               │
+ * │  3. Ispod, u spisku, promijeni `alt` i `caption` da opisuju tvoju sliku  │
  * │                                                                          │
  * │  Ništa drugo se ne dira. Next.js sam pravi WebP/AVIF verzije, računa     │
- * │  dimenzije i generiše zamućeni pregled dok se slika učitava.             │
+ * │  dimenzije i prikazuje zamućeni pregled dok se slika učitava.            │
  * │                                                                          │
- * │  Trenutne slike su sa Unsplash-a (Unsplash License — besplatno za        │
- * │  komercijalnu upotrebu, bez obaveze potpisivanja autora). One su SAMO    │
- * │  privremene — obavezno ih zamijeni pravim slikama kuće prije objave.     │
+ * │  SLIKA 1 je naslovna — ona velika preko cijelog ekrana na vrhu. Neka     │
+ * │  bude široka (npr. 2000×1200) i najljepša koju imaš.                     │
+ * │  SLIKA 3 i SLIKA 6 su uspravne, ostale položene.                        │
+ * │                                                                          │
+ * │  `alt` je opis za slijepe osobe i za Google — nikad ga ne ostavljaj      │
+ * │  prazan i nemoj u njega pisati "slika", nego šta se na slici vidi.       │
  * └─────────────────────────────────────────────────────────────────────────┘
  */
 
@@ -45,82 +50,31 @@ export interface GalleryImage {
 
 /** Velika slika na vrhu stranice. */
 export const HERO_IMAGE = {
-  image: vilaVece,
-  alt: 'Vila TreeScape uveče, osvijetljena među visokim stablima',
+  image: slika01,
+  alt: 'Vila TreeScape',
 } as const;
 
 /** Slika za dijeljenje na društvenim mrežama (Open Graph). */
-export const OG_IMAGE = vilaVece;
+export const OG_IMAGE = slika01;
+
+/** Slika uz tekst "O kući". */
+export const ABOUT_IMAGE = {
+  image: slika03,
+  alt: 'Vila TreeScape izvana',
+} as const;
 
 export const GALLERY: GalleryImage[] = [
-  {
-    image: vilaDan,
-    alt: 'Vanjski izgled vile TreeScape sa velikim stablom u dvorištu',
-    caption: 'Kuća i dvorište',
-    span: 'wide',
-  },
-  {
-    image: dnevniBoravak,
-    alt: 'Dnevni boravak sa velikim prozorima okrenutim prema šumi',
-    caption: 'Dnevni boravak',
-  },
-  {
-    image: kucaUSumi,
-    alt: 'Drvena kuća sa terasom, okružena šumom',
-    caption: 'Terasa iznad šume',
-    span: 'tall',
-  },
-  {
-    image: kuhinja,
-    alt: 'Potpuno opremljena kuhinja sa tamnozelenim elementima',
-    caption: 'Kuhinja',
-    span: 'tall',
-  },
-  {
-    image: kamin,
-    alt: 'Dnevna soba sa kaminom i pogledom kroz velike prozore',
-    caption: 'Kamin',
-  },
-  {
-    image: dnevniKuhinja,
-    alt: 'Otvoreni prostor dnevne sobe i kuhinje',
-    caption: 'Otvoreni prostor',
-    span: 'wide',
-  },
-  {
-    image: spavacaSoba,
-    alt: 'Spavaća soba sa udobnim krevetom i noćnom lampom',
-    caption: 'Spavaća soba',
-  },
-  {
-    image: spavacaSoba2,
-    alt: 'Druga spavaća soba sa bračnim krevetom',
-    caption: 'Druga spavaća soba',
-  },
-  {
-    image: kupatilo,
-    alt: 'Kupatilo sa tuš kabinom i dvostrukim umivaonikom',
-    caption: 'Kupatilo',
-  },
-  {
-    image: detalj,
-    alt: 'Detalj enterijera — fotelja i podna lampa uz zid',
-    caption: 'Kutak za čitanje',
-  },
-  {
-    image: stazaKrozSumu,
-    alt: 'Šumska staza obasjana jutarnjim suncem',
-    caption: 'Staze oko kuće',
-    span: 'wide',
-  },
-  {
-    image: pogledNaDolinu,
-    alt: 'Pogled na dolinu i planine u izmaglici',
-    caption: 'Pogled na dolinu',
-  },
-  {
-    image: sumaIzZraka,
-    alt: 'Šuma i put snimljeni iz zraka',
-    caption: 'Okolina iz zraka',
-  },
+  { image: slika02, alt: 'Slika 2', caption: 'Slika 2', span: 'wide' },
+  { image: slika04, alt: 'Slika 4', caption: 'Slika 4' },
+  { image: slika06, alt: 'Slika 6', caption: 'Slika 6', span: 'tall' },
+  { image: slika03, alt: 'Slika 3', caption: 'Slika 3', span: 'tall' },
+  { image: slika05, alt: 'Slika 5', caption: 'Slika 5' },
+  { image: slika07, alt: 'Slika 7', caption: 'Slika 7', span: 'wide' },
+  { image: slika08, alt: 'Slika 8', caption: 'Slika 8' },
+  { image: slika09, alt: 'Slika 9', caption: 'Slika 9' },
+  { image: slika10, alt: 'Slika 10', caption: 'Slika 10' },
+  { image: slika11, alt: 'Slika 11', caption: 'Slika 11' },
+  { image: slika12, alt: 'Slika 12', caption: 'Slika 12', span: 'wide' },
+  { image: slika13, alt: 'Slika 13', caption: 'Slika 13' },
+  { image: slika14, alt: 'Slika 14', caption: 'Slika 14' },
 ];
