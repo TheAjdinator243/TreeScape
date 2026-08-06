@@ -298,7 +298,6 @@ export const t = {
     contact: 'Kontakt',
     quickLinks: 'Brzi linkovi',
     rights: 'Sva prava zadržana.',
-    builtWith: 'Rezervacije osigurava Stripe.',
   },
 } as const;
 

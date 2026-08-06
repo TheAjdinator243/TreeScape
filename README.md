@@ -1,22 +1,21 @@
 # TreeScape
 
-Web stranica za iznajmljivanje vile **TreeScape** — sa kalendarom slobodnih termina,
-online rezervacijom i plaćanjem karticom ili gotovinom.
+Web stranica za iznajmljivanje vile **TreeScape** — sa kalendarom slobodnih
+termina i online rezervacijom.
 
-Kad neko plati, ti datumi **odmah** postanu sivi u kalendaru svih ostalih posjetilaca,
-bez osvježavanja stranice.
+Čim neko rezerviše, ti datumi **odmah** postanu sivi u kalendaru svih ostalih
+posjetilaca, bez osvježavanja stranice.
 
 ---
 
 ## Sadržaj
 
 - [Šta sve radi](#šta-sve-radi)
-- [Prije nego počneš: Stripe i BiH](#prije-nego-počneš-stripe-i-bih)
-- [Brzi start (5 minuta)](#brzi-start-5-minuta)
+- [Brzi start](#brzi-start)
 - [Podešavanje Supabase baze](#podešavanje-supabase-baze)
-- [Podešavanje Stripe plaćanja](#podešavanje-stripe-plaćanja)
+- [Načini plaćanja](#načini-plaćanja)
 - [Objava na Vercel](#objava-na-vercel)
-- [Zamjena fotografija](#zamjena-fotografija)
+- [Zamjena fotografija i teksta](#zamjena-fotografija-i-teksta)
 - [Administracija](#administracija)
 - [Kako je spriječen dvostruki booking](#kako-je-spriječen-dvostruki-booking)
 - [Testovi](#testovi)
@@ -28,41 +27,25 @@ bez osvježavanja stranice.
 
 **Za goste**
 
-- Jednostrana prezentacija: naslovna slika, galerija sa uvećavanjem, sadržaji, lokacija, česta pitanja
+- Jednostrana prezentacija: naslovna slika, galerija sa uvećavanjem, sadržaji,
+  lokacija, česta pitanja
 - Kalendar sa dva mjeseca — zauzeti datumi su prekriženi i ne mogu se kliknuti
+- **Rezervacija i za jedan jedini dan**, bez noćenja
 - Cijena se računa uživo dok se biraju datumi, po sezonskom cjenovniku
-- Plaćanje karticom (Stripe) ili zahtjev za plaćanje gotovinom
 - Stranica s potvrdom i email obavijest
 - Sve na bosanskom jeziku
 
 **Za vlasnika** (`/admin`, iza tajnog koda)
 
-- Odobravanje i odbijanje zahtjeva za plaćanje gotovinom
+- Odobravanje i odbijanje zahtjeva
+- Potvrda primljenih uplata na račun
 - Pregled svih rezervacija
 - Ručno blokiranje termina (održavanje, lični boravak)
-- Uređivanje osnovnih cijena i sezonskog cjenovnika
+- Uređivanje cijena, sezonskog cjenovnika i bankovnih podataka
 
 ---
 
-## Prije nego počneš: Stripe i BiH
-
-> **Važno:** Stripe trenutno **ne otvara naloge firmama registrovanim u Bosni i
-> Hercegovini.** Za stvarnu naplatu karticom potreban je Stripe nalog u nekoj od
-> podržanih zemalja, ili prelazak na domaći procesor (Monri, PaySpot, banka).
-
-To **ne blokira ništa** u razvoju:
-
-- Cijeli sajt, kalendar, cijene i administracija rade bez ijednog Stripe ključa.
-- Plaćanje karticom se u potpunosti testira Stripe **test modom**, koji je dostupan svima.
-- Ako Stripe ključevi nisu postavljeni, dugme za karticu se **samo ne prikaže** —
-  gosti i dalje mogu rezervisati uz plaćanje gotovinom.
-
-Sav kod vezan za Stripe je u `src/lib/payments/`. Zamjena procesora znači prepisati
-taj folder — kalendar, baza i sučelje ostaju netaknuti.
-
----
-
-## Brzi start (5 minuta)
+## Brzi start
 
 Treba ti [Node.js](https://nodejs.org) verzije 20 ili novije.
 
@@ -76,9 +59,9 @@ npm run dev
 
 Otvori <http://localhost:3000>.
 
-**Sajt radi odmah, bez ijednog naloga.** Dok Supabase nije podešen, kalendar koristi
-demo podatke (nekoliko izmišljenih zauzetih termina) da možeš vidjeti kako sve
-izgleda. Čim upišeš prave ključeve, demo podaci nestaju.
+**Sajt radi odmah, bez ijednog naloga.** Dok Supabase nije podešen, kalendar
+koristi demo podatke da možeš vidjeti kako sve izgleda. Čim upišeš prave
+ključeve, demo podaci nestaju.
 
 ### Dvije komande koje ti pomažu
 
@@ -93,11 +76,10 @@ generiše sam — dovoljno je pritisnuti Enter. Sve ostaje na tvom računaru.
 npm run doctor
 ```
 
-Provjeri da li je **sve** ispravno i javi tačno šta fali: da li je migracija
-pokrenuta, da li Stripe ključ radi, da li je pristupni kod dovoljno jak. Najvažnije
-— stvarno pokuša upisati dva preklapajuća termina u tvoju bazu i provjeri da ih
-odbije, pa počisti za sobom. Nijedan ključ se ne ispisuje, samo maskirano, pa izlaz
-te komande možeš slobodno nekome pokazati kad zatreba pomoć.
+Provjeri da li je **sve** ispravno i javi tačno šta fali. Najvažnije — stvarno
+pokuša upisati dva preklapajuća termina u tvoju bazu i provjeri da ih odbije, pa
+počisti za sobom. Nijedan ključ se ne ispisuje, samo maskirano, pa izlaz te
+komande možeš slobodno nekome pokazati kad zatreba pomoć.
 
 ---
 
@@ -108,61 +90,65 @@ promjene uživo u sve otvorene preglednike.
 
 **1.** Otvori nalog na [supabase.com](https://supabase.com) i napravi novi projekat.
 
-**2.** U Supabase-u idi na **SQL Editor**, otvori novi upit, kopiraj **cijeli sadržaj**
-datoteke [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
-i pokreni ga. Time se prave sve tabele, sigurnosna pravila i zaštita od
-dvostrukog bookinga.
+**2.** U Supabase-u idi na **SQL Editor** i pokreni **obje** migracije, redom:
 
-**3.** Idi na **Project Settings → API** i prepiši tri vrijednosti u `.env.local`:
+1. [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
+2. [`supabase/migrations/0002_bez_stripea.sql`](supabase/migrations/0002_bez_stripea.sql)
+
+Kopiraj cijeli sadržaj datoteke, zalijepi i klikni **Run**. Očekivani odgovor je
+_"Success. No rows returned"_ — to je uspjeh, migracije ne vraćaju redove.
+
+**3.** Idi na **Project Settings → API** i prepiši tri vrijednosti u `.env.local`
+(ili pokreni `npm run setup`):
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://tvoj-projekat.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
 ```
 
 > `SUPABASE_SERVICE_ROLE_KEY` je **tajni** ključ i koristi se samo na serveru.
 > Nikada ga ne stavljaj u varijablu koja počinje sa `NEXT_PUBLIC_` — to bi ga
 > poslalo u preglednik svakom posjetiocu.
 
-**4.** Restartuj `npm run dev`.
+**4.** Restartuj `npm run dev`, pa pokreni `npm run doctor` da potvrdiš da je sve na mjestu.
 
 ### Zašto preglednik ne vidi podatke gostiju
 
 Tabela `bookings` (imena, mailovi, telefoni) je zaključana pravilima pristupa —
 `anon` ključ iz preglednika iz nje **ne može pročitati nijedan red**. Kalendar
 umjesto toga čita tabelu `availability_slots`, u kojoj su samo datumi i ništa
-drugo. Provjeriti možeš i sam: otvori konzolu preglednika i probaj upit nad
-`bookings` — vratiće prazno.
+drugo. `npm run doctor` to provjerava svaki put.
 
 ---
 
-## Podešavanje Stripe plaćanja
+## Načini plaćanja
 
-**1.** Otvori nalog na [stripe.com](https://stripe.com) (pročitaj napomenu o BiH gore).
+Svi načini žive u [`src/lib/payments/`](src/lib/payments/index.ts). Ostatak
+aplikacije ne poznaje nijednog konkretnog procesora.
 
-**2.** **Developers → API keys** — prepiši test ključeve u `.env.local`:
+| Način | Kako radi | Šta traži |
+|---|---|---|
+| **Gotovina** | Gost pošalje zahtjev, vlasnik ga odobri. Termin se drži dok vlasnik ne odluči. | ništa |
+| **Uplata na račun** | Gost dobije IBAN, iznos i poziv na broj. Novac ide **direktno** vlasniku, bez posrednika i provizije. Termin se drži zadanim brojem dana; vlasnik potvrdi uplatu kad je vidi na izvodu. | IBAN unesen u `/admin → Cijene` |
+| **TEST** | Odmah potvrdi rezervaciju, bez ijednog centa. Služi samo za isprobavanje toka. | `ENABLE_TEST_PAYMENTS=true` |
 
-```bash
-STRIPE_SECRET_KEY=sk_test_...
-```
+> **TEST način na pravom sajtu znači besplatne rezervacije za svakoga.**
+> Zato `npm run doctor` javlja **grešku** (ne upozorenje) ako je uključen uz
+> adresu koja nije `localhost`.
 
-**3.** Za lokalno testiranje webhooka instaliraj
-[Stripe CLI](https://stripe.com/docs/stripe-cli), pa pokreni:
+Poziv na broj se izvodi iz tokena rezervacije, pa je jedinstven za svakog gosta —
+po njemu vlasnik na bankovnom izvodu prepoznaje ko je uplatio.
 
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
+### Naplata karticom preko banke
 
-Komanda ispiše `whsec_...` — to upiši kao `STRIPE_WEBHOOK_SECRET` u `.env.local`
-i restartuj `npm run dev`.
+Naplata karticom u BiH traži potpisan ugovor s bankom ili procesorom (Monri,
+WSPay, PaySpot); pristupne podatke dobiješ tek nakon toga. Kad ih dobiješ, dodaje
+se **jedan unos** u `src/lib/payments/index.ts` i jedna datoteka pored njega.
+Baza, kalendar i administracija se ne diraju.
 
-**4.** Testiraj plaćanje karticom **4242 4242 4242 4242**, bilo koji budući datum
-isteka i bilo koji CVC.
-
-> **Zašto je webhook obavezan:** rezervacija se potvrđuje **isključivo** kad Stripe
-> pošalje potpisanu potvrdu o uplati — nikad na osnovu povratka gosta na stranicu.
-> Adresu potvrde može otvoriti bilo ko; potpisani webhook ne može se lažirati.
+Rezervacija tada ostaje u stanju „rezervisano" dok se uplata ne provjeri, isto
+kao i sada — zato taj korak i ne traži izmjene drugdje.
 
 ---
 
@@ -174,108 +160,113 @@ isteka i bilo koji CVC.
 git init && git add -A && git commit -m "TreeScape" && git branch -M main
 ```
 
-Napravi prazan repozitorij na GitHub-u, pa:
-
 ```bash
 git remote add origin https://github.com/KORISNIK/treescape.git && git push -u origin main
 ```
 
-**2.** Na [vercel.com](https://vercel.com) klikni **Add New → Project** i odaberi taj
-repozitorij. Vercel sam prepozna Next.js — ništa se ne mora mijenjati.
+**2.** Na [vercel.com](https://vercel.com) klikni **Add New → Project** i odaberi
+taj repozitorij. Vercel sam prepozna Next.js — Root Directory ostaje `./`.
 
-**3.** U **Settings → Environment Variables** dodaj sve iz `.env.example`, s tim da
-`NEXT_PUBLIC_SITE_URL` bude prava adresa sajta (npr. `https://treescape.vercel.app`,
-bez kose crte na kraju).
+**3.** U **Environment Variables** dodaj sve iz `.env.example`, s tim da:
 
-**4.** Kad se sajt objavi, u Stripe-u idi na **Developers → Webhooks → Add endpoint**:
+- `NEXT_PUBLIC_SITE_URL` bude prava adresa sajta, **bez kose crte na kraju**
+- `ENABLE_TEST_PAYMENTS` bude **`false`**
 
-- Adresa: `https://tvoj-sajt.vercel.app/api/stripe/webhook`
-- Događaji: `checkout.session.completed`, `checkout.session.expired`,
-  `checkout.session.async_payment_failed`
-
-Stripe će prikazati novi `whsec_...` — upiši ga u Vercel kao `STRIPE_WEBHOOK_SECRET`
-i ponovo objavi (redeploy).
-
-**5.** Cron posao iz `vercel.json` se uključi sam. Jednom dnevno oslobađa termine
+**4.** Cron posao iz `vercel.json` se uključi sam. Jednom dnevno oslobađa termine
 kojima je istekao rok za uplatu.
 
 > Zašto samo jednom dnevno: cron je rezervna mreža, ne glavna odbrana. Iste
 > termine oslobađa i svako učitavanje kalendara i svaka nova rezervacija, pa
 > zastoj crona ne može zaključati termin. Besplatni Vercel plan ionako dozvoljava
-> samo dnevni cron — ako ti zatreba češće, tu je Pro plan.
+> samo dnevni cron.
+
+Od tada Vercel objavljuje svaku izmjenu automatski, čim je pošalješ na GitHub.
 
 ---
 
-## Zamjena fotografija
+## Zamjena fotografija i teksta
 
-Trenutne slike su privremene, sa [Unsplash-a](https://unsplash.com/license)
-(besplatne za komercijalnu upotrebu, bez obaveze potpisivanja autora).
-**Obavezno ih zamijeni pravim slikama kuće prije objave.**
+Sve slike su trenutno prazni okviri s natpisom **SLIKA 1 … SLIKA 14**.
 
-1. Ubaci svoje slike u `src/assets/gallery/`
-2. Otvori [`src/lib/gallery.ts`](src/lib/gallery.ts) i prilagodi `import` linije na vrhu
-3. Ispravi `alt` opise — njih čitaju Google i čitači ekrana za slijepe osobe
+1. Nazovi svoju sliku isto kao onu koju mijenjaš — npr. `slika-01.jpg`
+2. Prebaci je u `src/assets/gallery/` i prepiši postojeću
+3. U [`src/lib/gallery.ts`](src/lib/gallery.ts) promijeni `alt` i `caption` da
+   opisuju šta se stvarno vidi
 
-Next.js sam pravi WebP/AVIF verzije, računa dimenzije i prikazuje zamućeni pregled
-dok se slika učitava. Ne treba ništa ručno smanjivati.
+**SLIKA 1** je naslovna, preko cijelog ekrana — neka bude široka i najljepša.
+**SLIKA 3** i **SLIKA 6** su uspravne, ostale položene.
 
-Kontakt podaci (telefon, email) su na dnu [`src/components/site/Footer.tsx`](src/components/site/Footer.tsx).
-Koordinate karte su u [`src/components/site/Location.tsx`](src/components/site/Location.tsx).
-Sav tekst sajta je na jednom mjestu: [`src/lib/strings.ts`](src/lib/strings.ts).
+Next.js sam pravi WebP/AVIF verzije, računa dimenzije i prikazuje zamućeni
+pregled dok se slika učitava. Ne treba ništa ručno smanjivati.
+
+`alt` je opis za slijepe osobe i za Google — nikad ga ne ostavljaj prazan i
+nemoj u njega pisati „slika", nego šta se na slici vidi.
+
+**Ostalo što treba zamijeniti prije nego pustiš link gostima:**
+
+| Šta | Gdje |
+|---|---|
+| Sav tekst sajta | [`src/lib/strings.ts`](src/lib/strings.ts) |
+| Telefon i email | [`src/components/site/Footer.tsx`](src/components/site/Footer.tsx) |
+| Koordinate karte | [`src/components/site/Location.tsx`](src/components/site/Location.tsx) |
+| Sadržaji kuće | [`src/components/site/Amenities.tsx`](src/components/site/Amenities.tsx) |
+| Česta pitanja | [`src/components/site/Faq.tsx`](src/components/site/Faq.tsx) |
 
 ---
 
 ## Administracija
 
-Otvori `/admin` (npr. `https://tvoj-sajt.vercel.app/admin`).
-
-Nigdje na javnom sajtu **ne postoji link** ka administraciji, niti forma za
-prijavu — samo polje za tajni kod, koji postavljaš kao `ADMIN_ACCESS_CODE`.
+Otvori `/admin`. Nigdje na javnom sajtu **ne postoji link** ka administraciji,
+niti forma za prijavu — samo polje za tajni kod.
 
 ```bash
-# Generiši dug, nasumičan kod i tajnu za potpisivanje sesije:
-openssl rand -base64 24
-openssl rand -base64 32
+openssl rand -base64 24   # ADMIN_ACCESS_CODE
+openssl rand -base64 32   # ADMIN_SESSION_SECRET
 ```
 
 - `ADMIN_ACCESS_CODE` — kod koji vlasnik unosi
 - `ADMIN_SESSION_SECRET` — najmanje 32 znaka, potpisuje kolačić sesije
 
-Nakon unosa ispravnog koda sesija traje 12 sati. Kolačić je `httpOnly` (JavaScript
-na stranici ne može do njega), kod se poredi u konstantnom vremenu, a nakon 5
-pogrešnih pokušaja slijedi kratka pauza.
+Sesija traje 12 sati. Kolačić je `httpOnly` (JavaScript na stranici ne može do
+njega), kod se poredi u konstantnom vremenu, a nakon 5 pogrešnih pokušaja slijedi
+kratka pauza.
+
+> `npm run doctor` odbija kodove koji su primjeri iz uputstva i upozorava na
+> kodove oblika „Ime1234" — takve pogađa svako ko te poznaje.
 
 ---
 
 ## Kako je spriječen dvostruki booking
 
-Ovo je najvažniji dio cijelog sistema, pa zaslužuje objašnjenje.
+Ovo je najvažniji dio sistema.
 
-Dvoje ljudi može istovremeno biti na Stripe stranici za isti termin. Provjera u
-kodu tipa „je li slobodno?" pa onda upis **gubi tu utrku** — oba upita vide
-slobodan termin prije nego iko upiše.
+Dvoje ljudi može istovremeno rezervisati isti termin. Provjera u kodu tipa „je li
+slobodno?" pa onda upis **gubi tu utrku** — oba upita vide slobodan termin prije
+nego iko upiše.
 
 Zato odluku donosi sama baza:
 
 ```sql
 constraint bookings_no_overlap
   exclude using gist (stay with &&)
-  where (status in ('pending_payment', 'pending_cash', 'confirmed', 'blocked'))
+  where (status in ('pending_payment', 'pending_cash', 'pending_transfer',
+                    'confirmed', 'blocked'))
 ```
 
-Postgres fizički **ne dozvoljava** da dva reda koja se preklapaju istovremeno budu
-aktivna. Drugi upis pada s greškom `23P01`, koju aplikacija hvata i pretvara u
-poruku „ovi datumi su upravo rezervisani".
+Postgres fizički **ne dozvoljava** da dva reda koja se preklapaju istovremeno
+budu aktivna. Drugi upis pada s greškom `23P01`, koju aplikacija hvata i pretvara
+u poruku „ovi datumi su upravo rezervisani".
 
 Uz to:
 
-- **Termin se drži prije odlaska na Stripe**, ne poslije. Napušteno plaćanje se
-  oslobodi nakon 15 minuta — i preko cron posla i pri svakom čitanju dostupnosti,
-  pa zastoj crona ne može zaključati termin zauvijek.
-- **Dan odlaska je slobodan.** Boravak 1.–5. avgusta je 4 noćenja, a 5. avgust je
-  slobodan za sljedećeg gosta. To radi `daterange(start, end, '[)')`.
-- **Zahtjev za gotovinu odmah zauzima termin**, da vlasnik ne odobri nešto što je
-  u međuvremenu neko platio karticom.
+- **Termin se drži od trenutka rezervacije**, ne od potvrde. Neplaćena uplata na
+  račun se oslobodi nakon isteka roka — i preko cron posla i pri svakom čitanju
+  dostupnosti, pa zastoj crona ne može zaključati termin zauvijek.
+- **Dan odlaska je slobodan.** Boravak 1.–5. avgusta zauzima 4 dana, a 5. avgust
+  je slobodan sljedećem gostu. To se poklapa s odjavom u 09:00 i prijavom u 11:00
+  istog dana, a u bazi to radi `daterange(start, end, '[)')`.
+- **Jedan dan bez noćenja** se upisuje kao `[dan, dan+1)`, pa taj dan stvarno
+  bude zauzet i isto ograničenje radi nepromijenjeno.
 - **Cijenu uvijek računa server**, iz baze. Iznos poslan iz preglednika se ignoriše.
 
 Sve navedeno je pokriveno testovima.
@@ -288,18 +279,16 @@ Sve navedeno je pokriveno testovima.
 npm test
 ```
 
-60 testova, u dvije grupe:
+67 testova, u dvije grupe:
 
-- **`src/lib/pricing.test.ts`** — sezonske cijene, preklapanje sezona, minimalna
-  noćenja, bosanska množina, granični slučajevi oko dana odlaska
-- **`src/lib/schema.test.ts`** — pokreće `0001_init.sql` na **pravom Postgresu**
+- **`src/lib/pricing.test.ts`** — sezonske cijene, preklapanje sezona, rezervacija
+  jednog dana, bosanska množina, granični slučajevi oko dana odlaska
+- **`src/lib/schema.test.ts`** — pokreće obje migracije na **pravom Postgresu**
   (PGlite, Postgres preveden u WebAssembly) i provjerava da je dvostruki booking
   zaista nemoguć, da otkazivanje oslobađa termin, da okidač održava kalendar i da
   isteklo držanje termina propada kako treba
 
 Za ovo ne treba nikakav nalog ni internet — pokreće se lokalno za par sekundi.
-
-Ostale komande:
 
 ```bash
 npm run typecheck
@@ -327,27 +316,26 @@ src/
 │   ├── rezervacija/[token]/      stranica s potvrdom
 │   └── api/
 │       ├── availability/         javni spisak zauzetih datuma
-│       ├── booking/hold          zaključavanje termina + Stripe sesija
-│       ├── booking/cash          zahtjev za plaćanje gotovinom
-│       ├── stripe/webhook        potvrda uplate (jedini izvor istine)
+│       ├── booking/reserve       rezervacija (svi načini plaćanja)
 │       ├── admin/                zaštićene rute administracije
-│       └── cron/expire-holds     oslobađanje napuštenih termina
+│       └── cron/expire-holds     oslobađanje termina s isteklim rokom
 ├── components/
 │   ├── site/                     naslovna, galerija, sadržaji, lokacija, pitanja
-│   ├── booking/                  kalendar, cijena, forma za rezervaciju
+│   ├── booking/                  kalendar, cijena, forma, podaci za uplatu
 │   └── admin/                    ulaz i nadzorna ploča
 ├── lib/
 │   ├── pricing.ts                obračun cijene (isti kod na klijentu i serveru)
 │   ├── dates.ts                  datumi kao 'YYYY-MM-DD' — bez pomaka zona
 │   ├── booking-service.ts        pravljenje rezervacija, hvatanje sudara
+│   ├── payments/                 načini plaćanja
 │   ├── strings.ts                SAV tekst sajta
 │   ├── gallery.ts                spisak fotografija
-│   ├── payments/stripe.ts        sve što dodiruje Stripe
 │   └── supabase/                 klijenti za preglednik i server
-├── middleware.ts                 čuvar administracije
+├── proxy.ts                      čuvar administracije
 └── assets/gallery/               fotografije
 
-supabase/migrations/0001_init.sql shema baze
+supabase/migrations/              shema baze — pokreni obje, redom
+scripts/                          npm run setup i npm run doctor
 ```
 
 ---
@@ -357,9 +345,7 @@ supabase/migrations/0001_init.sql shema baze
 - **Datumi** se svuda prenose kao `'YYYY-MM-DD'` stringovi. `new Date('2026-08-05')`
   JavaScript tumači kao ponoć po UTC-u, pa bi u Sarajevu ispalo 4. avgusta —
   za rezervacije neprihvatljivo.
-- **Cijene** su u bazi u centima (`12000` = 120,00 €) da se izbjegne zaokruživanje
-  decimalnih brojeva.
-- **Valuta** je podrazumijevano EUR. Za konvertibilnu marku, u administraciji pod
-  „Cijene" postavi valutu na `BAM` i oznaku na `KM`.
-- **Podaci kartice nikada ne prolaze kroz ovaj sajt** — unose se na Stripe-ovoj
-  stranici.
+- **Cijene** su u bazi u centima (`25000` = 250,00 KM) da se izbjegne
+  zaokruživanje decimalnih brojeva.
+- **Jedinica je dan, ne noćenje** — jer se kuća može uzeti i samo za jedan dan.
+- **Valuta** se mijenja u administraciji pod „Cijene".

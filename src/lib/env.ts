@@ -2,7 +2,7 @@
  * Čitanje varijabli okruženja na jednom mjestu.
  *
  * Aplikacija je namjerno napravljena tako da se PODIŽE i bez ijednog ključa —
- * tako možeš vidjeti cijeli sajt prije nego otvoriš Supabase ili Stripe nalog.
+ * tako možeš vidjeti cijeli sajt prije nego otvoriš ijedan nalog.
  * Ono što nedostaje se javlja jasnom porukom tek kad se stvarno zatreba.
  */
 

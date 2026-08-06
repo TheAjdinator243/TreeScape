@@ -16,9 +16,8 @@ export const dynamic = 'force-dynamic';
 /**
  * Jedini put kojim gost pravi rezervaciju — bez obzira na način plaćanja.
  *
- * Ranije su za ovo postojale dvije rute (jedna za Stripe, jedna za gotovinu).
- * Sada je jedna: šta se dešava nakon upisa određuje `lib/payments`, pa dodavanje
- * novog načina plaćanja ne znači i novu API rutu koju treba zasebno čuvati.
+ * Šta se dešava nakon upisa određuje `lib/payments`, pa dodavanje novog načina
+ * plaćanja ne znači i novu API rutu koju treba zasebno čuvati i štititi.
  */
 export async function POST(request: Request) {
   const notReady = requireDatabase();

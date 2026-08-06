@@ -8,7 +8,8 @@ import { supabaseAdmin } from './supabase/admin';
 import type { AvailabilitySlot, BookingContext, RatePeriod, Settings } from './types';
 
 /**
- * Oslobađa termine koje su gosti ostavili na Stripe stranici pa odustali.
+ * Oslobađa termine kojima je istekao rok — uplate na račun koje nikad nisu
+ * stigle i eventualne online uplate koje gost nije dovršio.
  *
  * Poziva se prije svakog čitanja dostupnosti i prije svakog upisa. Ne oslanjamo
  * se samo na cron: da cron zakaže, termin bi ostao zaključan zauvijek, a ovako

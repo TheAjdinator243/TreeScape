@@ -72,11 +72,10 @@ export function Footer() {
       </div>
 
       <div className="border-t border-forest-800">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-moss-300/70 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className="mx-auto max-w-6xl px-5 py-6 text-xs text-moss-300/70 sm:px-8">
           <p>
             © {year} {t.site.name}. {t.footer.rights}
           </p>
-          <p>{t.footer.builtWith}</p>
         </div>
       </div>
     </footer>
