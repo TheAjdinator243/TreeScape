@@ -1,15 +1,17 @@
 import Image from 'next/image';
 
 import { HERO_IMAGE } from '@/lib/gallery';
+import { getServerStrings } from '@/lib/i18n/server';
 import { formatMoney } from '@/lib/pricing';
-import { t } from '@/lib/strings';
 
-export function Hero({ fromCents, symbol }: { fromCents: number; symbol: string }) {
+export async function Hero({ fromCents, symbol }: { fromCents: number; symbol: string }) {
+  const { locale, t } = await getServerStrings();
+
   return (
     <section id="vrh" className="relative flex min-h-[92svh] items-end overflow-hidden">
       <Image
-        src={HERO_IMAGE.image}
-        alt={HERO_IMAGE.alt}
+        src={HERO_IMAGE}
+        alt={t.hero.imageAlt}
         fill
         // `priority` jer je ovo prvo što posjetilac vidi — ne smije kasniti.
         priority
@@ -54,7 +56,7 @@ export function Hero({ fromCents, symbol }: { fromCents: number; symbol: string 
           <p className="text-sm text-sand-200">
             <span className="text-ink-400">{t.common.from} </span>
             <span className="text-lg font-semibold text-white">
-              {formatMoney(fromCents, symbol)}
+              {formatMoney(fromCents, symbol, locale)}
             </span>{' '}
             <span className="text-sand-200">/ {t.common.day}</span>
           </p>

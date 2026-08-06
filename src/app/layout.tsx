@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from 'next';
-import { Fraunces, Inter } from 'next/font/google';
+import { Fraunces, Inter, Noto_Sans_Arabic } from 'next/font/google';
 
+import { LocaleProvider } from '@/components/i18n/LocaleProvider';
 import { env } from '@/lib/env';
-import { t } from '@/lib/strings';
+import { OG_LOCALES, directionOf, getStrings } from '@/lib/i18n';
+import { getLocale } from '@/lib/i18n/server';
 
 import './globals.css';
 
@@ -19,41 +21,49 @@ const sans = Inter({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(env.siteUrl),
-  title: {
-    default: `${t.site.name} — ${t.site.tagline}`,
-    template: `%s · ${t.site.name}`,
-  },
-  description: t.site.description,
-  keywords: [
-    'TreeScape',
-    'vila',
-    'apartman',
-    'smještaj',
-    'najam kuće',
-    'odmor u prirodi',
-    'rezervacija',
-    'Bosna i Hercegovina',
-  ],
-  openGraph: {
-    type: 'website',
-    locale: 'bs_BA',
-    siteName: t.site.name,
-    title: `${t.site.name} — ${t.site.tagline}`,
+/**
+ * Ni Inter ni Fraunces nemaju arapsko pismo — bez ovoga bi arapska verzija
+ * pala na ono što posjetilac slučajno ima instalirano. `globals.css` je uključi
+ * samo kad je stranica na arapskom.
+ */
+const arabic = Noto_Sans_Arabic({
+  subsets: ['arabic'],
+  variable: '--font-arabic',
+  display: 'swap',
+  weight: ['400', '500', '600'],
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getStrings(locale);
+
+  return {
+    metadataBase: new URL(env.siteUrl),
+    title: {
+      default: `${t.site.name} — ${t.site.tagline}`,
+      template: `%s · ${t.site.name}`,
+    },
     description: t.site.description,
-    url: env.siteUrl,
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: `${t.site.name} — ${t.site.tagline}`,
-    description: t.site.description,
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+    keywords: [...t.site.keywords],
+    openGraph: {
+      type: 'website',
+      locale: OG_LOCALES[locale],
+      siteName: t.site.name,
+      title: `${t.site.name} — ${t.site.tagline}`,
+      description: t.site.description,
+      url: env.siteUrl,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${t.site.name} — ${t.site.tagline}`,
+      description: t.site.description,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: '#1f4436',
@@ -61,9 +71,18 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="bs" className={`${display.variable} ${sans.variable}`}>
+    <html
+      lang={locale}
+      // Arapski se piše zdesna nalijevo. Sve ostalo — raspored, strelice u
+      // galeriji, poravnanje u tabelama — visi o ovom jednom atributu, pa se
+      // po komponentama nigdje ne provjerava koji je jezik u pitanju.
+      dir={directionOf(locale)}
+      className={`${display.variable} ${sans.variable} ${arabic.variable}`}
+    >
       <head>
         {/* Bez JavaScripta nema ni animacije pojavljivanja — sadržaj se
             mora vidjeti odmah, a ne ostati na opacity: 0. */}
@@ -81,7 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ovom jednom elementu ne poredi. Djeca se i dalje provjeravaju normalno.
       */}
       <body className="min-h-dvh antialiased" suppressHydrationWarning>
-        {children}
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
       </body>
     </html>
   );

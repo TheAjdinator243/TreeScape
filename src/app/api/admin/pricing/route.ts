@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { invalidInput, readJson, requireDatabase, serverError } from '@/lib/api-helpers';
-import { t } from '@/lib/strings';
+import { getStrings, localeFromRequest } from '@/lib/i18n';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import { ratePeriodSchema, settingsSchema } from '@/lib/validation';
 
@@ -10,24 +10,23 @@ export const dynamic = 'force-dynamic';
 
 /** Izmjena osnovnih postavki i cijena. */
 export async function PUT(request: Request) {
-  const notReady = requireDatabase();
+  const locale = localeFromRequest(request);
+
+  const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
   const parsed = settingsSchema.safeParse(await readJson(request));
-  if (!parsed.success) return invalidInput();
+  if (!parsed.success) return invalidInput(locale);
 
   if (parsed.data.max_nights < parsed.data.min_nights) {
-    return NextResponse.json(
-      { error: 'Maksimalan broj noćenja ne može biti manji od minimalnog.' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: getStrings(locale).errors.MAX_BELOW_MIN }, { status: 400 });
   }
 
   const { error } = await supabaseAdmin().from('settings').update(parsed.data).eq('id', 1);
 
   if (error) {
     console.error('[treescape] izmjena postavki nije uspjela:', error.message);
-    return serverError();
+    return serverError(locale);
   }
 
   return NextResponse.json({ ok: true });
@@ -35,21 +34,23 @@ export async function PUT(request: Request) {
 
 /** Dodavanje sezone. */
 export async function POST(request: Request) {
-  const notReady = requireDatabase();
+  const locale = localeFromRequest(request);
+
+  const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
   const parsed = ratePeriodSchema.safeParse(await readJson(request));
-  if (!parsed.success) return invalidInput();
+  if (!parsed.success) return invalidInput(locale);
 
   if (parsed.data.end_date <= parsed.data.start_date) {
-    return NextResponse.json({ error: t.errors.INVALID_RANGE }, { status: 400 });
+    return NextResponse.json({ error: getStrings(locale).errors.INVALID_RANGE }, { status: 400 });
   }
 
   const { error } = await supabaseAdmin().from('rate_periods').insert(parsed.data);
 
   if (error) {
     console.error('[treescape] dodavanje sezone nije uspjelo:', error.message);
-    return serverError();
+    return serverError(locale);
   }
 
   return NextResponse.json({ ok: true });
@@ -57,17 +58,19 @@ export async function POST(request: Request) {
 
 /** Brisanje sezone. */
 export async function DELETE(request: Request) {
-  const notReady = requireDatabase();
+  const locale = localeFromRequest(request);
+
+  const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
   const id = new URL(request.url).searchParams.get('id');
-  if (!id) return invalidInput();
+  if (!id) return invalidInput(locale);
 
   const { error } = await supabaseAdmin().from('rate_periods').delete().eq('id', id);
 
   if (error) {
     console.error('[treescape] brisanje sezone nije uspjelo:', error.message);
-    return serverError();
+    return serverError(locale);
   }
 
   return NextResponse.json({ ok: true });

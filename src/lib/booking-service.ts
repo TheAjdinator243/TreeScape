@@ -5,9 +5,9 @@ import { randomBytes } from 'node:crypto';
 import { addDaysStr, daysBetween, todayStr } from './dates';
 import { getRatePeriods, getSettings, releaseExpiredHolds } from './data';
 import { env } from './env';
+import { DEFAULT_LOCALE, getStrings, type Locale } from './i18n';
 import { methodInfo } from './payments';
 import { quoteStay, validateStay } from './pricing';
-import { t } from './strings';
 import { isOverlapError, supabaseAdmin } from './supabase/admin';
 import type { Booking, PaymentMethod, PriceBreakdown, Settings } from './types';
 import type { BookingRequest } from './validation';
@@ -31,11 +31,17 @@ function newPublicToken(): string {
  *  4. pokušaj upis — a stvarnu provjeru zauzetosti radi EXCLUDE ograničenje.
  *
  * Korak 4 je jedini koji ne može izgubiti utrku dva istovremena gosta.
+ *
+ * `locale` je jezik na kojem je gost popunio formu. Upisuje se uz rezervaciju
+ * jer mailovi o njoj kreću i danima kasnije, kad od gosta nema više ničega.
  */
 export async function createBooking(
   input: Omit<BookingRequest, 'payment_method'>,
-  method: PaymentMethod
+  method: PaymentMethod,
+  locale: Locale = DEFAULT_LOCALE
 ): Promise<CreateResult> {
+  const t = getStrings(locale);
+
   await releaseExpiredHolds();
 
   const [periods, settings] = await Promise.all([getRatePeriods(), getSettings()]);
@@ -52,7 +58,14 @@ export async function createBooking(
     };
   }
 
-  const check = validateStay(input.start_date, input.end_date, input.guests, periods, settings);
+  const check = validateStay(
+    input.start_date,
+    input.end_date,
+    input.guests,
+    periods,
+    settings,
+    locale
+  );
   if (!check.ok) {
     return { ok: false, status: 400, code: check.code, message: check.message };
   }
@@ -81,6 +94,7 @@ export async function createBooking(
       currency: quote.currency,
       price_breakdown: quote,
       hold_expires_at: holdExpiresAt,
+      locale,
     })
     .select()
     .single();
@@ -117,8 +131,11 @@ export async function getBookingByToken(token: string): Promise<Booking | null> 
 export async function blockDates(
   startDate: string,
   endDate: string,
-  reason?: string
+  reason?: string,
+  locale: Locale = DEFAULT_LOCALE
 ): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
+  const t = getStrings(locale);
+
   if (endDate <= startDate) {
     return { ok: false, status: 400, message: t.errors.INVALID_RANGE };
   }

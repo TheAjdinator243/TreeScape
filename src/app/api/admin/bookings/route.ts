@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { invalidInput, readJson, requireDatabase, serverError } from '@/lib/api-helpers';
 import { sendGuestCashApproved, sendGuestCashRejected } from '@/lib/email';
+import { getStrings, localeFromRequest } from '@/lib/i18n';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import type { Booking } from '@/lib/types';
 import { bookingDecisionSchema } from '@/lib/validation';
@@ -17,11 +18,13 @@ export const dynamic = 'force-dynamic';
  *            (okidač u bazi sam briše red iz availability_slots).
  */
 export async function POST(request: Request) {
-  const notReady = requireDatabase();
+  const locale = localeFromRequest(request);
+
+  const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
   const parsed = bookingDecisionSchema.safeParse(await readJson(request));
-  if (!parsed.success) return invalidInput();
+  if (!parsed.success) return invalidInput(locale);
 
   const { booking_id, decision } = parsed.data;
   const nextStatus = decision === 'approve' ? 'confirmed' : 'cancelled';
@@ -38,12 +41,12 @@ export async function POST(request: Request) {
 
   if (error) {
     console.error('[treescape] odluka o rezervaciji nije upisana:', error.message);
-    return serverError();
+    return serverError(locale);
   }
 
   if (!data) {
     return NextResponse.json(
-      { error: 'Ovaj zahtjev je već riješen. Osvježite stranicu.' },
+      { error: getStrings(locale).errors.ALREADY_RESOLVED },
       { status: 409 }
     );
   }
@@ -58,11 +61,13 @@ export async function POST(request: Request) {
 
 /** Otkazivanje potvrđene rezervacije ili oslobađanje blokiranog termina. */
 export async function DELETE(request: Request) {
-  const notReady = requireDatabase();
+  const locale = localeFromRequest(request);
+
+  const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
   const id = new URL(request.url).searchParams.get('id');
-  if (!id) return invalidInput();
+  if (!id) return invalidInput(locale);
 
   const { error } = await supabaseAdmin()
     .from('bookings')
@@ -71,7 +76,7 @@ export async function DELETE(request: Request) {
 
   if (error) {
     console.error('[treescape] otkazivanje nije uspjelo:', error.message);
-    return serverError();
+    return serverError(locale);
   }
 
   return NextResponse.json({ ok: true });

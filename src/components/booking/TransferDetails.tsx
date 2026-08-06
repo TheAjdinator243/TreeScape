@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
+import { useI18n } from '@/components/i18n/LocaleProvider';
 import { formatDateTime } from '@/lib/dates';
 import { formatMoney } from '@/lib/pricing';
-import { t } from '@/lib/strings';
 import type { TransferInstructions } from '@/lib/payments';
 
 /**
@@ -14,6 +14,8 @@ import type { TransferInstructions } from '@/lib/payments';
  * za kopiranje — prekucavanje IBAN-a s ekrana je najčešći izvor grešaka.
  */
 export function TransferDetails({ data }: { data: TransferInstructions }) {
+  const { locale, t } = useI18n();
+
   return (
     <div className="mt-8 rounded-2xl border border-forest-600/25 bg-forest-700/5 p-5 sm:p-6">
       <h2 className="font-display text-lg text-forest-900">{t.confirmation.transferHeading}</h2>
@@ -25,11 +27,14 @@ export function TransferDetails({ data }: { data: TransferInstructions }) {
         <Row label={t.confirmation.transferReference} value={data.reference} mono copyable />
         <Row
           label={t.confirmation.transferAmount}
-          value={formatMoney(data.amountCents, data.currencySymbol)}
+          value={formatMoney(data.amountCents, data.currencySymbol, locale)}
           strong
         />
         {data.deadline && (
-          <Row label={t.confirmation.transferDeadline} value={formatDateTime(data.deadline)} />
+          <Row
+            label={t.confirmation.transferDeadline}
+            value={formatDateTime(data.deadline, locale)}
+          />
         )}
       </dl>
 
@@ -53,6 +58,7 @@ function Row({
   strong?: boolean;
   copyable?: boolean;
 }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -71,8 +77,9 @@ function Row({
       <dt className="text-sm text-ink-500">{label}</dt>
       <dd className="flex items-center gap-2">
         <span
+          dir={mono ? 'ltr' : undefined}
           className={[
-            'text-right',
+            'text-end',
             mono ? 'font-mono tracking-wide' : '',
             strong ? 'font-display text-xl text-forest-800' : 'text-sm font-medium text-ink-900',
           ].join(' ')}

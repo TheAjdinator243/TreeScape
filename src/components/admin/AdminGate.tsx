@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-import { t } from '@/lib/strings';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
 /**
  * Ulaz u administraciju.
@@ -13,6 +13,7 @@ import { t } from '@/lib/strings';
  * se nigdje ne čuva.
  */
 export function AdminGate({ configured }: { configured: boolean }) {
+  const { t } = useI18n();
   const router = useRouter();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +54,7 @@ export function AdminGate({ configured }: { configured: boolean }) {
 
         {!configured ? (
           <p className="mt-6 rounded-xl border border-warn-600/30 bg-warn-600/10 px-4 py-3 text-sm leading-relaxed text-warn-600">
-            Administracija nije podešena. Postavi <code>ADMIN_ACCESS_CODE</code> i{' '}
-            <code>ADMIN_SESSION_SECRET</code> u <code>.env.local</code>.
+            {t.admin.gateNotConfigured}
           </p>
         ) : (
           <form onSubmit={submit} className="mt-6">

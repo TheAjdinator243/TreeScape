@@ -18,7 +18,7 @@
  */
 
 import { daysBetween, eachDay, isWithin, todayStr, type DateStr } from './dates';
-import { t } from './strings';
+import { DEFAULT_LOCALE, getStrings, intlTag, type Locale } from './i18n';
 import type { AvailabilitySlot, PriceBreakdown, RatePeriod, Settings } from './types';
 
 /**
@@ -81,8 +81,11 @@ export function validateStay(
   end: DateStr,
   guests: number,
   periods: RatePeriod[],
-  settings: Settings
+  settings: Settings,
+  locale: Locale = DEFAULT_LOCALE
 ): ValidationResult {
+  const t = getStrings(locale);
+
   if (end <= start) {
     return { ok: false, code: 'INVALID_RANGE', message: t.errors.INVALID_RANGE };
   }
@@ -146,11 +149,16 @@ export function lowestNightlyCents(periods: RatePeriod[], settings: Settings): n
 
 // ── Formatiranje novca ─────────────────────────────────────────────────────
 
-/** 18000 → "180 KM" (bez decimala kad su nule, jer tako izgleda čistije). */
-export function formatMoney(cents: number, symbol = '€'): string {
+/**
+ * 18000 → "180 KM" (bez decimala kad su nule, jer tako izgleda čistije).
+ *
+ * Grupisanje hiljada nije svugdje isto — "1.250 KM" na bosanskom, "1,250 KM"
+ * na engleskom — pa razdvajanje određuje jezik, a ne tvrdo upisano 'bs-BA'.
+ */
+export function formatMoney(cents: number, symbol = '€', locale: Locale = DEFAULT_LOCALE): string {
   const amount = cents / 100;
   const hasFraction = cents % 100 !== 0;
-  const formatted = new Intl.NumberFormat('bs-BA', {
+  const formatted = new Intl.NumberFormat(intlTag(locale), {
     minimumFractionDigits: hasFraction ? 2 : 0,
     maximumFractionDigits: 2,
   }).format(amount);

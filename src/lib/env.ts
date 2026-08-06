@@ -47,7 +47,7 @@ export const env = {
   },
 } as const;
 
-/** Je li baza uopšte podešena? Ako nije, sajt radi na demo podacima. */
+/** Je li baza uopće podešena? Ako nije, sajt radi na demo podacima. */
 export const isDatabaseConfigured = Boolean(
   env.supabase.url && env.supabase.anonKey && env.supabase.serviceRoleKey
 );

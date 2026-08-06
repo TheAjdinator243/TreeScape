@@ -1,4 +1,5 @@
-import { t } from '@/lib/strings';
+import type { PlaceKey } from '@/lib/i18n';
+import { getServerStrings } from '@/lib/i18n/server';
 
 import { Reveal } from './Reveal';
 
@@ -23,14 +24,17 @@ const MAP_SRC =
   `https://www.openstreetmap.org/export/embed.html?bbox=${MAP_BBOX}` +
   `&layer=mapnik&marker=${MAP_MARKER.lat},${MAP_MARKER.lon}`;
 
-const TRAVEL = [
-  { label: 'Sarajevo', time: '35 min vožnje' },
-  { label: 'Aerodrom', time: '45 min vožnje' },
-  { label: 'Najbliža prodavnica', time: '8 min vožnje' },
-  { label: 'Skijalište', time: '25 min vožnje' },
+/** Minute vožnje su činjenica o kući, pa stoje ovdje; nazivi su u rječnicima. */
+const TRAVEL: { key: PlaceKey; minutes: number }[] = [
+  { key: 'city', minutes: 35 },
+  { key: 'airport', minutes: 45 },
+  { key: 'shop', minutes: 8 },
+  { key: 'ski', minutes: 25 },
 ];
 
-export function Location() {
+export async function Location() {
+  const { t } = await getServerStrings();
+
   return (
     <section id="lokacija" className="section">
       <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
@@ -41,9 +45,11 @@ export function Location() {
 
           <dl className="mt-10 divide-y divide-sand-200 border-y border-sand-200">
             {TRAVEL.map((row) => (
-              <div key={row.label} className="flex items-center justify-between py-4">
-                <dt className="text-base text-ink-700">{row.label}</dt>
-                <dd className="text-sm font-medium text-forest-700">{row.time}</dd>
+              <div key={row.key} className="flex items-center justify-between py-4">
+                <dt className="text-base text-ink-700">{t.location.places[row.key]}</dt>
+                <dd className="text-sm font-medium text-forest-700">
+                  {t.location.driveTime(row.minutes)}
+                </dd>
               </div>
             ))}
           </dl>
@@ -56,7 +62,7 @@ export function Location() {
         <Reveal delay={120}>
           <div className="h-[380px] overflow-hidden rounded-2xl border border-sand-200 shadow-soft lg:h-full lg:min-h-[460px]">
             <iframe
-              title="Karta lokacije vile TreeScape"
+              title={t.location.mapTitle}
               src={MAP_SRC}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
+import { useI18n } from '@/components/i18n/LocaleProvider';
 import { formatDateTime, formatRange, todayStr } from '@/lib/dates';
+import { count } from '@/lib/i18n';
 import { paymentReference } from '@/lib/payments';
 import { formatMoney } from '@/lib/pricing';
-import { t } from '@/lib/strings';
 import type { Booking, RatePeriod, Settings } from '@/lib/types';
 
 import { PricingTab } from './PricingTab';
@@ -22,6 +23,7 @@ export function Dashboard({
   periods: RatePeriod[];
   settings: Settings;
 }) {
+  const { locale, t } = useI18n();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('requests');
   const [pending, startTransition] = useTransition();
@@ -115,7 +117,7 @@ export function Dashboard({
             >
               {item.label}
               {item.badge ? (
-                <span className="ml-2 rounded-full bg-ember-500 px-2 py-0.5 text-xs font-semibold text-white">
+                <span className="ms-2 rounded-full bg-ember-500 px-2 py-0.5 text-xs font-semibold text-white">
                   {item.badge}
                 </span>
               ) : null}
@@ -148,32 +150,33 @@ export function Dashboard({
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="min-w-0">
                             <p className="font-display text-lg text-forest-900">
-                              {formatRange(booking.start_date, booking.end_date)}
+                              {formatRange(booking.start_date, booking.end_date, locale)}
                             </p>
                             <p className="mt-1 text-sm text-ink-700">
-                              {booking.guest_name} · {t.common.guestsCount(booking.guests ?? 1)}
+                              {booking.guest_name} ·{' '}
+                              {count(locale, booking.guests ?? 1, t.common.guests)}
                             </p>
                             <p className="mt-0.5 text-sm text-ink-500">
                               {booking.guest_email} · {booking.guest_phone}
                             </p>
                             <p className="mt-2 text-sm">
                               <span className="text-ink-500">{t.admin.transferRef}: </span>
-                              <span className="font-mono font-semibold text-forest-800">
+                              <span dir="ltr" className="font-mono font-semibold text-forest-800">
                                 {paymentReference(booking.public_token)}
                               </span>
                             </p>
                             {booking.hold_expires_at && (
                               <p className="mt-1 text-xs text-warn-600">
-                                {t.admin.deadlineAt}: {formatDateTime(booking.hold_expires_at)}
+                                {t.admin.deadlineAt}: {formatDateTime(booking.hold_expires_at, locale)}
                               </p>
                             )}
                           </div>
 
-                          <div className="text-right">
+                          <div className="text-end">
                             <p className="font-display text-2xl text-forest-800">
-                              {formatMoney(booking.total_cents, settings.currency_symbol)}
+                              {formatMoney(booking.total_cents, settings.currency_symbol, locale)}
                             </p>
-                            <p className="text-xs text-ink-400">na račun</p>
+                            <p className="text-xs text-ink-400">{t.admin.byTransfer}</p>
                           </div>
                         </div>
 
@@ -210,16 +213,17 @@ export function Dashboard({
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="min-w-0">
                           <p className="font-display text-lg text-forest-900">
-                            {formatRange(booking.start_date, booking.end_date)}
+                            {formatRange(booking.start_date, booking.end_date, locale)}
                           </p>
                           <p className="mt-1 text-sm text-ink-700">
-                            {booking.guest_name} · {t.common.guestsCount(booking.guests ?? 1)}
+                            {booking.guest_name} ·{' '}
+                            {count(locale, booking.guests ?? 1, t.common.guests)}
                           </p>
                           <p className="mt-0.5 text-sm text-ink-500">
                             {booking.guest_email} · {booking.guest_phone}
                           </p>
                           <p className="mt-2 text-xs text-ink-400">
-                            Zaprimljeno {formatDateTime(booking.created_at)}
+                            {t.admin.receivedAt(formatDateTime(booking.created_at, locale))}
                           </p>
                           {booking.note && (
                             <p className="mt-3 rounded-lg bg-sand-100 px-3 py-2 text-sm text-ink-700">
@@ -228,11 +232,11 @@ export function Dashboard({
                           )}
                         </div>
 
-                        <div className="text-right">
+                        <div className="text-end">
                           <p className="font-display text-2xl text-forest-800">
-                            {formatMoney(booking.total_cents, settings.currency_symbol)}
+                            {formatMoney(booking.total_cents, settings.currency_symbol, locale)}
                           </p>
-                          <p className="text-xs text-ink-400">gotovina</p>
+                          <p className="text-xs text-ink-400">{t.admin.byCash}</p>
                         </div>
                       </div>
 
@@ -267,14 +271,14 @@ export function Dashboard({
                 <Empty>{t.admin.bookingsEmpty}</Empty>
               ) : (
                 <div className="card overflow-x-auto">
-                  <table className="w-full min-w-[720px] text-left text-sm">
+                  <table className="w-full min-w-[720px] text-start text-sm">
                     <thead className="border-b border-sand-200 text-xs uppercase tracking-wider text-ink-400">
                       <tr>
-                        <th className="px-5 py-3 font-medium">Termin</th>
-                        <th className="px-5 py-3 font-medium">Gost</th>
-                        <th className="px-5 py-3 font-medium">Način</th>
-                        <th className="px-5 py-3 font-medium">Status</th>
-                        <th className="px-5 py-3 text-right font-medium">Iznos</th>
+                        <th className="px-5 py-3 font-medium">{t.admin.colStay}</th>
+                        <th className="px-5 py-3 font-medium">{t.admin.colGuest}</th>
+                        <th className="px-5 py-3 font-medium">{t.admin.colMethod}</th>
+                        <th className="px-5 py-3 font-medium">{t.admin.colStatus}</th>
+                        <th className="px-5 py-3 text-end font-medium">{t.admin.colAmount}</th>
                         <th className="px-5 py-3" />
                       </tr>
                     </thead>
@@ -282,7 +286,7 @@ export function Dashboard({
                       {bookings.map((booking) => (
                         <tr key={booking.id}>
                           <td className="px-5 py-3.5 font-medium text-ink-900">
-                            {formatRange(booking.start_date, booking.end_date)}
+                            {formatRange(booking.start_date, booking.end_date, locale)}
                           </td>
                           <td className="px-5 py-3.5 text-ink-700">
                             {booking.guest_name ?? (
@@ -295,23 +299,23 @@ export function Dashboard({
                           <td className="px-5 py-3.5">
                             <StatusBadge status={booking.status} />
                           </td>
-                          <td className="px-5 py-3.5 text-right tabular-nums text-ink-900">
+                          <td className="px-5 py-3.5 text-end tabular-nums text-ink-900">
                             {booking.total_cents > 0
-                              ? formatMoney(booking.total_cents, settings.currency_symbol)
+                              ? formatMoney(booking.total_cents, settings.currency_symbol, locale)
                               : '—'}
                           </td>
-                          <td className="px-5 py-3.5 text-right">
+                          <td className="px-5 py-3.5 text-end">
                             {['confirmed', 'pending_cash', 'pending_payment'].includes(
                               booking.status
                             ) && (
                               <button
                                 type="button"
                                 onClick={() =>
-                                  void cancel(booking.id, 'Otkazati ovu rezervaciju?')
+                                  void cancel(booking.id, t.admin.cancelConfirm)
                                 }
                                 className="text-xs font-medium text-danger-600 underline underline-offset-4"
                               >
-                                Otkaži
+                                {t.admin.cancel}
                               </button>
                             )}
                           </td>
@@ -352,6 +356,7 @@ function BlockTab({
   onBlock: (body: { start_date: string; end_date: string; reason?: string }) => Promise<boolean>;
   onUnblock: (id: string) => Promise<void>;
 }) {
+  const { locale, t } = useI18n();
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [reason, setReason] = useState('');
@@ -410,7 +415,7 @@ function BlockTab({
             type="text"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="npr. krečenje"
+            placeholder={t.admin.blockReasonPlaceholder}
             className="field-input"
           />
         </div>
@@ -423,14 +428,14 @@ function BlockTab({
 
       <h3 className="mt-10 font-display text-lg text-forest-900">{t.admin.blockedHeading}</h3>
       {blocked.length === 0 ? (
-        <Empty>Nema blokiranih termina.</Empty>
+        <Empty>{t.admin.blockedEmpty}</Empty>
       ) : (
         <ul className="mt-4 space-y-2">
           {blocked.map((item) => (
             <li key={item.id} className="card flex items-center justify-between gap-4 px-5 py-3.5">
               <div>
                 <p className="font-medium text-ink-900">
-                  {formatRange(item.start_date, item.end_date)}
+                  {formatRange(item.start_date, item.end_date, locale)}
                 </p>
                 {item.admin_note && <p className="text-sm text-ink-500">{item.admin_note}</p>}
               </div>
@@ -450,6 +455,8 @@ function BlockTab({
 }
 
 function StatusBadge({ status }: { status: string }) {
+  const { t } = useI18n();
+
   const tone: Record<string, string> = {
     confirmed: 'bg-success-600/12 text-success-600',
     pending_cash: 'bg-warn-600/12 text-warn-600',

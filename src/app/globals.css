@@ -43,6 +43,7 @@
   /* Tipografija — varijable dolaze iz next/font (vidi layout.tsx) */
   --font-display: var(--font-fraunces), Georgia, 'Times New Roman', serif;
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-arabic-stack: var(--font-arabic), 'Noto Sans Arabic', 'Segoe UI', system-ui, sans-serif;
 
   /* Mekane sjene — topli ton umjesto sivog */
   --shadow-soft: 0 1px 2px rgb(34 29 24 / 0.04), 0 8px 24px -8px rgb(34 29 24 / 0.12);
@@ -95,6 +96,33 @@
     background-color: var(--color-moss-300);
     color: var(--color-forest-900);
   }
+}
+
+/* ── Arapski ─────────────────────────────────────────────────────────────
+   Tri stvari koje se ne mogu riješiti u komponentama:
+
+   1. Pismo. Ni Inter ni Fraunces nemaju arapske glifove, pa i naslovi idu
+      na Noto Sans Arabic — ružniji je od Fraunces-a, ali barem postoji.
+   2. Razmicanje slova. Arapsko pismo je spojeno; `tracking-[0.2em]` bi
+      razbio riječ na pojedinačna slova i učinio je nečitljivom.
+   3. Velika slova. Arapski ih nema, pa je `uppercase` ili bez učinka ili
+      štetan (na latiničnim umecima usred arapskog teksta).
+
+   Pravila stoje IZVAN `@layer`, pa nadjačavaju Tailwindove utility klase
+   bez ijednog `!important` — neslojeviti CSS uvijek pobjeđuje slojeviti.
+   ─────────────────────────────────────────────────────────────────────── */
+
+html[lang='ar'] body,
+html[lang='ar'] h1,
+html[lang='ar'] h2,
+html[lang='ar'] h3 {
+  font-family: var(--font-arabic-stack);
+}
+
+html[lang='ar'] body,
+html[lang='ar'] body * {
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 /* ── Komponente koje se ponavljaju ───────────────────────────────────────── */
@@ -235,6 +263,23 @@
 .rdp-today:not(.rdp-selected) .rdp-day_button {
   font-weight: 700;
   color: var(--color-ember-600);
+}
+
+/*
+ * Odabrani raspon zdesna nalijevo.
+ *
+ * react-day-picker sam okreće raspored kad dobije `dir="rtl"`, ali ne i
+ * zaobljenja koja mi crtamo iznad njega: bez ovoga bi početak raspona bio
+ * zaobljen s pogrešne strane, pa bi traka izgledala kao da počinje na kraju.
+ */
+[dir='rtl'] .rdp-range_start .rdp-day_button {
+  border-start-start-radius: 9999px;
+  border-end-start-radius: 9999px;
+}
+
+[dir='rtl'] .rdp-range_end .rdp-day_button {
+  border-start-end-radius: 9999px;
+  border-end-end-radius: 9999px;
 }
 
 /* ── Animacije ───────────────────────────────────────────────────────────── */

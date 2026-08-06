@@ -4,9 +4,15 @@ import { Resend } from 'resend';
 
 import { formatDateTime, formatRange } from './dates';
 import { env, isEmailConfigured } from './env';
+import {
+  DEFAULT_LOCALE,
+  directionOf,
+  getStrings,
+  normalizeLocale,
+  type Locale,
+} from './i18n';
 import { transferInstructions } from './payments';
 import { formatMoney } from './pricing';
-import { t } from './strings';
 import type { Booking, Settings } from './types';
 
 /**
@@ -26,9 +32,26 @@ async function send(to: string, subject: string, html: string): Promise<void> {
   }
 }
 
-function layout(title: string, body: string): string {
+/**
+ * Jezik na kojem je gost rezervisao.
+ *
+ * Stoji uz rezervaciju u bazi (migracija 0003) baš zato što se mailovi šalju i
+ * danima kasnije, iz administracije — tada od gosta nema ni kolačića ni
+ * zaglavlja preglednika, samo ovaj red u tabeli.
+ */
+function bookingLocale(booking: Pick<Booking, 'locale'>): Locale {
+  return normalizeLocale(booking.locale) ?? DEFAULT_LOCALE;
+}
+
+function layout(locale: Locale, title: string, body: string): string {
+  const t = getStrings(locale);
+  const dir = directionOf(locale);
+  // Arapski mail mora biti okrenut zdesna nalijevo, a i poravnanje teksta
+  // ide uz smjer — mail klijenti ne nasljeđuju ništa od sajta.
+  const align = dir === 'rtl' ? 'right' : 'left';
+
   return `<!doctype html>
-<html lang="bs"><body style="margin:0;background:#faf7f1;font-family:system-ui,-apple-system,sans-serif;color:#221d18">
+<html lang="${locale}" dir="${dir}"><body style="margin:0;background:#faf7f1;font-family:system-ui,-apple-system,sans-serif;color:#221d18;text-align:${align}">
   <div style="max-width:560px;margin:0 auto;padding:32px 24px">
     <p style="font-size:22px;font-weight:600;color:#1f4436;margin:0 0 24px">${t.site.name}</p>
     <div style="background:#fff;border:1px solid #e9dcc7;border-radius:16px;padding:28px">
@@ -42,35 +65,68 @@ function layout(title: string, body: string): string {
 </body></html>`;
 }
 
-function detailRows(booking: Booking): string {
-  const stay = formatRange(booking.start_date, booking.end_date);
-  const total = formatMoney(booking.total_cents, booking.price_breakdown?.currencySymbol ?? '€');
+/** Naslov maila uvijek nosi i ime kuće — inače se izgubi u pretincu. */
+function subject(locale: Locale, line: string): string {
+  return `${line} — ${getStrings(locale).site.name}`;
+}
+
+function detailRows(booking: Booking, locale: Locale): string {
+  const t = getStrings(locale);
+  const dir = directionOf(locale);
+  const start = dir === 'rtl' ? 'right' : 'left';
+  const end = dir === 'rtl' ? 'left' : 'right';
+
+  const stay = formatRange(booking.start_date, booking.end_date, locale);
+  const total = formatMoney(
+    booking.total_cents,
+    booking.price_breakdown?.currencySymbol ?? '€',
+    locale
+  );
+
+  const row = (label: string, value: string, mono = false) =>
+    `<tr>
+       <td style="padding:8px 0;color:#6b6157;text-align:${start}">${label}</td>
+       <td style="padding:8px 0;text-align:${end};font-weight:600${mono ? ';font-family:monospace' : ''}">${value}</td>
+     </tr>`;
 
   return `
     <table style="width:100%;border-collapse:collapse;font-size:14px">
-      <tr><td style="padding:8px 0;color:#6b6157">Termin</td><td style="padding:8px 0;text-align:right;font-weight:600">${stay}</td></tr>
-      <tr><td style="padding:8px 0;color:#6b6157">Gostiju</td><td style="padding:8px 0;text-align:right;font-weight:600">${booking.guests ?? '—'}</td></tr>
-      <tr><td style="padding:8px 0;color:#6b6157">Iznos</td><td style="padding:8px 0;text-align:right;font-weight:600">${total}</td></tr>
-      <tr><td style="padding:8px 0;color:#6b6157">Broj rezervacije</td><td style="padding:8px 0;text-align:right;font-family:monospace">${booking.public_token.slice(0, 8).toUpperCase()}</td></tr>
+      ${row(t.email.rowStay, stay)}
+      ${row(t.email.rowGuests, String(booking.guests ?? '—'))}
+      ${row(t.email.rowAmount, total)}
+      ${row(t.email.rowReference, booking.public_token.slice(0, 8).toUpperCase(), true)}
     </table>`;
 }
 
-/** Gostu — rezervacija plaćena karticom. */
+/** Uvodni pasus: "Poštovani/a Ime, …" pa poruka. */
+function intro(booking: Booking, locale: Locale, message: string): string {
+  const t = getStrings(locale);
+
+  return `<p style="font-size:15px;line-height:1.6;color:#453d35;margin:0 0 20px">
+            ${t.email.greeting(booking.guest_name ?? '')} ${message}
+          </p>`;
+}
+
+function footNote(text: string): string {
+  return `<p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">${text}</p>`;
+}
+
+/** Gostu — rezervacija je plaćena i potvrđena. */
 export async function sendGuestConfirmation(booking: Booking): Promise<void> {
   if (!booking.guest_email) return;
 
+  const locale = bookingLocale(booking);
+  const t = getStrings(locale);
+
   await send(
     booking.guest_email,
-    `Rezervacija potvrđena — ${t.site.name}`,
+    subject(locale, t.email.confirmedSubject),
     layout(
-      `Vaša rezervacija je potvrđena`,
-      `<p style="font-size:15px;line-height:1.6;color:#453d35;margin:0 0 20px">
-         Poštovani/a ${booking.guest_name ?? ''}, hvala vam na rezervaciji. Termin je zaključan i plaćen.
-       </p>
-       ${detailRows(booking)}
-       <p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">
-         Tačnu adresu, uputstva za dolazak i kontakt domaćina šaljemo prije dolaska.
-       </p>`
+      locale,
+      t.email.confirmedTitle,
+      `${intro(booking, locale, t.email.confirmedBody)}
+       ${detailRows(booking, locale)}
+       ${footNote(t.email.addressLater)}`
     )
   );
 }
@@ -82,37 +138,40 @@ export async function sendGuestTransferInstructions(
 ): Promise<void> {
   if (!booking.guest_email) return;
 
+  const locale = bookingLocale(booking);
+  const t = getStrings(locale);
+  const dir = directionOf(locale);
+  const start = dir === 'rtl' ? 'right' : 'left';
+  const end = dir === 'rtl' ? 'left' : 'right';
+
   const p = transferInstructions(booking, settings);
   const row = (label: string, value: string, big = false) =>
     `<tr>
-       <td style="padding:10px 0;color:#6b6157;font-size:14px">${label}</td>
-       <td style="padding:10px 0;text-align:right;font-weight:600;font-size:${big ? '18px' : '14px'};font-family:${big ? 'monospace' : 'inherit'}">${value}</td>
+       <td style="padding:10px 0;color:#6b6157;font-size:14px;text-align:${start}">${label}</td>
+       <td style="padding:10px 0;text-align:${end};font-weight:600;font-size:${big ? '18px' : '14px'};font-family:${big ? 'monospace' : 'inherit'}">${value}</td>
      </tr>`;
 
   await send(
     booking.guest_email,
-    `Podaci za uplatu — ${t.site.name}`,
+    subject(locale, t.email.transferSubject),
     layout(
-      'Termin je rezervisan — preostaje uplata',
-      `<p style="font-size:15px;line-height:1.6;color:#453d35;margin:0 0 20px">
-         Poštovani/a ${booking.guest_name ?? ''}, termin držimo za vas. Molimo uplatite iznos
-         po podacima ispod — čim uplata stigne, rezervacija je potvrđena.
-       </p>
-       ${detailRows(booking)}
+      locale,
+      t.email.transferTitle,
+      `${intro(booking, locale, t.email.transferBody)}
+       ${detailRows(booking, locale)}
        <div style="background:#f4ede0;border-radius:12px;padding:18px;margin:20px 0 0">
-         <p style="margin:0 0 10px;font-weight:600;color:#1f4436;font-size:15px">Podaci za uplatu</p>
+         <p style="margin:0 0 10px;font-weight:600;color:#1f4436;font-size:15px">${t.email.transferHeading}</p>
          <table style="width:100%;border-collapse:collapse">
-           ${row('Primalac', p.accountName)}
-           ${p.bankName ? row('Banka', p.bankName) : ''}
-           ${row('IBAN', p.iban, true)}
-           ${row('Poziv na broj', p.reference, true)}
-           ${row('Iznos', formatMoney(p.amountCents, p.currencySymbol), true)}
-           ${p.deadline ? row('Uplatiti do', formatDateTime(p.deadline)) : ''}
+           ${row(t.email.transferRecipient, p.accountName)}
+           ${p.bankName ? row(t.email.transferBank, p.bankName) : ''}
+           ${row(t.email.transferIban, p.iban, true)}
+           ${row(t.email.transferReference, p.reference, true)}
+           ${row(t.email.transferAmount, formatMoney(p.amountCents, p.currencySymbol, locale), true)}
+           ${p.deadline ? row(t.email.transferDeadline, formatDateTime(p.deadline, locale)) : ''}
          </table>
        </div>
        <p style="font-size:13px;line-height:1.6;color:#b7791f;margin:16px 0 0">
-         Obavezno upišite poziv na broj — po njemu domaćin prepoznaje vašu uplatu.
-         Ako uplata ne stigne do navedenog roka, termin se oslobađa.
+         ${t.email.transferWarning}
        </p>`
     )
   );
@@ -122,19 +181,18 @@ export async function sendGuestTransferInstructions(
 export async function sendGuestCashRequest(booking: Booking): Promise<void> {
   if (!booking.guest_email) return;
 
+  const locale = bookingLocale(booking);
+  const t = getStrings(locale);
+
   await send(
     booking.guest_email,
-    `Zahtjev zaprimljen — ${t.site.name}`,
+    subject(locale, t.email.cashRequestSubject),
     layout(
-      `Zahtjev za rezervaciju je zaprimljen`,
-      `<p style="font-size:15px;line-height:1.6;color:#453d35;margin:0 0 20px">
-         Poštovani/a ${booking.guest_name ?? ''}, primili smo vaš zahtjev. Termin držimo za vas
-         dok ga domaćin ne potvrdi — javljamo se u najkraćem roku.
-       </p>
-       ${detailRows(booking)}
-       <p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">
-         Iznos se plaća u gotovini po dolasku.
-       </p>`
+      locale,
+      t.email.cashRequestTitle,
+      `${intro(booking, locale, t.email.cashRequestBody)}
+       ${detailRows(booking, locale)}
+       ${footNote(t.email.payOnArrival)}`
     )
   );
 }
@@ -143,18 +201,18 @@ export async function sendGuestCashRequest(booking: Booking): Promise<void> {
 export async function sendGuestCashApproved(booking: Booking): Promise<void> {
   if (!booking.guest_email) return;
 
+  const locale = bookingLocale(booking);
+  const t = getStrings(locale);
+
   await send(
     booking.guest_email,
-    `Rezervacija potvrđena — ${t.site.name}`,
+    subject(locale, t.email.cashApprovedSubject),
     layout(
-      `Domaćin je potvrdio vašu rezervaciju`,
-      `<p style="font-size:15px;line-height:1.6;color:#453d35;margin:0 0 20px">
-         Poštovani/a ${booking.guest_name ?? ''}, termin je vaš. Vidimo se!
-       </p>
-       ${detailRows(booking)}
-       <p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">
-         Iznos se plaća u gotovini po dolasku.
-       </p>`
+      locale,
+      t.email.cashApprovedTitle,
+      `${intro(booking, locale, t.email.cashApprovedBody)}
+       ${detailRows(booking, locale)}
+       ${footNote(t.email.payOnArrival)}`
     )
   );
 }
@@ -163,39 +221,48 @@ export async function sendGuestCashApproved(booking: Booking): Promise<void> {
 export async function sendGuestCashRejected(booking: Booking): Promise<void> {
   if (!booking.guest_email) return;
 
+  const locale = bookingLocale(booking);
+  const t = getStrings(locale);
+
   await send(
     booking.guest_email,
-    `Rezervacija nije potvrđena — ${t.site.name}`,
+    subject(locale, t.email.cashRejectedSubject),
     layout(
-      `Nažalost, termin nije dostupan`,
-      `<p style="font-size:15px;line-height:1.6;color:#453d35;margin:0 0 20px">
-         Poštovani/a ${booking.guest_name ?? ''}, domaćin nije bio u mogućnosti potvrditi
-         traženi termin. Termin je oslobođen, pa slobodno odaberite drugi.
-       </p>
-       ${detailRows(booking)}`
+      locale,
+      t.email.cashRejectedTitle,
+      `${intro(booking, locale, t.email.cashRejectedBody)}
+       ${detailRows(booking, locale)}`
     )
   );
 }
 
-/** Vlasniku — stigla je nova rezervacija ili zahtjev. */
+/**
+ * Vlasniku — stigla je nova rezervacija ili zahtjev.
+ *
+ * Ovaj mail ide vlasniku kuće, pa ide na jeziku kuće, a ne na jeziku gosta.
+ * Gostov jezik se ipak vidi — u redu s podacima o gostu.
+ */
 export async function sendOwnerNotification(
   booking: Booking,
   kind: 'cash' | 'bank_transfer' | 'card'
 ): Promise<void> {
   if (!env.email.ownerEmail) return;
 
+  const locale = DEFAULT_LOCALE;
+  const t = getStrings(locale);
+
   const title =
     kind === 'cash'
-      ? 'Novi zahtjev za plaćanje gotovinom'
+      ? t.email.ownerCashTitle
       : kind === 'bank_transfer'
-        ? 'Nova rezervacija — čeka uplatu na račun'
-        : 'Nova plaćena rezervacija';
+        ? t.email.ownerTransferTitle
+        : t.email.ownerCardTitle;
 
   const hint =
     kind === 'cash'
-      ? 'Termin je rezervisan i nevidljiv drugim gostima dok ne odlučite.'
+      ? t.email.ownerCashHint
       : kind === 'bank_transfer'
-        ? 'Termin je rezervisan. Kad uplata legne na račun, potvrdite je u administraciji.'
+        ? t.email.ownerTransferHint
         : '';
 
   const action =
@@ -203,23 +270,28 @@ export async function sendOwnerNotification(
       ? ''
       : `<p style="margin:20px 0 0">
            <a href="${env.siteUrl}/admin" style="display:inline-block;background:#2a5a47;color:#faf7f1;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
-             Otvori administraciju
+             ${t.email.ownerOpenAdmin}
            </a>
          </p>
          <p style="font-size:13px;color:#b7791f;margin:16px 0 0">${hint}</p>`;
 
+  const guestLocale = bookingLocale(booking);
+  const languageName = getStrings(locale).language.names[guestLocale];
+
   await send(
     env.email.ownerEmail,
-    `${title} — ${t.site.name}`,
+    subject(locale, title),
     layout(
+      locale,
       title,
-      `${detailRows(booking)}
+      `${detailRows(booking, locale)}
        <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:16px;border-top:1px solid #e9dcc7">
-         <tr><td style="padding:8px 0;color:#6b6157">Gost</td><td style="padding:8px 0;text-align:right">${booking.guest_name ?? '—'}</td></tr>
-         <tr><td style="padding:8px 0;color:#6b6157">Email</td><td style="padding:8px 0;text-align:right">${booking.guest_email ?? '—'}</td></tr>
-         <tr><td style="padding:8px 0;color:#6b6157">Telefon</td><td style="padding:8px 0;text-align:right">${booking.guest_phone ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowGuest}</td><td style="padding:8px 0;text-align:right">${booking.guest_name ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowEmail}</td><td style="padding:8px 0;text-align:right">${booking.guest_email ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowPhone}</td><td style="padding:8px 0;text-align:right">${booking.guest_phone ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6b6157">${t.language.label}</td><td style="padding:8px 0;text-align:right">${languageName}</td></tr>
        </table>
-       ${booking.note ? `<p style="font-size:14px;color:#453d35;background:#f4ede0;padding:12px 16px;border-radius:10px;margin:16px 0 0"><strong>Napomena gosta:</strong><br>${booking.note}</p>` : ''}
+       ${booking.note ? `<p style="font-size:14px;color:#453d35;background:#f4ede0;padding:12px 16px;border-radius:10px;margin:16px 0 0"><strong>${t.email.rowNote}:</strong><br>${booking.note}</p>` : ''}
        ${action}`
     )
   );

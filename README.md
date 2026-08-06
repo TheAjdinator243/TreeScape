@@ -6,12 +6,16 @@ termina i online rezervacijom.
 Čim neko rezerviše, ti datumi **odmah** postanu sivi u kalendaru svih ostalih
 posjetilaca, bez osvježavanja stranice.
 
+Sajt govori **bosanski, engleski i arapski** — uključujući i mailove koje gost
+dobija.
+
 ---
 
 ## Sadržaj
 
 - [Šta sve radi](#šta-sve-radi)
 - [Brzi start](#brzi-start)
+- [Jezici](#jezici)
 - [Podešavanje Supabase baze](#podešavanje-supabase-baze)
 - [Načini plaćanja](#načini-plaćanja)
 - [Objava na Vercel](#objava-na-vercel)
@@ -33,7 +37,7 @@ posjetilaca, bez osvježavanja stranice.
 - **Rezervacija i za jedan jedini dan**, bez noćenja
 - Cijena se računa uživo dok se biraju datumi, po sezonskom cjenovniku
 - Stranica s potvrdom i email obavijest
-- Sve na bosanskom jeziku
+- **Tri jezika** — bosanski, engleski i arapski, s ispravnim smjerom pisanja
 
 **Za vlasnika** (`/admin`, iza tajnog koda)
 
@@ -42,6 +46,7 @@ posjetilaca, bez osvježavanja stranice.
 - Pregled svih rezervacija
 - Ručno blokiranje termina (održavanje, lični boravak)
 - Uređivanje cijena, sezonskog cjenovnika i bankovnih podataka
+- Administracija govori isti jezik koji vlasnik odabere na sajtu
 
 ---
 
@@ -83,6 +88,62 @@ komande možeš slobodno nekome pokazati kad zatreba pomoć.
 
 ---
 
+## Jezici
+
+Sajt govori tri jezika:
+
+| Jezik | Oznaka | Smjer |
+|---|---|---|
+| Bosanski | `bs` | slijeva nadesno |
+| English | `en` | slijeva nadesno |
+| العربية (arapski) | `ar` | **zdesna nalijevo** |
+
+**Kako se bira.** Gost bira jezik u navigaciji ili u podnožju. Izbor se pamti u
+kolačiću `treescape_jezik` godinu dana. Ko još nije birao, dobija jezik svog
+preglednika (`Accept-Language`); ako sajt taj jezik ne govori — bosanski.
+
+Izričit izbor uvijek pobjeđuje preglednik. Ko je jednom kliknuo „English", ne
+želi da mu se sajt vrati na bosanski samo zato što mu je Windows na tom jeziku.
+
+**Šta se sve prevodi.** Cijela stranica, administracija, poruke o greškama iz
+API-ja i mailovi. Jezik na kojem je gost rezervisao upisuje se uz rezervaciju
+(kolona `bookings.locale`, migracija 0003) — jer potvrda ili odbijanje zahtjeva
+za gotovinu stižu danima kasnije, iz administracije, kad od gosta više nema ni
+kolačića ni zaglavlja. Mailovi vlasniku idu na bosanskom, ali nose podatak o
+tome kojim jezikom gost govori.
+
+**Arapski.** Cijela stranica se okreće preko `dir="rtl"` na `<html>`; komponente
+nigdje ne provjeravaju koji je jezik u pitanju, nego koriste logičke Tailwind
+klase (`ms-`, `pe-`, `text-start`), koje se same okrenu. Za arapsko pismo se
+učitava Noto Sans Arabic, a razmicanje slova i velika slova se isključuju — u
+arapskom prvo lomi riječi, a drugo ne postoji. Cifre ostaju latinične, da iznos
+od 345 KM i datum 5.8.2026. ne budu pisani dvjema vrstama cifara na istom
+ekranu.
+
+**Jedna adresa, ne tri.** Jezik se bira kolačićem, pa sve tri verzije žive na
+istoj adresi — nema `/en/` ni `/ar/`. Za goste je to najjednostavnije: link
+podijeljen na WhatsAppu radi svakome na njegovom jeziku.
+
+Cijena toga je SEO: Google indeksira samo bosansku verziju, jer njegov robot
+nema kolačić. Ako jednog dana bude važno da se sajt nalazi i po arapskim
+upitima, jezici moraju dobiti svoje adrese (`/en`, `/ar`) i `hreflang` oznake.
+Rječnici i sve ostalo ovdje ostaju isti — mijenja se samo gdje se jezik čita.
+
+**Kako dodati četvrti jezik.**
+
+1. Dodaj oznaku u `LOCALES` i smjer u `DIRECTIONS`
+   ([`src/lib/i18n/config.ts`](src/lib/i18n/config.ts))
+2. Napravi `src/lib/i18n/dictionaries/<oznaka>.ts` po uzoru na `bs.ts`
+3. Upiši ga u `DICTIONARIES` ([`src/lib/i18n/index.ts`](src/lib/i18n/index.ts))
+4. Dodaj oblike množine u `plural` ([`src/lib/i18n/plural.ts`](src/lib/i18n/plural.ts))
+   i obrasce datuma u `PATTERNS` ([`src/lib/dates.ts`](src/lib/dates.ts))
+5. Proširi `bookings_locale_check` novom migracijom
+
+Ako nešto zaboraviš, TypeScript prijavi grešku prije nego što se sajt uopće
+pokrene — tip `Dictionary` traži svaki ključ.
+
+---
+
 ## Podešavanje Supabase baze
 
 Supabase je besplatna hostovana Postgres baza. Ovdje čuva rezervacije i emituje
@@ -90,10 +151,11 @@ promjene uživo u sve otvorene preglednike.
 
 **1.** Otvori nalog na [supabase.com](https://supabase.com) i napravi novi projekat.
 
-**2.** U Supabase-u idi na **SQL Editor** i pokreni **obje** migracije, redom:
+**2.** U Supabase-u idi na **SQL Editor** i pokreni **sve** migracije, redom:
 
 1. [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
 2. [`supabase/migrations/0002_bez_stripea.sql`](supabase/migrations/0002_bez_stripea.sql)
+3. [`supabase/migrations/0003_jezik_gosta.sql`](supabase/migrations/0003_jezik_gosta.sql)
 
 Kopiraj cijeli sadržaj datoteke, zalijepi i klikni **Run**. Očekivani odgovor je
 _"Success. No rows returned"_ — to je uspjeh, migracije ne vraćaju redove.
@@ -190,8 +252,8 @@ Sve slike su trenutno prazni okviri s natpisom **SLIKA 1 … SLIKA 14**.
 
 1. Nazovi svoju sliku isto kao onu koju mijenjaš — npr. `slika-01.jpg`
 2. Prebaci je u `src/assets/gallery/` i prepiši postojeću
-3. U [`src/lib/gallery.ts`](src/lib/gallery.ts) promijeni `alt` i `caption` da
-   opisuju šta se stvarno vidi
+3. U rječnicima (`src/lib/i18n/dictionaries/`) promijeni `gallery.itemAlt` i
+   `gallery.itemCaption` da opisuju šta se stvarno vidi — na sva tri jezika
 
 **SLIKA 1** je naslovna, preko cijelog ekrana — neka bude široka i najljepša.
 **SLIKA 3** i **SLIKA 6** su uspravne, ostale položene.
@@ -206,11 +268,14 @@ nemoj u njega pisati „slika", nego šta se na slici vidi.
 
 | Šta | Gdje |
 |---|---|
-| Sav tekst sajta | [`src/lib/strings.ts`](src/lib/strings.ts) |
+| Sav tekst sajta, na sva tri jezika | [`src/lib/i18n/dictionaries/`](src/lib/i18n/dictionaries/) |
 | Telefon i email | [`src/components/site/Footer.tsx`](src/components/site/Footer.tsx) |
 | Koordinate karte | [`src/components/site/Location.tsx`](src/components/site/Location.tsx) |
-| Sadržaji kuće | [`src/components/site/Amenities.tsx`](src/components/site/Amenities.tsx) |
-| Česta pitanja | [`src/components/site/Faq.tsx`](src/components/site/Faq.tsx) |
+| Koji sadržaji se prikazuju i kojim redom | [`src/components/site/Amenities.tsx`](src/components/site/Amenities.tsx) |
+| Minuti vožnje do okoline | [`src/components/site/Location.tsx`](src/components/site/Location.tsx) |
+
+Nazivi sadržaja, pitanja i odgovori i sve ostale riječi stoje u rječnicima —
+komponente drže samo ono što ne zavisi od jezika (ikone, redoslijed, brojeve).
 
 ---
 
@@ -279,11 +344,14 @@ Sve navedeno je pokriveno testovima.
 npm test
 ```
 
-67 testova, u dvije grupe:
+90 testova, u tri grupe:
 
 - **`src/lib/pricing.test.ts`** — sezonske cijene, preklapanje sezona, rezervacija
-  jednog dana, bosanska množina, granični slučajevi oko dana odlaska
-- **`src/lib/schema.test.ts`** — pokreće obje migracije na **pravom Postgresu**
+  jednog dana, granični slučajevi oko dana odlaska
+- **`src/lib/i18n/i18n.test.ts`** — prepoznavanje jezika iz kolačića i zaglavlja,
+  množina na sva tri jezika (uključujući arapsku dvojinu), obrasci datuma i novca,
+  i provjera da nijedan prevod nije ostao prazan
+- **`src/lib/schema.test.ts`** — pokreće sve migracije na **pravom Postgresu**
   (PGlite, Postgres preveden u WebAssembly) i provjerava da je dvostruki booking
   zaista nemoguć, da otkazivanje oslobađa termin, da okidač održava kalendar i da
   isteklo držanje termina propada kako treba
@@ -322,19 +390,20 @@ src/
 ├── components/
 │   ├── site/                     naslovna, galerija, sadržaji, lokacija, pitanja
 │   ├── booking/                  kalendar, cijena, forma, podaci za uplatu
+│   ├── i18n/                     birač jezika i rječnik za klijentske komponente
 │   └── admin/                    ulaz i nadzorna ploča
 ├── lib/
 │   ├── pricing.ts                obračun cijene (isti kod na klijentu i serveru)
 │   ├── dates.ts                  datumi kao 'YYYY-MM-DD' — bez pomaka zona
 │   ├── booking-service.ts        pravljenje rezervacija, hvatanje sudara
 │   ├── payments/                 načini plaćanja
-│   ├── strings.ts                SAV tekst sajta
+│   ├── i18n/                     jezici: rječnici, množina, prepoznavanje
 │   ├── gallery.ts                spisak fotografija
 │   └── supabase/                 klijenti za preglednik i server
 ├── proxy.ts                      čuvar administracije
 └── assets/gallery/               fotografije
 
-supabase/migrations/              shema baze — pokreni obje, redom
+supabase/migrations/              shema baze — pokreni sve, redom
 scripts/                          npm run setup i npm run doctor
 ```
 

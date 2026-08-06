@@ -3,12 +3,13 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useI18n } from '@/components/i18n/LocaleProvider';
 import { GALLERY } from '@/lib/gallery';
-import { t } from '@/lib/strings';
 
 import { Reveal } from './Reveal';
 
 export function Gallery() {
+  const { t } = useI18n();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const close = useCallback(() => setOpenIndex(null), []);
@@ -32,7 +33,7 @@ export function Gallery() {
       <ul className="mt-12 grid auto-rows-[180px] grid-cols-2 gap-3 sm:auto-rows-[220px] md:grid-cols-4 md:gap-4">
         {GALLERY.map((item, i) => (
           <li
-            key={item.caption}
+            key={item.n}
             className={[
               'group relative overflow-hidden rounded-xl',
               item.span === 'wide' ? 'col-span-2' : '',
@@ -43,11 +44,11 @@ export function Gallery() {
               type="button"
               onClick={() => setOpenIndex(i)}
               className="h-full w-full cursor-zoom-in"
-              aria-label={`${t.gallery.open}: ${item.caption}`}
+              aria-label={`${t.gallery.open}: ${t.gallery.itemCaption(item.n)}`}
             >
               <Image
                 src={item.image}
-                alt={item.alt}
+                alt={t.gallery.itemAlt(item.n)}
                 fill
                 placeholder="blur"
                 sizes="(max-width: 768px) 50vw, 25vw"
@@ -58,8 +59,8 @@ export function Gallery() {
                 className="absolute inset-0 bg-gradient-to-t from-bark-950/70 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                 aria-hidden="true"
               />
-              <span className="absolute bottom-3 left-4 translate-y-2 text-sm font-medium text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                {item.caption}
+              <span className="absolute bottom-3 start-4 translate-y-2 text-sm font-medium text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                {t.gallery.itemCaption(item.n)}
               </span>
             </button>
           </li>
@@ -84,21 +85,25 @@ function Lightbox({
   onPrev: () => void;
   onNext: () => void;
 }) {
+  const { t, dir } = useI18n();
   const closeRef = useRef<HTMLButtonElement>(null);
   const touchStartX = useRef<number | null>(null);
   const item = GALLERY[index];
 
+  const rtl = dir === 'rtl';
+
   // Tastatura: strelice listaju, Escape zatvara. Bez ovoga galerija nije
-  // upotrebljiva bez miša.
+  // upotrebljiva bez miša. U arapskom "naprijed" je strelica ulijevo, jer se
+  // i sadržaj kreće tim smjerom.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft') onPrev();
-      if (e.key === 'ArrowRight') onNext();
+      if (e.key === 'ArrowLeft') (rtl ? onNext : onPrev)();
+      if (e.key === 'ArrowRight') (rtl ? onPrev : onNext)();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose, onPrev, onNext]);
+  }, [onClose, onPrev, onNext, rtl]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -125,7 +130,10 @@ function Lightbox({
         const end = e.changedTouches[0]?.clientX;
         if (start === null || end === undefined) return;
         const delta = end - start;
-        if (Math.abs(delta) > 60) (delta > 0 ? onPrev : onNext)();
+        if (Math.abs(delta) > 60) {
+          const forward = rtl ? delta > 0 : delta < 0;
+          (forward ? onNext : onPrev)();
+        }
         touchStartX.current = null;
       }}
     >
@@ -156,13 +164,13 @@ function Lightbox({
         // Klik na samu sliku ne zatvara — samo klik na tamnu pozadinu.
         onClick={(e) => e.stopPropagation()}
       >
-        <LightboxArrow side="left" onClick={onPrev} />
+        <LightboxArrow side="start" onClick={onPrev} label={t.gallery.prev} />
 
         <div className="relative h-full w-full max-w-5xl">
           <Image
-            key={item.caption}
+            key={item.n}
             src={item.image}
-            alt={item.alt}
+            alt={t.gallery.itemAlt(item.n)}
             fill
             placeholder="blur"
             sizes="100vw"
@@ -170,27 +178,49 @@ function Lightbox({
           />
         </div>
 
-        <LightboxArrow side="right" onClick={onNext} />
+        <LightboxArrow side="end" onClick={onNext} label={t.gallery.next} />
       </div>
 
-      <p className="px-5 pb-6 text-center text-sm text-sand-200">{item.caption}</p>
+      <p className="px-5 pb-6 text-center text-sm text-sand-200">
+        {t.gallery.itemCaption(item.n)}
+      </p>
     </div>
   );
 }
 
-function LightboxArrow({ side, onClick }: { side: 'left' | 'right'; onClick: () => void }) {
+/**
+ * `side` je logički, ne fizički: "start" je početak reda, dakle lijevo u
+ * bosanskom i engleskom, a desno u arapskom. Strelica se okreće uz njega —
+ * `rtl:rotate-180` je jedini način da ista putanja radi u oba smjera.
+ */
+function LightboxArrow({
+  side,
+  onClick,
+  label,
+}: {
+  side: 'start' | 'end';
+  onClick: () => void;
+  label: string;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={`absolute ${
-        side === 'left' ? 'left-2' : 'right-2'
+        side === 'start' ? 'start-2' : 'end-2'
       } z-10 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:h-14 sm:w-14`}
-      aria-label={side === 'left' ? t.gallery.prev : t.gallery.next}
+      aria-label={label}
     >
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+        className="rtl:rotate-180"
+      >
         <path
-          d={side === 'left' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'}
+          d={side === 'start' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'}
           stroke="currentColor"
           strokeWidth="1.8"
           strokeLinecap="round"

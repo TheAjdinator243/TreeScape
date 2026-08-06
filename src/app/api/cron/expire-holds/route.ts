@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { env, isDatabaseConfigured } from '@/lib/env';
+import { getStrings } from '@/lib/i18n';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export const runtime = 'nodejs';
@@ -19,17 +20,20 @@ export const dynamic = 'force-dynamic';
  * potrebno, a Vercel na besplatnom planu ionako dozvoljava samo dnevni cron.
  */
 export async function GET(request: Request) {
+  // Ovu rutu zove Vercel Cron, ne gost — poruke idu na jeziku kuće.
+  const t = getStrings();
+
   // Vercel Cron šalje `Authorization: Bearer <CRON_SECRET>`. Bez provjere bi
   // ovu adresu mogao pozivati bilo ko.
   if (env.cronSecret) {
     const header = request.headers.get('authorization');
     if (header !== `Bearer ${env.cronSecret}`) {
-      return NextResponse.json({ error: 'Nije dozvoljeno' }, { status: 401 });
+      return NextResponse.json({ error: t.errors.NOT_ALLOWED }, { status: 401 });
     }
   }
 
   if (!isDatabaseConfigured) {
-    return NextResponse.json({ error: 'Baza nije podešena' }, { status: 503 });
+    return NextResponse.json({ error: t.errors.DATABASE_MISSING }, { status: 503 });
   }
 
   const { data, error } = await supabaseAdmin().rpc('release_expired_holds');

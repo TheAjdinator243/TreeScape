@@ -4,24 +4,26 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 
+import { useI18n } from '@/components/i18n/LocaleProvider';
 import { Reveal } from '@/components/site/Reveal';
 import { addDaysStr, daysBetween, formatLong, toDateStr } from '@/lib/dates';
+import { count } from '@/lib/i18n';
 import { formatMoney, quoteStay, rangeHasConflict, validateStay } from '@/lib/pricing';
-import { t } from '@/lib/strings';
 import type { BookingContext, PaymentMethod } from '@/lib/types';
 
 import { StayCalendar } from './StayCalendar';
 import { useAvailability } from './useAvailability';
 
-const METHOD_COPY: Record<string, { label: string; hint: string }> = {
-  bank_transfer: { label: t.booking.payTransfer, hint: t.booking.payTransferHint },
-  cash: { label: t.booking.payCash, hint: t.booking.payCashHint },
-  test: { label: t.booking.payTest, hint: t.booking.payTestHint },
-};
-
 export function BookingSection({ context }: { context: BookingContext }) {
   const router = useRouter();
+  const { locale, t } = useI18n();
   const { periods, settings, paymentMethods } = context;
+
+  const methodCopy: Record<string, { label: string; hint: string }> = {
+    bank_transfer: { label: t.booking.payTransfer, hint: t.booking.payTransferHint },
+    cash: { label: t.booking.payCash, hint: t.booking.payCashHint },
+    test: { label: t.booking.payTest, hint: t.booking.payTestHint },
+  };
 
   const slots = useAvailability(context.slots);
 
@@ -59,9 +61,9 @@ export function BookingSection({ context }: { context: BookingContext }) {
   const stayError = useMemo(() => {
     if (!complete || !start || !end) return null;
     if (rangeHasConflict(start, end, slots)) return t.booking.unavailableRange;
-    const result = validateStay(start, end, guests, periods, settings);
+    const result = validateStay(start, end, guests, periods, settings, locale);
     return result.ok ? null : result.message;
-  }, [complete, start, end, guests, periods, settings, slots]);
+  }, [complete, start, end, guests, periods, settings, slots, locale, t]);
 
   function formError(): string | null {
     if (!complete) return t.booking.selectDatesFirst;
@@ -151,6 +153,9 @@ export function BookingSection({ context }: { context: BookingContext }) {
         <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
           {/* ── Kalendar ── */}
           <Reveal className="card p-4 sm:p-6">
+            <h3 className="mb-4 text-center font-display text-xl text-forest-900">
+              {t.booking.pickDates}
+            </h3>
             <StayCalendar
               slots={slots}
               range={range}
@@ -176,14 +181,22 @@ export function BookingSection({ context }: { context: BookingContext }) {
               <dl className="mt-5 space-y-3 text-sm">
                 <div className="flex items-baseline justify-between gap-4">
                   <dt className="text-ink-500">{t.booking.checkIn}</dt>
-                  <dd className="text-right font-medium text-ink-900">
-                    {start ? formatLong(start) : <span className="text-ink-400">—</span>}
+                  <dd className="text-end font-medium text-ink-900">
+                    {start ? (
+                      formatLong(start, locale)
+                    ) : (
+                      <span className="text-ink-400">{t.booking.notSelected}</span>
+                    )}
                   </dd>
                 </div>
                 <div className="flex items-baseline justify-between gap-4">
                   <dt className="text-ink-500">{t.booking.checkOut}</dt>
-                  <dd className="text-right font-medium text-ink-900">
-                    {end ? formatLong(end) : <span className="text-ink-400">—</span>}
+                  <dd className="text-end font-medium text-ink-900">
+                    {end ? (
+                      formatLong(end, locale)
+                    ) : (
+                      <span className="text-ink-400">{t.booking.notSelected}</span>
+                    )}
                   </dd>
                 </div>
               </dl>
@@ -214,16 +227,17 @@ export function BookingSection({ context }: { context: BookingContext }) {
                     <Row
                       label={`${t.booking.daysLabel(quote.dayCount)} × ${formatMoney(
                         quote.averageDailyCents,
-                        quote.currencySymbol
+                        quote.currencySymbol,
+                        locale
                       )}`}
-                      value={formatMoney(quote.totalCents, quote.currencySymbol)}
+                      value={formatMoney(quote.totalCents, quote.currencySymbol, locale)}
                     />
                   </div>
 
                   <div className="mt-4 flex items-baseline justify-between border-t border-sand-200 pt-4">
                     <span className="font-medium text-ink-900">{t.booking.total}</span>
                     <span className="font-display text-2xl text-forest-800">
-                      {formatMoney(quote.totalCents, quote.currencySymbol)}
+                      {formatMoney(quote.totalCents, quote.currencySymbol, locale)}
                     </span>
                   </div>
 
@@ -249,7 +263,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
                   >
                     {Array.from({ length: settings.max_guests }, (_, i) => i + 1).map((n) => (
                       <option key={n} value={n}>
-                        {t.common.guestsCount(n)}
+                        {count(locale, n, t.common.guests)}
                       </option>
                     ))}
                   </select>
@@ -310,7 +324,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
 
                 <div className="space-y-2.5">
                   {paymentMethods.map((id) => {
-                    const copy = METHOD_COPY[id];
+                    const copy = methodCopy[id];
                     if (!copy) return null;
                     const selected = method === id;
 
@@ -381,10 +395,10 @@ export function BookingSection({ context }: { context: BookingContext }) {
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="truncate text-xs text-ink-500">
-                {start && end ? t.common.daysCount(daysBetween(start, end)) : ''}
+                {start && end ? count(locale, daysBetween(start, end), t.common.days) : ''}
               </p>
               <p className="font-display text-lg text-forest-800">
-                {formatMoney(quote.totalCents, quote.currencySymbol)}
+                {formatMoney(quote.totalCents, quote.currencySymbol, locale)}
               </p>
             </div>
             <button

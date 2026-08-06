@@ -8,6 +8,7 @@ import {
   sendGuestTransferInstructions,
   sendOwnerNotification,
 } from '@/lib/email';
+import { localeFromRequest } from '@/lib/i18n';
 import { bookingRequestSchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
@@ -20,15 +21,18 @@ export const dynamic = 'force-dynamic';
  * plaćanja ne znači i novu API rutu koju treba zasebno čuvati i štititi.
  */
 export async function POST(request: Request) {
-  const notReady = requireDatabase();
+  // Jezik gosta određuje i poruke o greškama i, kasnije, jezik svih mailova.
+  const locale = localeFromRequest(request);
+
+  const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
   const parsed = bookingRequestSchema.safeParse(await readJson(request));
-  if (!parsed.success) return invalidInput();
+  if (!parsed.success) return invalidInput(locale);
 
   const { payment_method, ...booking } = parsed.data;
 
-  const result = await createBooking(booking, payment_method);
+  const result = await createBooking(booking, payment_method, locale);
   if (!result.ok) {
     return NextResponse.json(
       { error: result.message, code: result.code },

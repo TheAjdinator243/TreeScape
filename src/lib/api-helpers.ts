@@ -3,7 +3,7 @@ import 'server-only';
 import { NextResponse } from 'next/server';
 
 import { isDatabaseConfigured } from './env';
-import { t } from './strings';
+import { DEFAULT_LOCALE, getStrings, type Locale } from './i18n';
 
 /**
  * Kratka provjera prije nego ruta dodirne bazu.
@@ -11,16 +11,10 @@ import { t } from './strings';
  * Bez ovoga bi `supabaseAdmin()` bacio izuzetak zbog nedostajućeg ključa, a
  * pozivalac bi dobio goli 500 bez ikakvog objašnjenja šta da uradi.
  */
-export function requireDatabase(): NextResponse | null {
+export function requireDatabase(locale: Locale = DEFAULT_LOCALE): NextResponse | null {
   if (isDatabaseConfigured) return null;
 
-  return NextResponse.json(
-    {
-      error:
-        'Baza nije podešena. Dodaj Supabase ključeve u .env.local (ili u Vercel → Environment Variables) i pokreni migraciju iz supabase/migrations.',
-    },
-    { status: 503 }
-  );
+  return NextResponse.json({ error: getStrings(locale).errors.DATABASE_MISSING }, { status: 503 });
 }
 
 /** Sigurno čitanje JSON tijela — neispravan JSON ne smije rušiti rutu. */
@@ -32,10 +26,10 @@ export async function readJson(request: Request): Promise<unknown | null> {
   }
 }
 
-export function invalidInput(): NextResponse {
-  return NextResponse.json({ error: t.errors.INVALID_INPUT }, { status: 400 });
+export function invalidInput(locale: Locale = DEFAULT_LOCALE): NextResponse {
+  return NextResponse.json({ error: getStrings(locale).errors.INVALID_INPUT }, { status: 400 });
 }
 
-export function serverError(): NextResponse {
-  return NextResponse.json({ error: t.errors.SERVER_ERROR }, { status: 500 });
+export function serverError(locale: Locale = DEFAULT_LOCALE): NextResponse {
+  return NextResponse.json({ error: getStrings(locale).errors.SERVER_ERROR }, { status: 500 });
 }

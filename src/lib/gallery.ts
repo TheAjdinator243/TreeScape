@@ -24,7 +24,6 @@ import slika14 from '@/assets/gallery/slika-14.jpg';
  * │                                                                          │
  * │  1. Nazovi svoju sliku isto kao onu koju mijenjaš — npr. `slika-01.jpg`  │
  * │  2. Prebaci je u `src/assets/gallery/` i prepiši postojeću               │
- * │  3. Ispod, u spisku, promijeni `alt` i `caption` da opisuju tvoju sliku  │
  * │                                                                          │
  * │  Ništa drugo se ne dira. Next.js sam pravi WebP/AVIF verzije, računa     │
  * │  dimenzije i prikazuje zamućeni pregled dok se slika učitava.            │
@@ -33,48 +32,43 @@ import slika14 from '@/assets/gallery/slika-14.jpg';
  * │  bude široka (npr. 2000×1200) i najljepša koju imaš.                     │
  * │  SLIKA 3 i SLIKA 6 su uspravne, ostale položene.                        │
  * │                                                                          │
- * │  `alt` je opis za slijepe osobe i za Google — nikad ga ne ostavljaj      │
- * │  prazan i nemoj u njega pisati "slika", nego šta se na slici vidi.       │
+ * │  OPISI: `alt` (za slijepe osobe i za Google) i natpis ispod slike više   │
+ * │  ne stoje ovdje nego u rječnicima, u `src/lib/i18n/dictionaries/` pod    │
+ * │  `gallery.itemAlt` i `gallery.itemCaption` — jer ih treba na sva tri     │
+ * │  jezika. Dok stoje označene prazne slike, ispisuju samo redni broj;      │
+ * │  kad ubaciš prave, tamo opiši šta se na svakoj vidi.                     │
  * └─────────────────────────────────────────────────────────────────────────┘
  */
 
 export interface GalleryImage {
   image: StaticImageData;
-  /** Opis za čitače ekrana i pretraživače. Nikad ne ostavljaj prazno. */
-  alt: string;
-  /** Natpis koji se vidi u galeriji. */
-  caption: string;
+  /** Redni broj slike — po njemu rječnik daje `alt` i natpis. */
+  n: number;
   /** Vizuelna težina u mreži — `wide` i `tall` prave zanimljiviji raspored. */
   span?: 'wide' | 'tall';
 }
 
-/** Velika slika na vrhu stranice. */
-export const HERO_IMAGE = {
-  image: slika01,
-  alt: 'Vila TreeScape',
-} as const;
+/** Velika slika na vrhu stranice. Opis stoji u rječniku (`hero.imageAlt`). */
+export const HERO_IMAGE = slika01;
 
 /** Slika za dijeljenje na društvenim mrežama (Open Graph). */
 export const OG_IMAGE = slika01;
 
-/** Slika uz tekst "O kući". */
-export const ABOUT_IMAGE = {
-  image: slika03,
-  alt: 'Vila TreeScape izvana',
-} as const;
+/** Slika uz tekst "O kući". Opis stoji u rječniku (`about.imageAlt`). */
+export const ABOUT_IMAGE = slika03;
 
 export const GALLERY: GalleryImage[] = [
-  { image: slika02, alt: 'Slika 2', caption: 'Slika 2', span: 'wide' },
-  { image: slika04, alt: 'Slika 4', caption: 'Slika 4' },
-  { image: slika06, alt: 'Slika 6', caption: 'Slika 6', span: 'tall' },
-  { image: slika03, alt: 'Slika 3', caption: 'Slika 3', span: 'tall' },
-  { image: slika05, alt: 'Slika 5', caption: 'Slika 5' },
-  { image: slika07, alt: 'Slika 7', caption: 'Slika 7', span: 'wide' },
-  { image: slika08, alt: 'Slika 8', caption: 'Slika 8' },
-  { image: slika09, alt: 'Slika 9', caption: 'Slika 9' },
-  { image: slika10, alt: 'Slika 10', caption: 'Slika 10' },
-  { image: slika11, alt: 'Slika 11', caption: 'Slika 11' },
-  { image: slika12, alt: 'Slika 12', caption: 'Slika 12', span: 'wide' },
-  { image: slika13, alt: 'Slika 13', caption: 'Slika 13' },
-  { image: slika14, alt: 'Slika 14', caption: 'Slika 14' },
+  { image: slika02, n: 2, span: 'wide' },
+  { image: slika04, n: 4 },
+  { image: slika06, n: 6, span: 'tall' },
+  { image: slika03, n: 3, span: 'tall' },
+  { image: slika05, n: 5 },
+  { image: slika07, n: 7, span: 'wide' },
+  { image: slika08, n: 8 },
+  { image: slika09, n: 9 },
+  { image: slika10, n: 10 },
+  { image: slika11, n: 11 },
+  { image: slika12, n: 12, span: 'wide' },
+  { image: slika13, n: 13 },
+  { image: slika14, n: 14 },
 ];

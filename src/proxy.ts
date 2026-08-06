@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { ADMIN_COOKIE, isValidSession } from '@/lib/admin-session';
+import { getStrings, localeFromRequest } from '@/lib/i18n';
 
 /**
  * Čuvar administracije.
@@ -25,7 +26,8 @@ export default async function proxy(request: NextRequest) {
   // API rute dobijaju 401; stranice se vraćaju na /admin, koja bez sesije
   // prikaže polje za unos koda.
   if (pathname.startsWith('/api/admin')) {
-    return NextResponse.json({ error: 'Nije dozvoljeno' }, { status: 401 });
+    const t = getStrings(localeFromRequest(request));
+    return NextResponse.json({ error: t.errors.NOT_ALLOWED }, { status: 401 });
   }
 
   if (pathname !== '/admin') {

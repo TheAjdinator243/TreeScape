@@ -15,7 +15,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
  */
 
 const MIGRATIONS_DIR = path.resolve(import.meta.dirname, '../../supabase/migrations');
-const MIGRATIONS = ['0001_init.sql', '0002_bez_stripea.sql'];
+const MIGRATIONS = ['0001_init.sql', '0002_bez_stripea.sql', '0003_jezik_gosta.sql'];
 
 let db: PGlite;
 
@@ -58,7 +58,7 @@ beforeAll(async () => {
   // ograničenja, okidači, funkcije — testira se tačno onako kako će raditi.
   //
   // Migracije se puštaju redom, kao na pravoj bazi, pa se usput provjerava
-  // i da 0002 uredno legne na shemu koju je ostavio 0001.
+  // i da svaka sljedeća uredno legne na shemu koju je ostavila prethodna.
   for (const file of MIGRATIONS) {
     const sql = readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8')
       .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
@@ -103,6 +103,49 @@ describe('migracija', () => {
     expect(rows[0]?.transfer_days).toBe(3);
   });
 
+  it('rezervacija pamti jezik gosta', async () => {
+    const { rows } = await db.query<{ locale: string }>(
+      `select locale from bookings where public_token = 'jezik-podrazumijevani'`
+    );
+    // Red se upisuje u testu ispod; ovdje se provjerava samo da kolona postoji
+    // i da ima podrazumijevanu vrijednost.
+    expect(rows).toHaveLength(0);
+
+    await db.query(
+      `insert into bookings
+         (public_token, guest_name, guest_email, start_date, end_date, status, payment_method)
+       values ('jezik-podrazumijevani','Gost','g@primjer.ba','2029-06-01','2029-06-03','confirmed','cash')`
+    );
+
+    const inserted = await db.query<{ locale: string }>(
+      `select locale from bookings where public_token = 'jezik-podrazumijevani'`
+    );
+    expect(inserted.rows[0]?.locale).toBe('bs');
+  });
+
+  it('odbija jezik koji sajt ne govori', async () => {
+    await expect(
+      db.query(
+        `insert into bookings
+           (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, locale)
+         values ('jezik-nepoznat','Gost','g@primjer.ba','2029-07-01','2029-07-03','confirmed','cash','de')`
+      )
+    ).rejects.toThrow();
+  });
+
+  it('prima sva tri jezika sajta', async () => {
+    for (const [i, locale] of ['bs', 'en', 'ar'].entries()) {
+      await expect(
+        db.query(
+          `insert into bookings
+             (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, locale)
+           values ($1,'Gost','g@primjer.ba',$2,$3,'confirmed','cash',$4)`,
+          [`jezik-${locale}`, `2029-08-0${i * 2 + 1}`, `2029-08-0${i * 2 + 2}`, locale]
+        )
+      ).resolves.toBeDefined();
+    }
+  });
+
   it('upisuje početni red postavki', async () => {
     const { rows } = await db.query<{ count: string }>('select count(*) from settings');
     expect(Number(rows[0]?.count)).toBe(1);
@@ -124,19 +167,19 @@ describe('dvostruki booking je nemoguć', () => {
     expect(await isRejected(guest(`sudar-${name}`, start, end))).toBe(true);
   });
 
-  it('zahtjev za gotovinu takođe blokira termin', async () => {
+  it('zahtjev za gotovinu također blokira termin', async () => {
     expect(await isRejected(guest('gotovina', '2027-08-12', '2027-08-14', 'pending_cash'))).toBe(
       true
     );
   });
 
-  it('nezavršena uplata takođe blokira termin', async () => {
+  it('nezavršena uplata također blokira termin', async () => {
     expect(await isRejected(guest('uplata', '2027-08-12', '2027-08-14', 'pending_payment'))).toBe(
       true
     );
   });
 
-  it('bankovni transfer koji se čeka takođe blokira termin', async () => {
+  it('bankovni transfer koji se čeka također blokira termin', async () => {
     expect(
       await isRejected(guest('transfer', '2027-08-12', '2027-08-14', 'pending_transfer'))
     ).toBe(true);

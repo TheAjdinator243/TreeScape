@@ -8,17 +8,21 @@ import { getBookingByToken } from '@/lib/booking-service';
 import { getSettings } from '@/lib/data';
 import { formatLong, formatRange } from '@/lib/dates';
 import { isDatabaseConfigured } from '@/lib/env';
+import { getServerStrings } from '@/lib/i18n/server';
 import { transferInstructions } from '@/lib/payments';
 import { formatMoney } from '@/lib/pricing';
-import { t } from '@/lib/strings';
 
 export const dynamic = 'force-dynamic';
 
 // Potvrde su privatne — nemaju šta tražiti u pretraživačima.
-export const metadata: Metadata = {
-  title: 'Vaša rezervacija',
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerStrings();
+
+  return {
+    title: t.confirmation.pageTitle,
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function ConfirmationPage({
   params,
@@ -26,6 +30,7 @@ export default async function ConfirmationPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const { locale, t } = await getServerStrings();
 
   if (!isDatabaseConfigured) notFound();
 
@@ -67,7 +72,7 @@ export default async function ConfirmationPage({
               <StatusMark tone="pending" />
             )}
             {isTest && (
-              <span className="ml-3 inline-flex items-center rounded-full bg-warn-600/12 px-3 py-1 align-middle text-xs font-semibold uppercase tracking-wider text-warn-600">
+              <span className="ms-3 inline-flex items-center rounded-full bg-warn-600/12 px-3 py-1 align-middle text-xs font-semibold uppercase tracking-wider text-warn-600">
                 test
               </span>
             )}
@@ -75,7 +80,7 @@ export default async function ConfirmationPage({
 
           <h1 className="mt-6 font-display text-3xl leading-tight text-forest-900">
             {isDead
-              ? 'Rezervacija više nije aktivna'
+              ? t.confirmation.inactiveTitle
               : isConfirmed
                 ? t.confirmation.confirmedTitle
                 : awaitingTransfer
@@ -85,7 +90,7 @@ export default async function ConfirmationPage({
 
           <p className="mt-3 text-base leading-relaxed text-ink-500">
             {isDead
-              ? 'Ovaj termin je oslobođen i ponovo je dostupan drugim gostima.'
+              ? t.confirmation.inactiveLead
               : isConfirmed
                 ? t.confirmation.confirmedLead
                 : awaitingTransfer
@@ -109,23 +114,25 @@ export default async function ConfirmationPage({
 
           <dl className="mt-8 space-y-4 border-t border-sand-200 pt-8 text-sm">
             <Row label={t.confirmation.reference}>
-              <span className="font-mono text-base tracking-wider text-forest-800">
+              {/* Broj rezervacije je latinični niz — čita se slijeva nadesno
+                  i na arapskoj stranici. */}
+              <span dir="ltr" className="font-mono text-base tracking-wider text-forest-800">
                 {booking.public_token.slice(0, 8).toUpperCase()}
               </span>
             </Row>
 
             <Row label={t.confirmation.stay}>
-              {formatRange(booking.start_date, booking.end_date)}
+              {formatRange(booking.start_date, booking.end_date, locale)}
             </Row>
 
-            <Row label={t.booking.checkIn}>{formatLong(booking.start_date)}</Row>
-            <Row label={t.booking.checkOut}>{formatLong(booking.end_date)}</Row>
+            <Row label={t.booking.checkIn}>{formatLong(booking.start_date, locale)}</Row>
+            <Row label={t.booking.checkOut}>{formatLong(booking.end_date, locale)}</Row>
             <Row label={t.confirmation.guestsLabel}>{booking.guests ?? '—'}</Row>
 
             <div className="flex items-baseline justify-between gap-4 border-t border-sand-200 pt-4">
               <dt className="font-medium text-ink-900">{t.confirmation.totalLabel}</dt>
               <dd className="font-display text-2xl text-forest-800">
-                {formatMoney(booking.total_cents, symbol)}
+                {formatMoney(booking.total_cents, symbol, locale)}
               </dd>
             </div>
           </dl>
@@ -167,7 +174,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return (
     <div className="flex items-baseline justify-between gap-4">
       <dt className="text-ink-500">{label}</dt>
-      <dd className="text-right font-medium text-ink-900">{children}</dd>
+      <dd className="text-end font-medium text-ink-900">{children}</dd>
     </div>
   );
 }

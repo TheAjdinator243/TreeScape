@@ -7,8 +7,10 @@
  * string u stanju komponente, a pravi `Date` se pravi samo za prikaz.
  */
 
-import { format } from 'date-fns';
-import { bs } from 'date-fns/locale';
+import { format, type Locale as DateFnsLocale } from 'date-fns';
+import { ar, bs, enGB } from 'date-fns/locale';
+
+import { DEFAULT_LOCALE, type Locale } from './i18n/config';
 
 /** Datum bez vremena, u obliku 'YYYY-MM-DD'. */
 export type DateStr = string;
@@ -82,34 +84,150 @@ export function isWithin(date: DateStr, start: DateStr, end: DateStr): boolean {
   return date >= start && date < end;
 }
 
-// ── Prikaz ─────────────────────────────────────────────────────────────────
+// ── Jezik ──────────────────────────────────────────────────────────────────
 
-/** npr. "5. avgust 2026." */
-export function formatLong(value: DateStr): string {
-  return format(fromDateStr(value), 'd. MMMM yyyy.', { locale: bs });
+/**
+ * Bosanski mjeseci u date-fns-u nisu bosanski nego srpski: "avgust" umjesto
+ * "august". Standardni bosanski jezik zna samo za "august", pa se ta dva
+ * mjeseca (puni i skraćeni oblik) ovdje ispravljaju.
+ *
+ * Zakrpa je izdvojena u funkciju jer je treba i kalendar, koji svoj `bs`
+ * dobija od react-day-picker-a (isti date-fns objekat, plus prevedene ARIA
+ * oznake koje ne želimo izgubiti).
+ */
+const BS_MONTHS_WIDE = [
+  'januar',
+  'februar',
+  'mart',
+  'april',
+  'maj',
+  'juni',
+  'juli',
+  'august',
+  'septembar',
+  'oktobar',
+  'novembar',
+  'decembar',
+];
+
+const BS_MONTHS_ABBREVIATED = [
+  'jan',
+  'feb',
+  'mar',
+  'apr',
+  'maj',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'okt',
+  'nov',
+  'dec',
+];
+
+export function withBosnianMonths<T extends DateFnsLocale>(base: T): T {
+  return {
+    ...base,
+    localize: {
+      ...base.localize,
+      month: ((index: number, options?: { width?: string }) => {
+        if (options?.width === 'narrow') return base.localize.month(index as never, options as never);
+        const names = options?.width === 'abbreviated' ? BS_MONTHS_ABBREVIATED : BS_MONTHS_WIDE;
+        return names[index] ?? base.localize.month(index as never, options as never);
+      }) as T['localize']['month'],
+    },
+  };
 }
 
-/** npr. "5. avg" */
-export function formatShort(value: DateStr): string {
-  return format(fromDateStr(value), 'd. MMM', { locale: bs });
+const DATE_LOCALES: Record<Locale, DateFnsLocale> = {
+  bs: withBosnianMonths(bs),
+  en: enGB,
+  ar,
+};
+
+export function dateLocale(locale: Locale): DateFnsLocale {
+  return DATE_LOCALES[locale] ?? DATE_LOCALES[DEFAULT_LOCALE];
+}
+
+// ── Prikaz ─────────────────────────────────────────────────────────────────
+
+/**
+ * Obrasci se razlikuju po jeziku, i to ne samo po nazivima mjeseci: bosanski
+ * iza rednog broja i godine piše tačku ("5. august 2026."), engleski i arapski
+ * ne pišu ništa.
+ */
+interface Patterns {
+  long: string;
+  short: string;
+  /** Skraćeni oblik s godinom — samo za raspone koji prelaze iz jedne godine u drugu. */
+  shortWithYear: string;
+  numeric: string;
+  dateTime: string;
+}
+
+const PATTERNS: Record<Locale, Patterns> = {
+  bs: {
+    long: 'd. MMMM yyyy.',
+    short: 'd. MMM',
+    shortWithYear: 'd. MMM yyyy.',
+    numeric: 'd.M.yyyy.',
+    dateTime: 'd.M.yyyy. HH:mm',
+  },
+  en: {
+    long: 'd MMMM yyyy',
+    short: 'd MMM',
+    shortWithYear: 'd MMM yyyy',
+    numeric: 'd/M/yyyy',
+    dateTime: 'd/M/yyyy HH:mm',
+  },
+  ar: {
+    long: 'd MMMM yyyy',
+    short: 'd MMM',
+    shortWithYear: 'd MMM yyyy',
+    numeric: 'd/M/yyyy',
+    dateTime: 'd/M/yyyy HH:mm',
+  },
+};
+
+function patterns(locale: Locale) {
+  return PATTERNS[locale] ?? PATTERNS[DEFAULT_LOCALE];
+}
+
+/** npr. "5. august 2026." */
+export function formatLong(value: DateStr, locale: Locale = DEFAULT_LOCALE): string {
+  return format(fromDateStr(value), patterns(locale).long, { locale: dateLocale(locale) });
+}
+
+/** npr. "5. aug" */
+export function formatShort(value: DateStr, locale: Locale = DEFAULT_LOCALE): string {
+  return format(fromDateStr(value), patterns(locale).short, { locale: dateLocale(locale) });
 }
 
 /** npr. "5.8.2026." */
-export function formatNumeric(value: DateStr): string {
-  return format(fromDateStr(value), 'd.M.yyyy.', { locale: bs });
+export function formatNumeric(value: DateStr, locale: Locale = DEFAULT_LOCALE): string {
+  return format(fromDateStr(value), patterns(locale).numeric, { locale: dateLocale(locale) });
 }
 
-/** npr. "5. avg – 9. avg 2026." */
-export function formatRange(start: DateStr, end: DateStr): string {
+/** npr. "5. aug – 9. aug 2026." */
+export function formatRange(
+  start: DateStr,
+  end: DateStr,
+  locale: Locale = DEFAULT_LOCALE
+): string {
   const a = fromDateStr(start);
   const b = fromDateStr(end);
   const sameYear = a.getFullYear() === b.getFullYear();
-  const left = format(a, sameYear ? 'd. MMM' : 'd. MMM yyyy.', { locale: bs });
-  const right = format(b, 'd. MMM yyyy.', { locale: bs });
+  const { short, shortWithYear } = patterns(locale);
+  const options = { locale: dateLocale(locale) };
+  const left = format(a, sameYear ? short : shortWithYear, options);
+  const right = format(b, shortWithYear, options);
   return `${left} – ${right}`;
 }
 
-export function formatDateTime(value: string | Date): string {
+export function formatDateTime(
+  value: string | Date,
+  locale: Locale = DEFAULT_LOCALE
+): string {
   const d = typeof value === 'string' ? new Date(value) : value;
-  return format(d, 'd.M.yyyy. HH:mm', { locale: bs });
+  return format(d, patterns(locale).dateTime, { locale: dateLocale(locale) });
 }

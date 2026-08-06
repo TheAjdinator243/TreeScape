@@ -113,6 +113,7 @@ if (!url || !anonKey || !serviceKey) {
   const columnChecks = [
     { table: 'bookings', column: 'payment_reference', migration: '0002' },
     { table: 'settings', column: 'bank_iban', migration: '0002' },
+    { table: 'bookings', column: 'locale', migration: '0003' },
   ];
   const missingColumns = [];
 
@@ -125,7 +126,7 @@ if (!url || !anonKey || !serviceKey) {
   if (missing.length === tables.length) {
     bad(
       'nijedna tabela ne postoji — migracije nisu pokrenute',
-      'Supabase → SQL Editor → pokreni 0001_init.sql pa 0002_bez_stripea.sql'
+      'Supabase → SQL Editor → pokreni sve migracije iz supabase/migrations, redom'
     );
   } else if (missing.includes('payment_events') && missing.length === 1) {
     bad(
@@ -138,9 +139,13 @@ if (!url || !anonKey || !serviceKey) {
       'pokreni migracije iz supabase/migrations redom, u SQL Editoru'
     );
   } else if (missingColumns.length > 0) {
+    // Poruka imenuje najstariju migraciju koja fali — nju treba pokrenuti prvu.
+    const oldest = missingColumns
+      .map((entry) => entry.slice(entry.lastIndexOf('migracija ') + 'migracija '.length, -1))
+      .sort()[0];
     bad(
       `shema je zastarjela — nedostaje: ${missingColumns.join(', ')}`,
-      'Supabase → SQL Editor → pokreni supabase/migrations/0002_bez_stripea.sql → Run'
+      `Supabase → SQL Editor → pokreni supabase/migrations/${oldest}_*.sql pa sve novije → Run`
     );
   } else {
     ok('sve tabele postoje', tables.join(', '));

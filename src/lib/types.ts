@@ -81,6 +81,8 @@ export interface Booking {
   payment_id: string | null;
   hold_expires_at: string | null;
   admin_note: string | null;
+  /** Jezik na kojem je gost rezervisao — na njemu mu stižu i svi mailovi. */
+  locale: string | null;
   created_at: string;
   updated_at: string;
 }

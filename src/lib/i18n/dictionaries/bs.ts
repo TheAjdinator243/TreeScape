@@ -1,16 +1,34 @@
 /**
- * Sav tekst sajta na jednom mjestu.
+ * Bosanski — jezik kuće i mjerilo za sve ostale prevode.
  *
- * Zašto ovako: kad jednog dana zatreba engleska verzija, dodaje se drugi
- * objekat istog oblika — a ne traži se tekst po trideset komponenti.
+ * Kad se dodaje novi tekst, prvo ide ovdje, pa u `dictionary.ts`, pa u `en` i
+ * `ar` — obrnutim redom TypeScript ne bi imao šta prijaviti.
  */
 
-export const t = {
+import type { Dictionary } from '../dictionary';
+import { count, plural } from '../plural';
+
+export const bs: Dictionary = {
   site: {
     name: 'TreeScape',
     tagline: 'Vila u zagrljaju šume',
     description:
       'TreeScape je vila okružena šumom — mir, priroda i sva udobnost doma. Provjerite slobodne termine i rezervišite online.',
+    keywords: [
+      'TreeScape',
+      'vila',
+      'apartman',
+      'smještaj',
+      'najam kuće',
+      'odmor u prirodi',
+      'rezervacija',
+      'Bosna i Hercegovina',
+    ],
+  },
+
+  language: {
+    label: 'Jezik',
+    names: { bs: 'Bosanski', en: 'English', ar: 'العربية' },
   },
 
   nav: {
@@ -22,6 +40,8 @@ export const t = {
     book: 'Rezerviši',
     menu: 'Meni',
     close: 'Zatvori',
+    skipToBooking: 'Preskoči na rezervaciju',
+    mainNav: 'Glavna navigacija',
   },
 
   hero: {
@@ -30,6 +50,7 @@ export const t = {
     subtitle: 'Probudite se uz zvuk šume, a ne uz zvuk grada.',
     cta: 'Provjeri dostupnost',
     scroll: 'Saznaj više',
+    imageAlt: 'Vila TreeScape',
   },
 
   about: {
@@ -39,6 +60,7 @@ export const t = {
       'TreeScape je porodična vila okružena visokom šumom, sa velikom terasom okrenutom prema dolini. Unutra je sve što treba za duži boravak — potpuno opremljena kuhinja, topla dnevna soba s kaminom i sobe u kojima se stvarno naspavate.',
       'Idealno za porodični odmor, bijeg s prijateljima na vikend ili mirnu sedmicu rada iz prirode. Ljeti roštilj i duge večeri na terasi, zimi snijeg i vatra u kaminu.',
     ],
+    imageAlt: 'Vila TreeScape izvana',
     stats: {
       guests: 'gostiju',
       bedrooms: 'spavaće sobe',
@@ -53,28 +75,89 @@ export const t = {
     prev: 'Prethodna slika',
     next: 'Sljedeća slika',
     close: 'Zatvori galeriju',
-    counter: (i: number, total: number) => `${i} / ${total}`,
+    counter: (index, total) => `${index} / ${total}`,
+    itemAlt: (n) => `Slika ${n}`,
+    itemCaption: (n) => `Slika ${n}`,
   },
 
   amenities: {
     heading: 'Šta vas čeka',
     lead: 'Sve je već tu — vi ponesite samo torbu.',
+    items: {
+      pool: { label: 'Bazen', note: 'Grijan toplotnom pumpom' },
+      jacuzzi: { label: 'Jacuzzi', note: 'Topla voda i masažne mlaznice' },
+      fountain: { label: 'Šadrvan', note: 'U dvorištu, uz sjedište' },
+      wifi: { label: 'Internet', note: 'Bežični, u cijeloj kući' },
+      kitchen: { label: 'Opremljena kuhinja', note: 'Sve posuđe i aparati' },
+      fire: { label: 'Kamin', note: 'Drva su obezbijeđena' },
+      grill: { label: 'Roštilj i vrtna garnitura', note: 'Za duge ljetne večeri' },
+      car: { label: 'Besplatan parking', note: 'Do tri vozila u dvorištu' },
+      heat: { label: 'Centralno grijanje', note: 'Toplo i usred zime' },
+      washer: { label: 'Mašina za veš', note: 'I sušilica za rublje' },
+      tv: { label: 'Smart TV', note: 'Netflix i lokalni kanali' },
+      pet: { label: 'Ljubimci dobrodošli', note: 'Uz prethodnu najavu' },
+      tree: { label: 'Velika bašta', note: '2000 m² ograđenog placa' },
+      coffee: { label: 'Aparat za kafu', note: 'Domaća kafa i espresso' },
+      towel: { label: 'Posteljina i peškiri', note: 'Uključeno u cijenu' },
+    },
   },
 
   location: {
     heading: 'Gdje se nalazimo',
     lead: 'Dovoljno blizu da se lako stigne, dovoljno daleko da se čuje samo šuma.',
     directions: 'Tačnu adresu i uputstva za dolazak šaljemo nakon potvrde rezervacije.',
+    mapTitle: 'Karta lokacije vile TreeScape',
+    driveTime: (minutes) => `${minutes} min vožnje`,
+    places: {
+      city: 'Sarajevo',
+      airport: 'Aerodrom',
+      shop: 'Najbliža prodavnica',
+      ski: 'Skijalište',
+    },
   },
 
   faq: {
     heading: 'Česta pitanja',
     lead: 'Ako nešto nije jasno, slobodno nas kontaktirajte.',
+    items: ({ checkinTime, checkoutTime, maxGuests }) => [
+      {
+        q: 'Kada mogu doći i do kada moram otići?',
+        a: `Prijava je od ${checkinTime}, a odjava do ${checkoutTime}. Ako vam treba raniji dolazak ili kasniji odlazak, javite se — obično se može dogovoriti.`,
+      },
+      {
+        q: 'Kako funkcionira rezervacija?',
+        a: 'Odaberete termin i pošaljete rezervaciju. Termin odmah držimo za vas i drugim gostima je prikazan kao zauzet. Rezervacija je konačno potvrđena tek kad je domaćin prihvati — o tome vas obavještavamo emailom.',
+      },
+      {
+        q: 'Mogu li otkazati rezervaciju?',
+        a: 'Za otkazivanje nas kontaktirajte što prije, na email ili telefon iz podnožja stranice. Uslovi povrata novca zavise od toga koliko je ostalo do dolaska.',
+      },
+      {
+        q: 'Jesu li kućni ljubimci dozvoljeni?',
+        a: 'Jesu, uz prethodnu najavu — molimo da to upišete u napomenu prilikom rezervacije kako bismo pripremili kuću.',
+      },
+      {
+        q: 'Je li posteljina uključena?',
+        a: 'Jeste. Posteljina, peškiri i osnovna sredstva za higijenu uključeni su u cijenu — nema dodatnih naknada.',
+      },
+      {
+        q: 'Koliko osoba može boraviti u kući?',
+        a: `Kuća prima do ${maxGuests} osoba. Za veće grupe javite nam se prije rezervacije.`,
+      },
+      {
+        q: 'Ima li interneta i mobilnog signala?',
+        a: 'Ima — bežični internet pokriva cijelu kuću, a mobilni signal je stabilan.',
+      },
+      {
+        q: 'Kako dobijam adresu i ključ?',
+        a: 'Nakon potvrde rezervacije šaljemo vam email sa tačnom adresom, uputstvima za dolazak i kontakt brojem domaćina, koji vas dočekuje i predaje ključ.',
+      },
+    ],
   },
 
   booking: {
     heading: 'Rezervišite svoj termin',
-    lead: 'Kliknite jedan datum za boravak bez noćenja, ili dva za duži boravak. Zauzeti termini su prikazani sivo i ne mogu se odabrati.',
+    lead: 'Kliknite jedan datum za boravak bez noćenja, ili dva za duži boravak. Zauzeti termini prikazani su sivo i ne mogu se odabrati.',
 
     pickDates: 'Odaberite datume',
     checkIn: 'Dolazak',
@@ -98,8 +181,7 @@ export const t = {
     optional: 'opcionalno',
 
     summaryTitle: 'Pregled rezervacije',
-    daysLabel: (n: number) => `${n} ${plural(n, 'dan', 'dana', 'dana')}`,
-    perDay: 'po danu',
+    daysLabel: (n) => count('bs', n, plural.bs.days),
     total: 'Ukupno',
     seasonalNote: 'Cijena po danu zavisi od sezone.',
     singleDayNote: 'Rezervacija za jedan dan, bez noćenja.',
@@ -119,7 +201,6 @@ export const t = {
       'Samo za isprobavanje — potvrđuje rezervaciju bez ikakvog plaćanja. Ne prikazuje se gostima.',
 
     reserve: 'Rezerviši',
-
     submitting: 'Trenutak…',
 
     selectDatesFirst: 'Prvo odaberite datum u kalendaru.',
@@ -130,6 +211,8 @@ export const t = {
   },
 
   confirmation: {
+    pageTitle: 'Vaša rezervacija',
+
     // "Uspješna" se kaže SAMO kad je rezervacija stvarno prihvaćena.
     // Dok se čeka, termin jeste zauzet, ali gost ne smije misliti da je gotovo.
     confirmedTitle: 'Rezervacija je uspješna',
@@ -143,6 +226,9 @@ export const t = {
     transferTitle: 'Termin je rezervisan za vas',
     transferLead:
       'Preostaje još uplata. Termin držimo za vas do isteka roka ispod. Rezervacija je konačna tek kad uplata bude provjerena.',
+
+    inactiveTitle: 'Rezervacija više nije aktivna',
+    inactiveLead: 'Ovaj termin je oslobođen i ponovo je dostupan drugim gostima.',
 
     transferHeading: 'Podaci za uplatu',
     transferRecipient: 'Primalac',
@@ -171,18 +257,14 @@ export const t = {
     whatNextBody:
       'Poslali smo vam email s detaljima. Tačnu adresu, uputstva za dolazak i kontakt domaćina dobijate prije dolaska.',
     backHome: 'Nazad na početnu',
-    notFound: 'Rezervacija nije pronađena',
-    notFoundBody: 'Link je možda pogrešan ili je istekao. Provjerite email koji smo vam poslali.',
   },
 
   errors: {
     DATES_TAKEN: 'Ovi datumi su upravo rezervisani. Molimo odaberite druge.',
     INVALID_RANGE: 'Datum odlaska mora biti nakon datuma dolaska.',
     PAST_DATE: 'Ne možete rezervisati datum u prošlosti.',
-    MAX_DAYS: (n: number) =>
-      `Maksimalan boravak je ${n} ${plural(n, 'dan', 'dana', 'dana')}.`,
-    TOO_MANY_GUESTS: (n: number) =>
-      `Maksimalan broj gostiju je ${n} ${plural(n, 'gost', 'gosta', 'gostiju')}.`,
+    MAX_DAYS: (n) => `Maksimalan boravak je ${count('bs', n, plural.bs.days)}.`,
+    TOO_MANY_GUESTS: (n) => `Maksimalan broj gostiju je ${count('bs', n, plural.bs.guests)}.`,
     INVALID_INPUT: 'Provjerite unesene podatke i pokušajte ponovo.',
     REQUIRED_NAME: 'Unesite ime i prezime.',
     REQUIRED_EMAIL: 'Unesite ispravnu email adresu.',
@@ -190,7 +272,13 @@ export const t = {
     REQUIRED_METHOD: 'Odaberite način plaćanja.',
     METHOD_UNAVAILABLE: 'Odabrani način plaćanja trenutno nije dostupan.',
     SERVER_ERROR: 'Došlo je do greške. Pokušajte ponovo za koji trenutak.',
-    NOT_FOUND: 'Traženi sadržaj nije pronađen.',
+    NOT_ALLOWED: 'Nije dozvoljeno.',
+    MAX_BELOW_MIN: 'Maksimalan broj dana ne može biti manji od minimalnog.',
+    ALREADY_RESOLVED: 'Ovaj zahtjev je već riješen. Osvježite stranicu.',
+    DATABASE_MISSING:
+      'Baza nije podešena. Dodaj Supabase ključeve u .env.local (ili u Vercel → Environment Variables) i pokreni migracije iz supabase/migrations.',
+    ADMIN_MISSING:
+      'Administracija nije podešena — nedostaju ADMIN_ACCESS_CODE i ADMIN_SESSION_SECRET.',
   },
 
   admin: {
@@ -200,6 +288,10 @@ export const t = {
     gateSubmit: 'Otključaj',
     gateWrong: 'Pogrešan kod.',
     gateLocked: 'Previše pokušaja. Sačekajte minutu pa probajte ponovo.',
+    gateNotConfigured:
+      'Administracija nije podešena. Postavi ADMIN_ACCESS_CODE i ADMIN_SESSION_SECRET u .env.local.',
+    databaseNotConfigured:
+      'Baza nije podešena, pa nema šta prikazati. Dodaj Supabase ključeve u .env.local i pokreni migracije iz supabase/migrations.',
 
     logout: 'Odjava',
     title: 'Administracija',
@@ -215,17 +307,28 @@ export const t = {
     reject: 'Odbij',
     approveConfirm: 'Potvrditi ovu rezervaciju?',
     rejectConfirm: 'Odbiti ovaj zahtjev? Termin će se osloboditi.',
+    receivedAt: (when) => `Zaprimljeno ${when}`,
+    byCash: 'gotovina',
+    byTransfer: 'na račun',
 
     bookingsHeading: 'Sve rezervacije',
     bookingsEmpty: 'Još nema nijedne rezervacije.',
-    filterAll: 'Sve',
+    colStay: 'Termin',
+    colGuest: 'Gost',
+    colMethod: 'Način',
+    colStatus: 'Status',
+    colAmount: 'Iznos',
+    cancel: 'Otkaži',
+    cancelConfirm: 'Otkazati ovu rezervaciju?',
 
     calendarHeading: 'Blokiranje termina',
     calendarLead:
       'Odaberite raspon datuma koje želite zatvoriti za goste (održavanje, lični boravak…).',
     blockReason: 'Razlog (interno)',
+    blockReasonPlaceholder: 'npr. krečenje',
     blockSubmit: 'Blokiraj termin',
     blockedHeading: 'Blokirani termini',
+    blockedEmpty: 'Nema blokiranih termina.',
     unblock: 'Oslobodi',
     unblockConfirm: 'Osloboditi ovaj termin?',
 
@@ -235,6 +338,10 @@ export const t = {
     maxNights: 'Maksimalan broj dana',
     maxGuests: 'Maksimalan broj gostiju',
     holdMinutes: 'Trajanje rezervacije termina tokom plaćanja (min)',
+    checkinFrom: 'Prijava od',
+    checkoutBy: 'Odjava do',
+    currency: 'Valuta (EUR, BAM…)',
+    currencySymbol: 'Oznaka (€, KM…)',
     save: 'Sačuvaj',
     saved: 'Sačuvano.',
 
@@ -242,8 +349,11 @@ export const t = {
     seasonsLead:
       'Ako se dvije sezone preklapaju, vrijedi ona s većim prioritetom. Dan odlaska se ne naplaćuje.',
     seasonName: 'Naziv sezone',
+    seasonNamePlaceholder: 'npr. Ljetna sezona 2027',
     seasonFrom: 'Od',
     seasonTo: 'Do',
+    seasonToHint: 'ne uključuje se',
+    seasonPeriod: 'Period',
     seasonPrice: 'Cijena po danu',
     seasonPriority: 'Prioritet',
     seasonAdd: 'Dodaj sezonu',
@@ -259,7 +369,7 @@ export const t = {
       expired: 'Isteklo',
       cancelled: 'Otkazano',
       blocked: 'Blokirano',
-    } as Record<string, string>,
+    },
 
     methodLabels: {
       card: 'Kartica',
@@ -267,7 +377,7 @@ export const t = {
       bank_transfer: 'Uplata na račun',
       test: 'TEST',
       none: '—',
-    } as Record<string, string>,
+    },
 
     markPaid: 'Uplata stigla',
     markPaidConfirm: 'Potvrditi da je uplata legla na račun?',
@@ -278,10 +388,14 @@ export const t = {
 
     bankHeading: 'Podaci za uplatu na račun',
     bankLead:
-      'Ovo gost vidi kad odabere plaćanje na račun. Dok je IBAN prazan, ta opcija se uopšte ne nudi.',
+      'Ovo gost vidi kad odabere plaćanje na račun. Dok je IBAN prazan, ta opcija se uopće ne nudi.',
     bankAccountName: 'Naziv primaoca',
+    bankAccountNamePlaceholder: 'Ime i prezime ili naziv firme',
     bankName: 'Naziv banke',
+    bankNamePlaceholder: 'npr. Raiffeisen Bank d.d. BiH',
     bankIban: 'IBAN / broj računa',
+    bankIbanPlaceholder: 'BA39 1234 5678 9012 3456',
+    bankIbanHint: 'Ostavi prazno da se plaćanje na račun uopće ne nudi gostima.',
     transferDays: 'Rok za uplatu (dana)',
   },
 
@@ -290,25 +404,70 @@ export const t = {
     day: 'dan',
     loading: 'Učitavanje…',
     tryAgain: 'Pokušaj ponovo',
-    guestsCount: (n: number) => `${n} ${plural(n, 'gost', 'gosta', 'gostiju')}`,
-    daysCount: (n: number) => `${n} ${plural(n, 'dan', 'dana', 'dana')}`,
+    days: plural.bs.days,
+    guests: plural.bs.guests,
   },
 
   footer: {
     contact: 'Kontakt',
     quickLinks: 'Brzi linkovi',
     rights: 'Sva prava zadržana.',
+    address: 'Bosna i Hercegovina',
   },
-} as const;
 
-/**
- * Bosanska množina: 1 kruška, 2–4 kruške, 5+ krušaka.
- * Izuzeci su brojevi 11–14, koji uvijek idu u treći oblik.
- */
-export function plural(n: number, one: string, few: string, many: string): string {
-  const mod10 = n % 10;
-  const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
-  return many;
-}
+  email: {
+    // Bez imena bi "Poštovani/a ," ostavilo zarez koji visi u zraku.
+    greeting: (name) => (name ? `Poštovani/a ${name},` : 'Poštovani/a,'),
+    rowStay: 'Termin',
+    rowGuests: 'Gostiju',
+    rowAmount: 'Iznos',
+    rowReference: 'Broj rezervacije',
+    rowGuest: 'Gost',
+    rowEmail: 'Email',
+    rowPhone: 'Telefon',
+    rowNote: 'Napomena gosta',
+
+    addressLater: 'Tačnu adresu, uputstva za dolazak i kontakt domaćina šaljemo prije dolaska.',
+    payOnArrival: 'Iznos se plaća u gotovini po dolasku.',
+
+    confirmedSubject: 'Rezervacija potvrđena',
+    confirmedTitle: 'Vaša rezervacija je potvrđena',
+    confirmedBody: 'hvala vam na rezervaciji. Termin je zaključan i plaćen.',
+
+    transferSubject: 'Podaci za uplatu',
+    transferTitle: 'Termin je rezervisan — preostaje uplata',
+    transferBody:
+      'termin držimo za vas. Molimo uplatite iznos po podacima ispod — čim uplata stigne, rezervacija je potvrđena.',
+    transferHeading: 'Podaci za uplatu',
+    transferRecipient: 'Primalac',
+    transferBank: 'Banka',
+    transferIban: 'IBAN',
+    transferReference: 'Poziv na broj',
+    transferAmount: 'Iznos',
+    transferDeadline: 'Uplatiti do',
+    transferWarning:
+      'Obavezno upišite poziv na broj — po njemu domaćin prepoznaje vašu uplatu. Ako uplata ne stigne do navedenog roka, termin se oslobađa.',
+
+    cashRequestSubject: 'Zahtjev zaprimljen',
+    cashRequestTitle: 'Zahtjev za rezervaciju je zaprimljen',
+    cashRequestBody:
+      'primili smo vaš zahtjev. Termin držimo za vas dok ga domaćin ne potvrdi — javljamo se u najkraćem roku.',
+
+    cashApprovedSubject: 'Rezervacija potvrđena',
+    cashApprovedTitle: 'Domaćin je potvrdio vašu rezervaciju',
+    cashApprovedBody: 'termin je vaš. Vidimo se!',
+
+    cashRejectedSubject: 'Rezervacija nije potvrđena',
+    cashRejectedTitle: 'Nažalost, termin nije dostupan',
+    cashRejectedBody:
+      'domaćin nije bio u mogućnosti potvrditi traženi termin. Termin je oslobođen, pa slobodno odaberite drugi.',
+
+    ownerCashTitle: 'Novi zahtjev za plaćanje gotovinom',
+    ownerTransferTitle: 'Nova rezervacija — čeka uplatu na račun',
+    ownerCardTitle: 'Nova plaćena rezervacija',
+    ownerCashHint: 'Termin je rezervisan i nevidljiv drugim gostima dok ne odlučite.',
+    ownerTransferHint:
+      'Termin je rezervisan. Kad uplata legne na račun, potvrdite je u administraciji.',
+    ownerOpenAdmin: 'Otvori administraciju',
+  },
+};

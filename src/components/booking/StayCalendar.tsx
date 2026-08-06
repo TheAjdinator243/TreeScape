@@ -1,13 +1,28 @@
 'use client';
 
+import { useMemo } from 'react';
 import { DayPicker, type DateRange } from 'react-day-picker';
-import { bs } from 'react-day-picker/locale';
+import { ar, bs, enGB } from 'react-day-picker/locale';
 import 'react-day-picker/style.css';
 
-import { fromDateStr, todayStr, type DateStr } from '@/lib/dates';
+import { useI18n } from '@/components/i18n/LocaleProvider';
+import { fromDateStr, todayStr, withBosnianMonths, type DateStr } from '@/lib/dates';
+import type { Locale } from '@/lib/i18n';
 import { takenDayMap } from '@/lib/pricing';
-import { t } from '@/lib/strings';
 import type { AvailabilitySlot } from '@/lib/types';
+
+/**
+ * Kalendarske lokalizacije dolaze od react-day-picker-a, a ne pravo iz
+ * date-fns-a: on ih dopunjuje prevedenim ARIA oznakama ("idi na sljedeći
+ * mjesec"), koje bi se golim date-fns objektom izgubile.
+ *
+ * Bosanskom se i ovdje ispravljaju nazivi mjeseci — date-fns piše "avgust".
+ */
+const CALENDAR_LOCALES = {
+  bs: withBosnianMonths(bs),
+  en: enGB,
+  ar,
+} satisfies Record<Locale, typeof bs>;
 
 export function StayCalendar({
   slots,
@@ -20,13 +35,19 @@ export function StayCalendar({
   onRangeChange: (range: DateRange | undefined) => void;
   maxNights: number;
 }) {
-  const taken = takenDayMap(slots);
+  const { locale, dir, t } = useI18n();
 
-  const hardDays: Date[] = [];
-  const pendingDays: Date[] = [];
-  for (const [day, level] of taken) {
-    (level === 'pending' ? pendingDays : hardDays).push(fromDateStr(day as DateStr));
-  }
+  const { hardDays, pendingDays } = useMemo(() => {
+    const taken = takenDayMap(slots);
+    const hard: Date[] = [];
+    const pending: Date[] = [];
+
+    for (const [day, level] of taken) {
+      (level === 'pending' ? pending : hard).push(fromDateStr(day as DateStr));
+    }
+
+    return { hardDays: hard, pendingDays: pending };
+  }, [slots]);
 
   const allTaken = [...hardDays, ...pendingDays];
 
@@ -34,7 +55,10 @@ export function StayCalendar({
     <div className="flex flex-col items-center">
       <DayPicker
         mode="range"
-        locale={bs}
+        locale={CALENDAR_LOCALES[locale]}
+        // Bez ovoga bi arapski kalendar imao ponedjeljak na pogrešnoj strani
+        // sedmice, a strelice za listanje mjeseci bi vodile unazad.
+        dir={dir}
         selected={range}
         onSelect={onRangeChange}
         numberOfMonths={2}

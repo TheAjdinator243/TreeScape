@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { invalidInput, readJson, requireDatabase } from '@/lib/api-helpers';
 import { blockDates } from '@/lib/booking-service';
+import { localeFromRequest } from '@/lib/i18n';
 import { blockDatesSchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
@@ -9,16 +10,19 @@ export const dynamic = 'force-dynamic';
 
 /** Ručno zatvaranje termina (održavanje, lični boravak, dogovor van sajta). */
 export async function POST(request: Request) {
-  const notReady = requireDatabase();
+  const locale = localeFromRequest(request);
+
+  const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
   const parsed = blockDatesSchema.safeParse(await readJson(request));
-  if (!parsed.success) return invalidInput();
+  if (!parsed.success) return invalidInput(locale);
 
   const result = await blockDates(
     parsed.data.start_date,
     parsed.data.end_date,
-    parsed.data.reason
+    parsed.data.reason,
+    locale
   );
 
   if (!result.ok) {

@@ -1,31 +1,37 @@
-import { t } from '@/lib/strings';
+import { getServerStrings } from '@/lib/i18n/server';
+import type { AmenityKey } from '@/lib/i18n';
 
 import { Reveal } from './Reveal';
 
 /**
  * Ikone su ručno pisani SVG-ovi umjesto biblioteke — dvadesetak redova
  * naspram još jedne zavisnosti u package.json-u.
+ *
+ * Spisak drži samo redoslijed i ikone; nazivi i opisi stoje u rječnicima, pod
+ * `amenities.items`, i vezani su za isti ključ.
  */
-const AMENITIES = [
+const AMENITIES: AmenityKey[] = [
   // Ovo troje su najjači adut kuće, pa idu prvi — gost ih vidi bez skrolanja.
-  { icon: 'pool', label: 'Bazen', note: 'Grijan toplotnom pumpom' },
-  { icon: 'jacuzzi', label: 'Jacuzzi', note: 'Topla voda i masažne mlaznice' },
-  { icon: 'fountain', label: 'Šadrvan', note: 'U dvorištu, uz sjedište' },
-  { icon: 'wifi', label: 'Internet', note: 'Bežični, u cijeloj kući' },
-  { icon: 'kitchen', label: 'Opremljena kuhinja', note: 'Sve posuđe i aparati' },
-  { icon: 'fire', label: 'Kamin', note: 'Drva su obezbijeđena' },
-  { icon: 'grill', label: 'Roštilj i vrtna garnitura', note: 'Za duge ljetne večeri' },
-  { icon: 'car', label: 'Besplatan parking', note: 'Do tri vozila u dvorištu' },
-  { icon: 'heat', label: 'Centralno grijanje', note: 'Toplo i usred zime' },
-  { icon: 'washer', label: 'Veš mašina', note: 'I sušilica za rublje' },
-  { icon: 'tv', label: 'Smart TV', note: 'Netflix i lokalni kanali' },
-  { icon: 'pet', label: 'Ljubimci dobrodošli', note: 'Uz prethodnu najavu' },
-  { icon: 'tree', label: 'Velika bašta', note: '2000 m² ograđenog placa' },
-  { icon: 'coffee', label: 'Aparat za kafu', note: 'Domaća i espresso' },
-  { icon: 'towel', label: 'Posteljina i peškiri', note: 'Uključeno u cijenu' },
+  'pool',
+  'jacuzzi',
+  'fountain',
+  'wifi',
+  'kitchen',
+  'fire',
+  'grill',
+  'car',
+  'heat',
+  'washer',
+  'tv',
+  'pet',
+  'tree',
+  'coffee',
+  'towel',
 ];
 
-export function Amenities() {
+export async function Amenities() {
+  const { t } = await getServerStrings();
+
   return (
     <section id="sadrzaji" className="bg-forest-900 text-sand-100">
       <div className="section">
@@ -36,18 +42,22 @@ export function Amenities() {
         </Reveal>
 
         <ul className="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-          {AMENITIES.map((item, i) => (
-            <Reveal key={item.label} delay={Math.min(i, 6) * 60}>
+          {AMENITIES.map((key, i) => (
+            <Reveal key={key} delay={Math.min(i, 6) * 60}>
               <li className="flex gap-4">
                 <span
                   className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest-800 text-moss-300"
                   aria-hidden="true"
                 >
-                  <Icon name={item.icon} />
+                  <Icon name={key} />
                 </span>
                 <div>
-                  <h3 className="font-sans text-base font-semibold text-sand-50">{item.label}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-moss-300/80">{item.note}</p>
+                  <h3 className="font-sans text-base font-semibold text-sand-50">
+                    {t.amenities.items[key].label}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed text-moss-300/80">
+                    {t.amenities.items[key].note}
+                  </p>
                 </div>
               </li>
             </Reveal>

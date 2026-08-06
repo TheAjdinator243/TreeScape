@@ -7,7 +7,7 @@ import {
   sessionCookieOptions,
 } from '@/lib/admin-auth';
 import { env } from '@/lib/env';
-import { t } from '@/lib/strings';
+import { getStrings, localeFromRequest } from '@/lib/i18n';
 import { adminLoginSchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
@@ -33,11 +33,10 @@ function clientKey(request: Request): string {
 }
 
 export async function POST(request: Request) {
+  const t = getStrings(localeFromRequest(request));
+
   if (!env.admin.accessCode || !env.admin.sessionSecret) {
-    return NextResponse.json(
-      { error: 'Administracija nije podešena — nedostaju ADMIN_ACCESS_CODE i ADMIN_SESSION_SECRET.' },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: t.errors.ADMIN_MISSING }, { status: 503 });
   }
 
   const key = clientKey(request);

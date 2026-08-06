@@ -1,4 +1,5 @@
-import { t } from '@/lib/strings';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { getServerStrings } from '@/lib/i18n/server';
 
 /**
  * Kontakt podatke promijeni ovdje — na jednom mjestu za cijeli sajt.
@@ -7,10 +8,10 @@ export const CONTACT = {
   phone: '+387 61 000 000',
   phoneHref: 'tel:+38761000000',
   email: 'info@treescape.ba',
-  address: 'Bosna i Hercegovina',
 };
 
-export function Footer() {
+export async function Footer() {
+  const { t } = await getServerStrings();
   const year = new Date().getFullYear();
 
   return (
@@ -21,6 +22,10 @@ export function Footer() {
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-moss-300/80">
             {t.site.description}
           </p>
+
+          <div className="mt-6">
+            <LanguageSwitcher tone="dark" />
+          </div>
         </div>
 
         <div>
@@ -29,16 +34,24 @@ export function Footer() {
           </h2>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
-              <a href={CONTACT.phoneHref} className="transition-colors hover:text-sand-50">
+              <a
+                href={CONTACT.phoneHref}
+                dir="ltr"
+                className="inline-block transition-colors hover:text-sand-50"
+              >
                 {CONTACT.phone}
               </a>
             </li>
             <li>
-              <a href={`mailto:${CONTACT.email}`} className="transition-colors hover:text-sand-50">
+              <a
+                href={`mailto:${CONTACT.email}`}
+                dir="ltr"
+                className="inline-block transition-colors hover:text-sand-50"
+              >
                 {CONTACT.email}
               </a>
             </li>
-            <li className="text-moss-300/80">{CONTACT.address}</li>
+            <li className="text-moss-300/80">{t.footer.address}</li>
           </ul>
         </div>
 

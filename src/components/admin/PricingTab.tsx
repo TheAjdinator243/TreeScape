@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
+import { useI18n } from '@/components/i18n/LocaleProvider';
 import { formatNumeric, todayStr } from '@/lib/dates';
 import { formatMoney } from '@/lib/pricing';
-import { t } from '@/lib/strings';
 import type { RatePeriod, Settings } from '@/lib/types';
 
 /**
@@ -24,6 +24,7 @@ export function PricingTab({
   periods: RatePeriod[];
   onCall: (url: string, init: RequestInit) => Promise<boolean>;
 }) {
+  const { locale, t } = useI18n();
   const [form, setForm] = useState({
     default_nightly: toMajor(settings.default_nightly_cents),
     max_nights: String(settings.max_nights),
@@ -135,7 +136,7 @@ export function PricingTab({
 
           <div>
             <label htmlFor="checkin_time" className="field-label">
-              Prijava od
+              {t.admin.checkinFrom}
             </label>
             <input
               id="checkin_time"
@@ -147,7 +148,7 @@ export function PricingTab({
           </div>
           <div>
             <label htmlFor="checkout_time" className="field-label">
-              Odjava do
+              {t.admin.checkoutBy}
             </label>
             <input
               id="checkout_time"
@@ -160,7 +161,7 @@ export function PricingTab({
 
           <div>
             <label htmlFor="currency" className="field-label">
-              Valuta (EUR, BAM…)
+              {t.admin.currency}
             </label>
             <input
               id="currency"
@@ -173,7 +174,7 @@ export function PricingTab({
           </div>
           <div>
             <label htmlFor="currency_symbol" className="field-label">
-              Oznaka (€, KM…)
+              {t.admin.currencySymbol}
             </label>
             <input
               id="currency_symbol"
@@ -204,7 +205,7 @@ export function PricingTab({
               type="text"
               value={form.bank_account_name}
               onChange={set('bank_account_name')}
-              placeholder="Ime i prezime ili naziv firme"
+              placeholder={t.admin.bankAccountNamePlaceholder}
               className="field-input"
             />
           </div>
@@ -217,7 +218,7 @@ export function PricingTab({
               type="text"
               value={form.bank_name}
               onChange={set('bank_name')}
-              placeholder="npr. Raiffeisen Bank d.d. BiH"
+              placeholder={t.admin.bankNamePlaceholder}
               className="field-input"
             />
           </div>
@@ -230,12 +231,11 @@ export function PricingTab({
               type="text"
               value={form.bank_iban}
               onChange={set('bank_iban')}
-              placeholder="BA39 1234 5678 9012 3456"
+              placeholder={t.admin.bankIbanPlaceholder}
+              dir="ltr"
               className="field-input font-mono"
             />
-            <p className="mt-1.5 text-xs text-ink-400">
-              Ostavi prazno da se plaćanje na račun uopšte ne nudi gostima.
-            </p>
+            <p className="mt-1.5 text-xs text-ink-400">{t.admin.bankIbanHint}</p>
           </div>
           <Num
             id="transfer_days"
@@ -266,13 +266,13 @@ export function PricingTab({
           </p>
         ) : (
           <div className="card mt-6 overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <table className="w-full min-w-[640px] text-start text-sm">
               <thead className="border-b border-sand-200 text-xs uppercase tracking-wider text-ink-400">
                 <tr>
                   <th className="px-5 py-3 font-medium">{t.admin.seasonName}</th>
-                  <th className="px-5 py-3 font-medium">Period</th>
-                  <th className="px-5 py-3 text-right font-medium">{t.admin.seasonPrice}</th>
-                  <th className="px-5 py-3 text-right font-medium">{t.admin.seasonPriority}</th>
+                  <th className="px-5 py-3 font-medium">{t.admin.seasonPeriod}</th>
+                  <th className="px-5 py-3 text-end font-medium">{t.admin.seasonPrice}</th>
+                  <th className="px-5 py-3 text-end font-medium">{t.admin.seasonPriority}</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -281,13 +281,14 @@ export function PricingTab({
                   <tr key={period.id}>
                     <td className="px-5 py-3.5 font-medium text-ink-900">{period.name}</td>
                     <td className="px-5 py-3.5 text-ink-500">
-                      {formatNumeric(period.start_date)} – {formatNumeric(period.end_date)}
+                      {formatNumeric(period.start_date, locale)} –{' '}
+                      {formatNumeric(period.end_date, locale)}
                     </td>
-                    <td className="px-5 py-3.5 text-right tabular-nums text-ink-900">
-                      {formatMoney(period.nightly_price_cents, settings.currency_symbol)}
+                    <td className="px-5 py-3.5 text-end tabular-nums text-ink-900">
+                      {formatMoney(period.nightly_price_cents, settings.currency_symbol, locale)}
                     </td>
-                    <td className="px-5 py-3.5 text-right text-ink-500">{period.priority}</td>
-                    <td className="px-5 py-3.5 text-right">
+                    <td className="px-5 py-3.5 text-end text-ink-500">{period.priority}</td>
+                    <td className="px-5 py-3.5 text-end">
                       <button
                         type="button"
                         onClick={() => void removeSeason(period.id)}
@@ -314,7 +315,7 @@ export function PricingTab({
               required
               value={season.name}
               onChange={(e) => setSeason((s) => ({ ...s, name: e.target.value }))}
-              placeholder="npr. Ljetna sezona 2027"
+              placeholder={t.admin.seasonNamePlaceholder}
               className="field-input"
             />
           </div>
@@ -334,7 +335,8 @@ export function PricingTab({
           </div>
           <div>
             <label htmlFor="season-end" className="field-label">
-              {t.admin.seasonTo} <span className="font-normal text-ink-400">(ne uključuje se)</span>
+              {t.admin.seasonTo}{' '}
+              <span className="font-normal text-ink-400">({t.admin.seasonToHint})</span>
             </label>
             <input
               id="season-end"

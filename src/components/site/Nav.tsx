@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from 'react';
 
-import { t } from '@/lib/strings';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
+import { useI18n } from '@/components/i18n/LocaleProvider';
 
+/** Sidra u stranici ostaju bosanska bez obzira na jezik — adresa se ne prevodi. */
 const LINKS = [
-  { href: '#o-kuci', label: t.nav.about },
-  { href: '#galerija', label: t.nav.gallery },
-  { href: '#sadrzaji', label: t.nav.amenities },
-  { href: '#lokacija', label: t.nav.location },
-  { href: '#pitanja', label: t.nav.faq },
-];
+  { href: '#o-kuci', key: 'about' },
+  { href: '#galerija', key: 'gallery' },
+  { href: '#sadrzaji', key: 'amenities' },
+  { href: '#lokacija', key: 'location' },
+  { href: '#pitanja', key: 'faq' },
+] as const;
 
 export function Nav() {
+  const { t } = useI18n();
+
   // Preko heroja je navigacija providna i bijela; čim se skrola, dobija podlogu.
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -46,9 +50,9 @@ export function Nav() {
     <>
       <a
         href="#rezervacija"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-forest-800 focus:px-5 focus:py-3 focus:text-sm focus:text-sand-50"
+        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-forest-800 focus:px-5 focus:py-3 focus:text-sm focus:text-sand-50"
       >
-        Preskoči na rezervaciju
+        {t.nav.skipToBooking}
       </a>
 
       <header
@@ -60,7 +64,7 @@ export function Nav() {
       >
         <nav
           className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8"
-          aria-label="Glavna navigacija"
+          aria-label={t.nav.mainNav}
         >
           <a
             href="#vrh"
@@ -82,13 +86,17 @@ export function Nav() {
                       : 'text-white/90 drop-shadow-sm hover:text-white'
                   }`}
                 >
-                  {link.label}
+                  {t.nav[link.key]}
                 </a>
               </li>
             ))}
           </ul>
 
           <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex">
+              <LanguageSwitcher tone={solid ? 'light' : 'dark'} />
+            </span>
+
             <a href="#rezervacija" className="btn-primary hidden px-5 py-2.5 sm:inline-flex">
               {t.nav.book}
             </a>
@@ -96,7 +104,7 @@ export function Nav() {
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className={`-mr-2 inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors md:hidden ${
+              className={`-me-2 inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors md:hidden ${
                 solid ? 'text-forest-900 hover:bg-sand-200' : 'text-white hover:bg-white/15'
               }`}
               aria-expanded={open}
@@ -123,19 +131,19 @@ export function Nav() {
                 onClick={() => setOpen(false)}
                 className="block rounded-xl px-4 py-3.5 font-display text-2xl text-forest-900 hover:bg-sand-100"
               >
-                {link.label}
+                {t.nav[link.key]}
               </a>
             </li>
           ))}
         </ul>
 
-        <a
-          href="#rezervacija"
-          onClick={() => setOpen(false)}
-          className="btn-primary mt-6 w-full"
-        >
+        <a href="#rezervacija" onClick={() => setOpen(false)} className="btn-primary mt-6 w-full">
           {t.nav.book}
         </a>
+
+        <div className="mt-6 flex justify-center">
+          <LanguageSwitcher />
+        </div>
       </div>
     </>
   );
