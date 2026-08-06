@@ -16,6 +16,7 @@ dobija.
 - [Šta sve radi](#šta-sve-radi)
 - [Brzi start](#brzi-start)
 - [Jezici](#jezici)
+- [Kako se računa cijena](#kako-se-računa-cijena)
 - [Podešavanje Supabase baze](#podešavanje-supabase-baze)
 - [Načini plaćanja](#načini-plaćanja)
 - [Objava na Vercel](#objava-na-vercel)
@@ -35,7 +36,7 @@ dobija.
   lokacija, česta pitanja
 - Kalendar sa dva mjeseca — zauzeti datumi su prekriženi i ne mogu se kliknuti
 - **Rezervacija i za jedan jedini dan**, bez noćenja
-- Cijena se računa uživo dok se biraju datumi, po sezonskom cjenovniku
+- Cijena se računa uživo dok se biraju datumi — osnovna, vikend i sezonska
 - Stranica s potvrdom i email obavijest
 - **Tri jezika** — bosanski, engleski i arapski, s ispravnim smjerom pisanja
 
@@ -45,7 +46,8 @@ dobija.
 - Potvrda primljenih uplata na račun
 - Pregled svih rezervacija
 - Ručno blokiranje termina (održavanje, lični boravak)
-- Uređivanje cijena, sezonskog cjenovnika i bankovnih podataka
+- Uređivanje cijena: osnovna, vikend (subota i nedjelja) i sezonski cjenovnik
+- Uređivanje bankovnih podataka
 - Administracija govori isti jezik koji vlasnik odabere na sajtu
 
 ---
@@ -168,6 +170,7 @@ promjene uživo u sve otvorene preglednike.
 1. [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
 2. [`supabase/migrations/0002_bez_stripea.sql`](supabase/migrations/0002_bez_stripea.sql)
 3. [`supabase/migrations/0003_jezik_gosta.sql`](supabase/migrations/0003_jezik_gosta.sql)
+4. [`supabase/migrations/0004_vikend_cijena.sql`](supabase/migrations/0004_vikend_cijena.sql)
 
 Kopiraj cijeli sadržaj datoteke, zalijepi i klikni **Run**. Očekivani odgovor je
 _"Success. No rows returned"_ — to je uspjeh, migracije ne vraćaju redove.
@@ -193,6 +196,34 @@ Tabela `bookings` (imena, mailovi, telefoni) je zaključana pravilima pristupa �
 `anon` ključ iz preglednika iz nje **ne može pročitati nijedan red**. Kalendar
 umjesto toga čita tabelu `availability_slots`, u kojoj su samo datumi i ništa
 drugo. `npm run doctor` to provjerava svaki put.
+
+---
+
+## Kako se računa cijena
+
+Za svaki dan boravka vrijedi prvo pravilo koje ga pokrije, ovim redom:
+
+| Red | Pravilo | Gdje se postavlja |
+|---|---|---|
+| 1. | **Sezona** s najvećim prioritetom koja pokriva taj datum | `/admin` → Cijene → Sezonske cijene |
+| 2. | **Vikend** — subota i nedjelja | `/admin` → Cijene → Cijena za subotu i nedjelju |
+| 3. | **Osnovna cijena** | `/admin` → Cijene → Osnovna cijena po danu |
+
+Sezona je iznad vikenda namjerno. Vlasnik je sezonu upisao za tačno te datume i
+za tu cijenu; da je vikend nadglasa, ljetna subota bi se najednom naplaćivala
+jeftinije od ljetnog utorka.
+
+Vikend je zasebna postavka, a ne još jedna sezona, jer se sezone zadaju kao
+rasponi datuma, a vikend se ponavlja svake sedmice — pedeset i dva reda
+godišnje koje bi neko morao dopisivati svakog decembra. **0 znači isključeno**:
+tada i vikend ide po osnovnoj cijeni.
+
+Dan odlaska se ne naplaćuje, pa boravak `[dolazak, odlazak)` od petka do
+ponedjeljka plaća petak, subotu i nedjelju.
+
+Račun se radi **dva puta**: u pregledniku, da gost odmah vidi iznos dok pomjera
+datume, i ponovo na serveru prije upisa u bazu. Iznos koji stigne od klijenta se
+nikada ne vjeruje.
 
 ---
 
@@ -356,10 +387,11 @@ Sve navedeno je pokriveno testovima.
 npm test
 ```
 
-90 testova, u tri grupe:
+101 test, u tri grupe:
 
-- **`src/lib/pricing.test.ts`** — sezonske cijene, preklapanje sezona, rezervacija
-  jednog dana, granični slučajevi oko dana odlaska
+- **`src/lib/pricing.test.ts`** — sezonske cijene, preklapanje sezona, vikend
+  cijena i njen odnos prema sezoni, rezervacija jednog dana, granični slučajevi
+  oko dana odlaska
 - **`src/lib/i18n/i18n.test.ts`** — prepoznavanje jezika iz kolačića i zaglavlja,
   množina na sva tri jezika (uključujući arapsku dvojinu), obrasci datuma i novca,
   i provjera da nijedan prevod nije ostao prazan

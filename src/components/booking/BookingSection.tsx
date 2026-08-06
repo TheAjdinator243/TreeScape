@@ -8,7 +8,13 @@ import { useI18n } from '@/components/i18n/LocaleProvider';
 import { Reveal } from '@/components/site/Reveal';
 import { addDaysStr, daysBetween, formatLong, toDateStr } from '@/lib/dates';
 import { count } from '@/lib/i18n';
-import { formatMoney, quoteStay, rangeHasConflict, validateStay } from '@/lib/pricing';
+import {
+  WEEKEND_PERIOD,
+  formatMoney,
+  quoteStay,
+  rangeHasConflict,
+  validateStay,
+} from '@/lib/pricing';
 import type { BookingContext, PaymentMethod } from '@/lib/types';
 
 import { StayCalendar } from './StayCalendar';
@@ -241,9 +247,14 @@ export function BookingSection({ context }: { context: BookingContext }) {
                     </span>
                   </div>
 
-                  {/* Ako svi dani nisu iste cijene, gost zaslužuje objašnjenje. */}
+                  {/* Ako svi dani nisu iste cijene, gost zaslužuje objašnjenje —
+                      i to ono pravo: vikend i sezona nisu isti razlog. */}
                   {new Set(quote.days.map((d) => d.cents)).size > 1 && (
-                    <p className="mt-2 text-xs text-ink-400">{t.booking.seasonalNote}</p>
+                    <p className="mt-2 text-xs text-ink-400">
+                      {quote.days.some((d) => d.periodName === WEEKEND_PERIOD)
+                        ? t.booking.weekendNote
+                        : t.booking.seasonalNote}
+                    </p>
                   )}
                 </div>
               )}

@@ -83,7 +83,6 @@ export const en: Dictionary = {
     lead: 'Everything is already here — just bring your bag.',
     items: {
       pool: { label: 'Swimming pool', note: 'Heated by a heat pump' },
-      jacuzzi: { label: 'Jacuzzi', note: 'Hot water and massage jets' },
       fountain: { label: 'Fountain', note: 'In the yard, next to the seating' },
       wifi: { label: 'Internet', note: 'Wi-Fi throughout the house' },
       kitchen: { label: 'Equipped kitchen', note: 'All cookware and appliances' },
@@ -182,6 +181,7 @@ export const en: Dictionary = {
     daysLabel: (n) => count('en', n, plural.en.days),
     total: 'Total',
     seasonalNote: 'The daily rate depends on the season.',
+    weekendNote: 'Saturdays and Sundays are charged at the weekend rate.',
     singleDayNote: 'A single-day booking, without an overnight stay.',
 
     payMethodTitle: 'Payment method',
@@ -329,6 +329,8 @@ export const en: Dictionary = {
     pricingHeading: 'Base pricing',
     pricingLead: 'Applies to every date that does not fall into a season.',
     defaultNightly: 'Base rate per day',
+    weekendPrice: 'Saturday and Sunday rate',
+    weekendPriceHint: 'Enter 0 to charge the base rate at weekends too. A season, where set, still takes precedence.',
     maxNights: 'Maximum number of days',
     maxGuests: 'Maximum number of guests',
     holdMinutes: 'How long dates are held during payment (min)',

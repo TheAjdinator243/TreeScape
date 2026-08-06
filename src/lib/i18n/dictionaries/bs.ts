@@ -88,7 +88,6 @@ export const bs: Dictionary = {
     lead: 'Sve je već tu — vi ponesite samo torbu.',
     items: {
       pool: { label: 'Bazen', note: 'Grijan toplotnom pumpom' },
-      jacuzzi: { label: 'Jacuzzi', note: 'Topla voda i masažne mlaznice' },
       fountain: { label: 'Šadrvan', note: 'U dvorištu, uz sjedište' },
       wifi: { label: 'Internet', note: 'Bežični, u cijeloj kući' },
       kitchen: { label: 'Opremljena kuhinja', note: 'Sve posuđe i aparati' },
@@ -187,6 +186,7 @@ export const bs: Dictionary = {
     daysLabel: (n) => count('bs', n, plural.bs.days),
     total: 'Ukupno',
     seasonalNote: 'Cijena po danu zavisi od sezone.',
+    weekendNote: 'Subota i nedjelja se naplaćuju po vikend cijeni.',
     singleDayNote: 'Rezervacija za jedan dan, bez noćenja.',
 
     payMethodTitle: 'Način plaćanja',
@@ -338,6 +338,8 @@ export const bs: Dictionary = {
     pricingHeading: 'Osnovne cijene',
     pricingLead: 'Vrijede za svaki datum koji ne pripada nijednoj sezoni.',
     defaultNightly: 'Osnovna cijena po danu',
+    weekendPrice: 'Cijena za subotu i nedjelju',
+    weekendPriceHint: 'Upiši 0 da vikend ide po osnovnoj cijeni. Sezona, ako je postavljena, i dalje ima prednost.',
     maxNights: 'Maksimalan broj dana',
     maxGuests: 'Maksimalan broj gostiju',
     holdMinutes: 'Trajanje rezervacije termina tokom plaćanja (min)',

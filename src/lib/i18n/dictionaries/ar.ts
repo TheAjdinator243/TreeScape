@@ -88,7 +88,6 @@ export const ar: Dictionary = {
     lead: 'كل شيء موجود بالفعل — لا تحمل معك سوى حقيبتك.',
     items: {
       pool: { label: 'مسبح', note: 'مُدفّأ بمضخة حرارية' },
-      jacuzzi: { label: 'جاكوزي', note: 'ماء ساخن ونفّاثات تدليك' },
       fountain: { label: 'نافورة', note: 'في الفناء، بجوار مكان الجلوس' },
       wifi: { label: 'إنترنت', note: 'واي فاي في المنزل كله' },
       kitchen: { label: 'مطبخ مجهّز', note: 'كل الأواني والأجهزة' },
@@ -187,6 +186,7 @@ export const ar: Dictionary = {
     daysLabel: (n) => count('ar', n, plural.ar.days),
     total: 'الإجمالي',
     seasonalNote: 'السعر اليومي يتغيّر حسب الموسم.',
+    weekendNote: 'يُحتسب يوما السبت والأحد بسعر عطلة نهاية الأسبوع.',
     singleDayNote: 'حجز ليوم واحد، من دون مبيت.',
 
     payMethodTitle: 'طريقة الدفع',
@@ -333,6 +333,8 @@ export const ar: Dictionary = {
     pricingHeading: 'الأسعار الأساسية',
     pricingLead: 'تسري على كل تاريخ لا ينتمي إلى أي موسم.',
     defaultNightly: 'السعر الأساسي لليوم',
+    weekendPrice: 'سعر السبت والأحد',
+    weekendPriceHint: 'أدخل 0 ليُحتسب السعر الأساسي في عطلة نهاية الأسبوع أيضًا. الموسم، إن كان محدَّدًا، تبقى له الأولوية.',
     maxNights: 'الحد الأقصى لعدد الأيام',
     maxGuests: 'الحد الأقصى لعدد الضيوف',
     holdMinutes: 'مدة حجز الموعد أثناء الدفع (دقيقة)',

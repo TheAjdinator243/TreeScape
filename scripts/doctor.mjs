@@ -114,6 +114,7 @@ if (!url || !anonKey || !serviceKey) {
     { table: 'bookings', column: 'payment_reference', migration: '0002' },
     { table: 'settings', column: 'bank_iban', migration: '0002' },
     { table: 'bookings', column: 'locale', migration: '0003' },
+    { table: 'settings', column: 'weekend_price_cents', migration: '0004' },
   ];
   const missingColumns = [];
 

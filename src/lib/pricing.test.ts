@@ -1,12 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
-import { addDaysStr, daysBetween, eachDay, rangesOverlap, todayStr } from './dates';
-import { formatMoney, quoteStay, rangeHasConflict, takenDayMap, validateStay } from './pricing';
+import { addDaysStr, daysBetween, eachDay, isWeekend, rangesOverlap, todayStr } from './dates';
+import {
+  WEEKEND_PERIOD,
+  formatMoney,
+  lowestNightlyCents,
+  quoteStay,
+  rangeHasConflict,
+  takenDayMap,
+  validateStay,
+} from './pricing';
 import type { AvailabilitySlot, RatePeriod, Settings } from './types';
 
 const settings: Settings = {
   id: 1,
   default_nightly_cents: 25000, // 250 KM po danu
+  // Isključen, da postojeći testovi ostanu o sezonama i osnovnoj cijeni.
+  weekend_price_cents: 0,
   cleaning_fee_cents: 0, // naknade za čišćenje više nema
   currency: 'BAM',
   currency_symbol: 'KM',
@@ -42,6 +52,62 @@ const augustPeak: RatePeriod = {
   min_nights: null,
   priority: 30,
 };
+
+/** Iste postavke, ali s vikendom od 300 KM. */
+const withWeekend: Settings = { ...settings, weekend_price_cents: 30000 };
+
+describe('vikend cijena', () => {
+  // Provjereni datumi: 6.11.2027 je subota, 7.11. nedjelja,
+  // 5.11. petak i 8.11. ponedjeljak.
+  it('subota i nedjelja su vikend, radni dani nisu', () => {
+    expect(isWeekend('2027-11-06')).toBe(true);
+    expect(isWeekend('2027-11-07')).toBe(true);
+    expect(isWeekend('2027-11-05')).toBe(false);
+    expect(isWeekend('2027-11-08')).toBe(false);
+  });
+
+  it('subota i nedjelja se naplaćuju po vikend cijeni', () => {
+    const quote = quoteStay('2027-11-06', '2027-11-08', [], withWeekend);
+    expect(quote.days.map((d) => d.cents)).toEqual([30000, 30000]);
+    expect(quote.totalCents).toBe(60000);
+  });
+
+  it('radni dani ostaju na osnovnoj cijeni', () => {
+    const quote = quoteStay('2027-11-08', '2027-11-10', [], withWeekend);
+    expect(quote.days.map((d) => d.cents)).toEqual([25000, 25000]);
+  });
+
+  it('boravak preko vikenda miješa obje cijene', () => {
+    // pet 5.11 → uto 9.11 = petak, subota, nedjelja, ponedjeljak
+    const quote = quoteStay('2027-11-05', '2027-11-09', [], withWeekend);
+    expect(quote.days.map((d) => d.cents)).toEqual([25000, 30000, 30000, 25000]);
+    expect(quote.totalCents).toBe(110000);
+  });
+
+  it('vikend dan nosi oznaku po kojoj ga sučelje prepozna', () => {
+    const quote = quoteStay('2027-11-06', '2027-11-07', [], withWeekend);
+    expect(quote.days[0]?.periodName).toBe(WEEKEND_PERIOD);
+  });
+
+  it('nula znači da vikenda nema — sve ide po osnovnoj', () => {
+    const quote = quoteStay('2027-11-06', '2027-11-08', [], settings);
+    expect(quote.days.map((d) => d.cents)).toEqual([25000, 25000]);
+  });
+
+  it('sezona je jača od vikenda', () => {
+    // 7.8.2027 je subota, i pada usred ljetne sezone.
+    const quote = quoteStay('2027-08-07', '2027-08-08', [summer], withWeekend);
+    expect(quote.days[0]?.cents).toBe(18000);
+    expect(quote.days[0]?.periodName).toBe('Ljeto');
+  });
+
+  it('"od" cijena ne laže kad je vikend jeftiniji od osnovne', () => {
+    expect(lowestNightlyCents([], withWeekend)).toBe(25000);
+    expect(lowestNightlyCents([], { ...settings, weekend_price_cents: 9000 })).toBe(9000);
+    // Isključen vikend ne smije oboriti "od" na nulu.
+    expect(lowestNightlyCents([], settings)).toBe(25000);
+  });
+});
 
 describe('daysBetween — dan odlaska se ne naplaćuje', () => {
   it('01.08 → 05.08 su 4 dana', () => {

@@ -40,6 +40,8 @@ export const bookingDecisionSchema = z.object({
 
 export const settingsSchema = z.object({
   default_nightly_cents: z.number().int().min(0).max(100_000_00),
+  // 0 je dozvoljena i znači "vikend ide po osnovnoj cijeni".
+  weekend_price_cents: z.number().int().min(0).max(100_000_00),
   cleaning_fee_cents: z.number().int().min(0).max(100_000_00),
   min_nights: z.number().int().min(1).max(60),
   max_nights: z.number().int().min(1).max(365),

@@ -28,7 +28,6 @@ export interface PluralForms {
 /** Sadržaji kuće — ključ vezuje tekst za ikonu u `Amenities.tsx`. */
 export type AmenityKey =
   | 'pool'
-  | 'jacuzzi'
   | 'fountain'
   | 'wifi'
   | 'kitchen'
@@ -178,6 +177,7 @@ export interface Dictionary {
     daysLabel: (n: number) => string;
     total: string;
     seasonalNote: string;
+    weekendNote: string;
     singleDayNote: string;
 
     payMethodTitle: string;
@@ -306,6 +306,8 @@ export interface Dictionary {
     pricingHeading: string;
     pricingLead: string;
     defaultNightly: string;
+    weekendPrice: string;
+    weekendPriceHint: string;
     maxNights: string;
     maxGuests: string;
     holdMinutes: string;

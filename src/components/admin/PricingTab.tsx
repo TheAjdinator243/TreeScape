@@ -27,6 +27,7 @@ export function PricingTab({
   const { locale, t } = useI18n();
   const [form, setForm] = useState({
     default_nightly: toMajor(settings.default_nightly_cents),
+    weekend_price: toMajor(settings.weekend_price_cents),
     max_nights: String(settings.max_nights),
     max_guests: String(settings.max_guests),
     hold_minutes: String(settings.hold_minutes),
@@ -57,6 +58,7 @@ export function PricingTab({
       method: 'PUT',
       body: JSON.stringify({
         default_nightly_cents: toCents(form.default_nightly),
+        weekend_price_cents: toCents(form.weekend_price),
         // Naknade za čišćenje i minimalnog boravka više nema — u bazi ostaju
         // kolone (da ne treba nova migracija), ali se drže na neutralnoj vrijednosti.
         cleaning_fee_cents: 0,
@@ -125,6 +127,17 @@ export function PricingTab({
             onChange={set('default_nightly')}
             step="0.01"
           />
+          <div>
+            <Num
+              id="weekend_price"
+              label={`${t.admin.weekendPrice} (${settings.currency_symbol})`}
+              value={form.weekend_price}
+              onChange={set('weekend_price')}
+              step="0.01"
+            />
+            <p className="mt-1.5 text-xs text-ink-400">{t.admin.weekendPriceHint}</p>
+          </div>
+
           <Num id="max_nights" label={t.admin.maxNights} value={form.max_nights} onChange={set('max_nights')} />
           <Num id="max_guests" label={t.admin.maxGuests} value={form.max_guests} onChange={set('max_guests')} />
           <Num

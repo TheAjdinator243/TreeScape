@@ -17,13 +17,20 @@
  * odjavom u 09:00 i prijavom u 11:00 istog dana.
  */
 
-import { daysBetween, eachDay, isWithin, todayStr, type DateStr } from './dates';
+import { daysBetween, eachDay, isWeekend, isWithin, todayStr, type DateStr } from './dates';
 import { DEFAULT_LOCALE, getStrings, intlTag, type Locale } from './i18n';
 import type { AvailabilitySlot, PriceBreakdown, RatePeriod, Settings } from './types';
 
 /**
- * Cijena za jedan dan: pobjeđuje sezona s najvećim `priority` koja pokriva
- * taj datum. Ako nijedna ne pokriva — osnovna cijena iz postavki.
+ * Cijena za jedan dan, po ovom redoslijedu:
+ *
+ *   1. sezona s najvećim `priority` koja pokriva taj datum
+ *   2. vikend cijena, ako je subota ili nedjelja i ako je uključena
+ *   3. osnovna cijena iz postavki
+ *
+ * Sezona je iznad vikenda namjerno. Vlasnik je sezonu upisao za tačno te
+ * datume i za tu cijenu; da je vikend nadglasa, ljetna subota bi se najednom
+ * naplaćivala jeftinije od ljetnog utorka.
  */
 function rateForDay(
   day: DateStr,
@@ -37,12 +44,25 @@ function rateForDay(
     if (!winner || period.priority > winner.priority) winner = period;
   }
 
-  if (!winner) {
-    return { cents: settings.default_nightly_cents, periodName: null };
+  if (winner) {
+    return { cents: winner.nightly_price_cents, periodName: winner.name };
   }
 
-  return { cents: winner.nightly_price_cents, periodName: winner.name };
+  // 0 znači "vikend nema posebnu cijenu".
+  if (settings.weekend_price_cents > 0 && isWeekend(day)) {
+    return { cents: settings.weekend_price_cents, periodName: WEEKEND_PERIOD };
+  }
+
+  return { cents: settings.default_nightly_cents, periodName: null };
 }
+
+/**
+ * Oznaka koju vikend dan nosi u razradi cijene.
+ *
+ * Nije naziv sezone nego ključ: sučelje po njemu zna da red treba ispisati na
+ * jeziku gosta, a ne onako kako je vlasnik nazvao sezonu.
+ */
+export const WEEKEND_PERIOD = 'weekend';
 
 /** Puni obračun za boravak [start, end). Dan odlaska se ne naplaćuje. */
 export function quoteStay(
@@ -139,12 +159,19 @@ export function takenDayMap(slots: AvailabilitySlot[]): Map<DateStr, 'hard' | 'p
   return map;
 }
 
-/** Najniža dnevna cijena — za "od 180 KM po danu" u heroju. */
+/**
+ * Najniža dnevna cijena — za "od 180 KM po danu" u heroju.
+ *
+ * Vikend ulazi u račun samo ako je uključen. Obično je skuplji pa ništa ne
+ * mijenja, ali ako je vlasnik postavio niži vikend, "od" mora reći istinu.
+ */
 export function lowestNightlyCents(periods: RatePeriod[], settings: Settings): number {
-  return periods.reduce(
-    (min, p) => Math.min(min, p.nightly_price_cents),
-    settings.default_nightly_cents
-  );
+  const base =
+    settings.weekend_price_cents > 0
+      ? Math.min(settings.default_nightly_cents, settings.weekend_price_cents)
+      : settings.default_nightly_cents;
+
+  return periods.reduce((min, p) => Math.min(min, p.nightly_price_cents), base);
 }
 
 // ── Formatiranje novca ─────────────────────────────────────────────────────

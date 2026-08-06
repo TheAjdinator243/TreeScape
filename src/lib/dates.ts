@@ -84,6 +84,18 @@ export function isWithin(date: DateStr, start: DateStr, end: DateStr): boolean {
   return date >= start && date < end;
 }
 
+/**
+ * Subota ili nedjelja.
+ *
+ * `getDay()` vraća 0 za nedjelju i 6 za subotu. Računa se iz LOKALNOG datuma
+ * (`fromDateStr` pravi lokalnu ponoć), pa vikend ostaje vikend bez obzira na
+ * to u kojoj se vremenskoj zoni vrti server — a Vercel ga vrti u UTC-u.
+ */
+export function isWeekend(date: DateStr): boolean {
+  const day = fromDateStr(date).getDay();
+  return day === 0 || day === 6;
+}
+
 // ── Jezik ──────────────────────────────────────────────────────────────────
 
 /**

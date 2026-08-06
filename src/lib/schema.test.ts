@@ -15,7 +15,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
  */
 
 const MIGRATIONS_DIR = path.resolve(import.meta.dirname, '../../supabase/migrations');
-const MIGRATIONS = ['0001_init.sql', '0002_bez_stripea.sql', '0003_jezik_gosta.sql'];
+const MIGRATIONS = [
+  '0001_init.sql',
+  '0002_bez_stripea.sql',
+  '0003_jezik_gosta.sql',
+  '0004_vikend_cijena.sql',
+];
 
 let db: PGlite;
 
@@ -144,6 +149,26 @@ describe('migracija', () => {
         )
       ).resolves.toBeDefined();
     }
+  });
+
+  it('vikend cijena je dio postavki', async () => {
+    const { rows } = await db.query<{ weekend_price_cents: number }>(
+      'select weekend_price_cents from settings where id = 1'
+    );
+    expect(rows[0]?.weekend_price_cents).toBe(30000);
+  });
+
+  it('vikend cijena ne može biti negativna', async () => {
+    await expect(
+      db.query('update settings set weekend_price_cents = -1 where id = 1')
+    ).rejects.toThrow();
+  });
+
+  it('nula je dozvoljena i znači "vikend nema posebnu cijenu"', async () => {
+    await expect(
+      db.query('update settings set weekend_price_cents = 0 where id = 1')
+    ).resolves.toBeDefined();
+    await db.query('update settings set weekend_price_cents = 30000 where id = 1');
   });
 
   it('upisuje početni red postavki', async () => {

@@ -46,6 +46,8 @@ export interface RatePeriod {
 export interface Settings {
   id: number;
   default_nightly_cents: number;
+  /** Cijena za subotu i nedjelju. 0 = vikend nema posebnu cijenu. */
+  weekend_price_cents: number;
   cleaning_fee_cents: number;
   currency: string;
   currency_symbol: string;

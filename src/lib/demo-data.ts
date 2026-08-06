@@ -12,6 +12,7 @@ import type { AvailabilitySlot, RatePeriod, Settings } from './types';
 export const DEMO_SETTINGS: Settings = {
   id: 1,
   default_nightly_cents: 12000,
+  weekend_price_cents: 30000,
   cleaning_fee_cents: 3000,
   currency: 'EUR',
   currency_symbol: '€',

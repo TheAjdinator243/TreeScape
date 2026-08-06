@@ -11,9 +11,8 @@ import { Reveal } from './Reveal';
  * `amenities.items`, i vezani su za isti ključ.
  */
 const AMENITIES: AmenityKey[] = [
-  // Ovo troje su najjači adut kuće, pa idu prvi — gost ih vidi bez skrolanja.
+  // Ovo dvoje su najjači adut kuće, pa idu prvi — gost ih vidi bez skrolanja.
   'pool',
-  'jacuzzi',
   'fountain',
   'wifi',
   'kitchen',
@@ -88,17 +87,6 @@ function Icon({ name }: { name: string }) {
           <path d="M3 16c1.5 0 1.5 1.2 3 1.2s1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2" />
           <path d="M3 20c1.5 0 1.5 1.2 3 1.2s1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2 1.5 1.2 3 1.2 1.5-1.2 3-1.2" />
           <path d="M8 14V5.5A2.5 2.5 0 0 1 10.5 3M16 14V5.5A2.5 2.5 0 0 1 18.5 3M8 8h8" />
-        </svg>
-      );
-    case 'jacuzzi':
-      return (
-        <svg {...common}>
-          {/* kada s mjehurićima */}
-          <path d="M3 11h18v3a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5v-3Z" />
-          <path d="M6 11V6a2 2 0 0 1 2-2h1" />
-          <circle cx="8.5" cy="7.5" r=".8" fill="currentColor" stroke="none" />
-          <circle cx="13" cy="6" r=".8" fill="currentColor" stroke="none" />
-          <circle cx="17" cy="7.5" r=".8" fill="currentColor" stroke="none" />
         </svg>
       );
     case 'fountain':
