@@ -87,6 +87,50 @@ create table if not exists public.bookings (
   )
 );
 
+-- ── Ako tabela VEĆ POSTOJI iz starije verzije ──────────────────────────────
+--
+--  `create table if not exists` iznad ne uradi ništa kad tabela već postoji —
+--  pa ni kolone dodane kasnije ne bi nikad stigle. Zato se svaka takva kolona
+--  dodaje i izričito. Na praznoj bazi ovi redovi ne rade ništa (kolone su već
+--  tu), a na starijoj bazi je dovode u današnji oblik bez gubitka podataka.
+--
+--  Bez ovoga migracija pukne s "column ... does not exist" i baza ostane
+--  na pola posla.
+
+-- Nazivi iz vremena Stripe-a → neutralni. Preimenovanje čuva podatke.
+do $$
+begin
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'bookings'
+                and column_name = 'stripe_session_id') then
+    alter table public.bookings rename column stripe_session_id to payment_reference;
+  end if;
+
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'bookings'
+                and column_name = 'stripe_payment_intent_id') then
+    alter table public.bookings rename column stripe_payment_intent_id to payment_id;
+  end if;
+
+  if exists (select 1 from information_schema.tables
+              where table_schema = 'public' and table_name = 'stripe_events') then
+    alter table public.stripe_events rename to payment_events;
+  end if;
+
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'payment_events'
+                and column_name = 'event_id') then
+    alter table public.payment_events rename column event_id to external_id;
+  end if;
+end;
+$$;
+
+alter table public.bookings
+  add column if not exists payment_reference text,
+  add column if not exists payment_id        text,
+  add column if not exists locale            text not null default 'bs';
+
+
 -- Ograničenja se imenuju izričito, da se kasnije mogu naći i zamijeniti.
 alter table public.bookings drop constraint if exists bookings_status_check;
 alter table public.bookings
@@ -279,6 +323,15 @@ create table if not exists public.settings (
   updated_at            timestamptz not null default now()
 );
 
+-- Isti razlog kao kod `bookings`: na starijoj bazi ovih kolona nema.
+alter table public.settings
+  add column if not exists weekend_price_cents integer not null default 30000,
+  add column if not exists cleaning_fee_cents  integer not null default 0,
+  add column if not exists bank_account_name   text    not null default '',
+  add column if not exists bank_name           text    not null default '',
+  add column if not exists bank_iban           text    not null default '',
+  add column if not exists transfer_days       integer not null default 3;
+
 alter table public.settings drop constraint if exists settings_weekend_price_check;
 alter table public.settings
   add constraint settings_weekend_price_check
@@ -299,6 +352,10 @@ create table if not exists public.payment_events (
   provider    text not null default 'nepoznato',
   received_at timestamptz not null default now()
 );
+
+-- Na starijoj bazi ove kolone nema (vidi isto obrazloženje gore).
+alter table public.payment_events
+  add column if not exists provider text not null default 'nepoznato';
 
 
 -- ───────────────────────────────────────────────────────────────────────────

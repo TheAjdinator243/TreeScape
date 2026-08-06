@@ -15,7 +15,18 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
  */
 
 const MIGRATIONS_DIR = path.resolve(import.meta.dirname, '../../supabase/migrations');
+const FIXTURES_DIR = path.resolve(import.meta.dirname, '__fixtures__');
 const MIGRATION = '0001_init.sql';
+
+/**
+ * PGlite nema Supabase-ove role (anon/authenticated) ni publikaciju
+ * supabase_realtime. Ta dva mjesta izbacujemo; sve ostalo — tabele,
+ * ograničenja, okidači, funkcije — testira se tačno onako kako će raditi.
+ */
+const prepare = (sql: string) =>
+  sql
+    .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
+    .replace(/^\s*to anon, authenticated\s*$/gim, '');
 
 let db: PGlite;
 
@@ -53,18 +64,68 @@ async function isRejected(promise: Promise<unknown>): Promise<boolean> {
 beforeAll(async () => {
   db = new PGlite();
 
-  // PGlite nema Supabase-ove role (anon/authenticated) ni publikaciju
-  // supabase_realtime. Ta dva mjesta izbacujemo; sve ostalo — tabele,
-  // ograničenja, okidači, funkcije — testira se tačno onako kako će raditi.
-  const sql = readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')
-    .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
-    .replace(/^\s*to anon, authenticated\s*$/gim, '');
-
-  await db.exec(sql);
+  await db.exec(prepare(readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')));
 }, 60_000);
 
 afterAll(async () => {
   await db?.close();
+});
+
+describe('nadogradnja sa starije sheme', () => {
+  /**
+   * Najopasniji slučaj u praksi: baza već postoji, ali je iz ranije verzije
+   * projekta. `create table if not exists` tada ne uradi NIŠTA, pa kolone
+   * dodane kasnije (locale, weekend_price_cents, bankovni podaci) ne bi
+   * nikad stigle — a ograničenja ispod ih traže.
+   *
+   * Prije nego je ovo napisano, shema je u tom slučaju pucala s
+   * `column "locale" does not exist` i ostavljala bazu na pola posla.
+   */
+  it('stara baza s podacima se podigne na današnji oblik', async () => {
+    const old = new PGlite();
+
+    await old.exec(prepare(readFileSync(path.join(FIXTURES_DIR, 'stara-shema.sql'), 'utf8')));
+
+    await old.query(
+      `insert into bookings
+         (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, total_cents)
+       values ('stari-gost','Gost','g@primjer.ba','2030-01-01','2030-01-05','confirmed','cash',50000)`
+    );
+
+    await old.exec(prepare(readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')));
+
+    // Rezervacija iz stare baze je preživjela i dobila podrazumijevani jezik.
+    const booking = await old.query<{ locale: string; payment_reference: string | null }>(
+      `select locale, payment_reference from bookings where public_token = 'stari-gost'`
+    );
+    expect(booking.rows).toHaveLength(1);
+    expect(booking.rows[0]?.locale).toBe('bs');
+
+    // Nove kolone su stigle, s ispravnim podrazumijevanim vrijednostima.
+    const settings = await old.query<{ weekend_price_cents: number; bank_iban: string }>(
+      'select weekend_price_cents, bank_iban from settings where id = 1'
+    );
+    expect(settings.rows[0]?.weekend_price_cents).toBe(30000);
+    expect(settings.rows[0]?.bank_iban).toBe('');
+
+    // Stripe naziva više nema, ali su podaci preimenovani, ne obrisani.
+    const stripe = await old.query<{ column_name: string }>(
+      `select column_name from information_schema.columns
+        where table_schema = 'public' and column_name like '%stripe%'`
+    );
+    expect(stripe.rows).toHaveLength(0);
+
+    // I dalje se ne može dvaput rezervisati isti termin.
+    await expect(
+      old.query(
+        `insert into bookings
+           (public_token, guest_name, guest_email, start_date, end_date, status, payment_method)
+         values ('sudar','Drugi','d@primjer.ba','2030-01-02','2030-01-04','confirmed','cash')`
+      )
+    ).rejects.toThrow();
+
+    await old.close();
+  }, 60_000);
 });
 
 describe('migracija', () => {
@@ -77,10 +138,7 @@ describe('migracija', () => {
        values ('preziveo','Gost','g@primjer.ba','2030-05-01','2030-05-03','confirmed','cash')`
     );
 
-    const sql = readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')
-      .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
-      .replace(/^\s*to anon, authenticated\s*$/gim, '');
-    await db.exec(sql);
+    await db.exec(prepare(readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')));
 
     const { rows } = await db.query<{ count: string }>(
       `select count(*) from bookings where public_token = 'preziveo'`
