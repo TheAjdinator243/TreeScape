@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 
-import { invalidInput, readJson, requireDatabase, serverError } from '@/lib/api-helpers';
+import {
+  describeIssues,
+  invalidInput,
+  readJson,
+  requireDatabase,
+  serverError,
+} from '@/lib/api-helpers';
 import { sendGuestCashApproved, sendGuestCashRejected } from '@/lib/email';
 import { getStrings, localeFromRequest } from '@/lib/i18n';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -24,7 +30,7 @@ export async function POST(request: Request) {
   if (notReady) return notReady;
 
   const parsed = bookingDecisionSchema.safeParse(await readJson(request));
-  if (!parsed.success) return invalidInput(locale);
+  if (!parsed.success) return invalidInput(locale, describeIssues(parsed.error));
 
   const { booking_id, decision } = parsed.data;
   const nextStatus = decision === 'approve' ? 'confirmed' : 'cancelled';
@@ -41,7 +47,7 @@ export async function POST(request: Request) {
 
   if (error) {
     console.error('[treescape] odluka o rezervaciji nije upisana:', error.message);
-    return serverError(locale);
+    return serverError(locale, error.message);
   }
 
   if (!data) {
@@ -76,7 +82,7 @@ export async function DELETE(request: Request) {
 
   if (error) {
     console.error('[treescape] otkazivanje nije uspjelo:', error.message);
-    return serverError(locale);
+    return serverError(locale, error.message);
   }
 
   return NextResponse.json({ ok: true });

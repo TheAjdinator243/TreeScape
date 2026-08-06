@@ -26,10 +26,34 @@ export async function readJson(request: Request): Promise<unknown | null> {
   }
 }
 
-export function invalidInput(locale: Locale = DEFAULT_LOCALE): NextResponse {
-  return NextResponse.json({ error: getStrings(locale).errors.INVALID_INPUT }, { status: 400 });
+/**
+ * `detail` je pravi razlog (poruka iz baze, ili koje polje nije prošlo
+ * provjeru). Šalje se SAMO iz administracije, koja je iza pristupnog koda.
+ *
+ * Gost ga nikad ne vidi — njemu poruka o unutrašnjosti baze ne znači ništa, a
+ * može odati kako je sistem građen. Vlasniku znači sve: bez toga na ekranu
+ * piše samo "Došlo je do greške", pravi uzrok ostane u Vercel logu, i svaki
+ * kvar postaje pogađanje.
+ */
+export function invalidInput(locale: Locale = DEFAULT_LOCALE, detail?: string): NextResponse {
+  const message = getStrings(locale).errors.INVALID_INPUT;
+  return NextResponse.json(
+    { error: detail ? `${message} — ${detail}` : message },
+    { status: 400 }
+  );
 }
 
-export function serverError(locale: Locale = DEFAULT_LOCALE): NextResponse {
-  return NextResponse.json({ error: getStrings(locale).errors.SERVER_ERROR }, { status: 500 });
+export function serverError(locale: Locale = DEFAULT_LOCALE, detail?: string): NextResponse {
+  const message = getStrings(locale).errors.SERVER_ERROR;
+  return NextResponse.json(
+    { error: detail ? `${message} — ${detail}` : message },
+    { status: 500 }
+  );
+}
+
+/** Sažetak zod grešaka: "weekend_price_cents: Expected number, received nan". */
+export function describeIssues(error: { issues: { path: PropertyKey[]; message: string }[] }): string {
+  return error.issues
+    .map((i) => `${i.path.join('.') || '(tijelo)'}: ${i.message}`)
+    .join('; ');
 }
