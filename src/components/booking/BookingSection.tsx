@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 
 import { Reveal } from '@/components/site/Reveal';
@@ -116,6 +116,28 @@ export function BookingSection({ context }: { context: BookingContext }) {
   }
 
   const busy = submitting;
+
+  /**
+   * Skrol do pregleda BEZ diranja adrese.
+   *
+   * Ranije je ovo bio `<a href="#pregled">`, pa je nakon klika u adresi ostajao
+   * `#pregled`. Preglednik onda pri svakom sljedećem otvaranju ili osvježavanju
+   * skoči pravo na pregled umjesto na vrh stranice — a to je gost primijetio.
+   */
+  function scrollToSummary() {
+    document.getElementById('pregled')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /**
+   * Čišćenje adrese za one koji su `#pregled` već sačuvali u prečici na
+   * početnom ekranu ili u zabilješkama — inače bi im stranica zauvijek
+   * otvarala na pregledu.
+   */
+  useEffect(() => {
+    if (window.location.hash !== '#pregled') return;
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   return (
     <section id="rezervacija" className="bg-sand-100">
@@ -365,9 +387,13 @@ export function BookingSection({ context }: { context: BookingContext }) {
                 {formatMoney(quote.totalCents, quote.currencySymbol)}
               </p>
             </div>
-            <a href="#pregled" className="btn-primary shrink-0 px-5 py-2.5">
+            <button
+              type="button"
+              onClick={scrollToSummary}
+              className="btn-primary shrink-0 px-5 py-2.5"
+            >
               {t.nav.book}
-            </a>
+            </button>
           </div>
         </div>
       )}
