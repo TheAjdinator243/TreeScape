@@ -24,12 +24,23 @@ import type { Dictionary } from './dictionary';
  * smije biti keširana.
  */
 export async function getLocale(): Promise<Locale> {
-  const cookieStore = await cookies();
-  const chosen = normalizeLocale(cookieStore.get(LOCALE_COOKIE)?.value);
+  const chosen = await getChosenLocale();
   if (chosen) return chosen;
 
   const headerStore = await headers();
   return localeFromAcceptLanguage(headerStore.get('accept-language')) ?? DEFAULT_LOCALE;
+}
+
+/**
+ * Jezik koji je posjetilac IZRIČITO odabrao, ili `null` ako još nije.
+ *
+ * Razlika u odnosu na `getLocale()` je cijela poenta ulaznog ekrana: `null`
+ * znači "ovaj čovjek još nije rekao svoj jezik, pitaj ga", dok `getLocale()`
+ * uvijek vrati neki jezik jer ima na šta pasti (preglednik, pa bosanski).
+ */
+export async function getChosenLocale(): Promise<Locale | null> {
+  const cookieStore = await cookies();
+  return normalizeLocale(cookieStore.get(LOCALE_COOKIE)?.value);
 }
 
 /** Prečica za komponente kojima trebaju i jezik i tekst. */

@@ -24,6 +24,9 @@ export const en: Dictionary = {
   language: {
     label: 'Language',
     names: { bs: 'Bosanski', en: 'English', ar: 'العربية' },
+    gateTitle: 'Choose your language',
+    gateLead: 'Which language would you like to browse in?',
+    gateAria: 'Choose your language: Bosanski, English, العربية',
   },
 
   nav: {

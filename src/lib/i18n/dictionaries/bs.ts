@@ -29,6 +29,9 @@ export const bs: Dictionary = {
   language: {
     label: 'Jezik',
     names: { bs: 'Bosanski', en: 'English', ar: 'العربية' },
+    gateTitle: 'Odaberite jezik',
+    gateLead: 'Na kojem jeziku želite pregledati sajt?',
+    gateAria: 'Odaberite jezik: Bosanski, English, العربية',
   },
 
   nav: {

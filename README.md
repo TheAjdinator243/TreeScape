@@ -98,12 +98,23 @@ Sajt govori tri jezika:
 | English | `en` | slijeva nadesno |
 | العربية (arapski) | `ar` | **zdesna nalijevo** |
 
-**Kako se bira.** Gost bira jezik u navigaciji ili u podnožju. Izbor se pamti u
-kolačiću `treescape_jezik` godinu dana. Ko još nije birao, dobija jezik svog
-preglednika (`Accept-Language`); ako sajt taj jezik ne govori — bosanski.
+**Kako se bira.** Prvi put gost dobija ulazni ekran s pitanjem o jeziku, prije
+nego se sajt uopće vidi. Pitanje na tom ekranu **kruži kroz sva tri jezika** dok
+se ne odabere — ekran koji piše samo „Odaberite jezik" pomaže jedino onome ko
+već razumije bosanski. Nazivi jezika na dugmadima stalno stoje u svom pismu
+(Bosanski / English / العربية), pa se dugme može pogoditi i prije nego pitanje
+dođe na red. Kruženje počinje od jezika koji je preglednik nagovijestio.
+
+Izbor se pamti u kolačiću `treescape_jezik` godinu dana i **ekran se više nikada
+ne pojavljuje**. Ko se poslije predomisli, mijenja jezik u navigaciji.
 
 Izričit izbor uvijek pobjeđuje preglednik. Ko je jednom kliknuo „English", ne
 želi da mu se sajt vrati na bosanski samo zato što mu je Windows na tom jeziku.
+
+> Ulazni ekran je sloj **preko** sajta, a ne umjesto njega: sadržaj se iscrtava
+> normalno i ostaje u HTML-u, pa ga pretraživači i dalje vide. Bez JavaScripta
+> se ekran preskače (vidi `<noscript>` u `layout.tsx`) — inače bi zauvijek
+> stajao, jer se izbor bez JavaScripta ne može ni napraviti ni zapamtiti.
 
 **Šta se sve prevodi.** Cijela stranica, administracija, poruke o greškama iz
 API-ja i mailovi. Jezik na kojem je gost rezervisao upisuje se uz rezervaciju
@@ -132,7 +143,8 @@ Rječnici i sve ostalo ovdje ostaju isti — mijenja se samo gdje se jezik čita
 **Kako dodati četvrti jezik.**
 
 1. Dodaj oznaku u `LOCALES` i smjer u `DIRECTIONS`
-   ([`src/lib/i18n/config.ts`](src/lib/i18n/config.ts))
+   ([`src/lib/i18n/config.ts`](src/lib/i18n/config.ts)) — ulazni ekran sam
+   dobija novo dugme i novi jezik u kruženju
 2. Napravi `src/lib/i18n/dictionaries/<oznaka>.ts` po uzoru na `bs.ts`
 3. Upiši ga u `DICTIONARIES` ([`src/lib/i18n/index.ts`](src/lib/i18n/index.ts))
 4. Dodaj oblike množine u `plural` ([`src/lib/i18n/plural.ts`](src/lib/i18n/plural.ts))

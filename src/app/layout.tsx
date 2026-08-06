@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, Inter, Noto_Sans_Arabic } from 'next/font/google';
 
+import { LanguageGate } from '@/components/i18n/LanguageGate';
 import { LocaleProvider } from '@/components/i18n/LocaleProvider';
 import { env } from '@/lib/env';
 import { OG_LOCALES, directionOf, getStrings } from '@/lib/i18n';
-import { getLocale } from '@/lib/i18n/server';
+import { getChosenLocale, getLocale } from '@/lib/i18n/server';
 
 import './globals.css';
 
@@ -74,6 +75,10 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
 
+  // Ulazni ekran ide samo onome ko jezik još nije birao. `getLocale()` uvijek
+  // vrati neki jezik, pa se po njemu to ne može znati — zato zasebno pitanje.
+  const chosen = await getChosenLocale();
+
   return (
     <html
       lang={locale}
@@ -88,6 +93,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             mora vidjeti odmah, a ne ostati na opacity: 0. */}
         <noscript>
           <style>{`.reveal { opacity: 1 !important; transform: none !important; }`}</style>
+          {/* Bez JavaScripta se jezik ne može ni odabrati ni zapamtiti, pa bi
+              ulazni ekran zauvijek stajao preko sajta. Tada se preskače, a
+              posjetilac dobija jezik svog preglednika. */}
+          <style>{`#izbor-jezika { display: none !important; }`}</style>
         </noscript>
       </head>
       {/*
@@ -100,7 +109,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         ovom jednom elementu ne poredi. Djeca se i dalje provjeravaju normalno.
       */}
       <body className="min-h-dvh antialiased" suppressHydrationWarning>
-        <LocaleProvider locale={locale}>{children}</LocaleProvider>
+        <LocaleProvider locale={locale}>
+          {children}
+          {chosen === null && <LanguageGate suggested={locale} />}
+        </LocaleProvider>
       </body>
     </html>
   );

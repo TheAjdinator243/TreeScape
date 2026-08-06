@@ -29,6 +29,9 @@ export const ar: Dictionary = {
   language: {
     label: 'اللغة',
     names: { bs: 'Bosanski', en: 'English', ar: 'العربية' },
+    gateTitle: 'اختر لغتك',
+    gateLead: 'بأي لغة تريد تصفّح الموقع؟',
+    gateAria: 'اختر لغتك: Bosanski، English، العربية',
   },
 
   nav: {

@@ -1,4 +1,3 @@
-import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import { getServerStrings } from '@/lib/i18n/server';
 
 /**
@@ -22,10 +21,6 @@ export async function Footer() {
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-moss-300/80">
             {t.site.description}
           </p>
-
-          <div className="mt-6">
-            <LanguageSwitcher tone="dark" />
-          </div>
         </div>
 
         <div>

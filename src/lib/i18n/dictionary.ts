@@ -71,6 +71,14 @@ export interface Dictionary {
     label: string;
     /** Naziv svakog jezika — uvijek na tom jeziku, da ga prepozna i onaj ko sajt ne razumije. */
     names: Record<Locale, string>;
+    /** Pitanje na ulaznom ekranu, prije nego se sajt uopće vidi. */
+    gateTitle: string;
+    gateLead: string;
+    /**
+     * Nepromjenjiv opis za čitače ekrana. Naslov na ulazu se smjenjuje kroz
+     * jezike, a čitač ekrana ne smije to čitati u krug.
+     */
+    gateAria: string;
   };
 
   nav: {
