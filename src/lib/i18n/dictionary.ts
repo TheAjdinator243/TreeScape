@@ -138,6 +138,10 @@ export interface Dictionary {
     lead: string;
     directions: string;
     mapTitle: string;
+    /** Tekst dugmeta koje otvara Google Mape u novoj kartici. */
+    openInMaps: string;
+    /** Dodaje se čitačima ekrana — link napušta sajt. */
+    opensInNewTab: string;
     driveTime: (minutes: number) => string;
     places: Record<PlaceKey, string>;
   };

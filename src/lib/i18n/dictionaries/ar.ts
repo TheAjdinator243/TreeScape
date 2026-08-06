@@ -115,6 +115,8 @@ export const ar: Dictionary = {
     lead: 'قريب بما يكفي للوصول بسهولة، وبعيد بما يكفي لئلا تسمع سوى الغابة.',
     directions: 'نرسل العنوان الدقيق وإرشادات الوصول بعد تأكيد الحجز.',
     mapTitle: 'خريطة موقع فيلا TreeScape',
+    openInMaps: 'افتح في خرائط جوجل',
+    opensInNewTab: 'يُفتح في تبويب جديد',
     driveTime: (minutes) => `${minutes} دقيقة بالسيارة`,
     places: {
       city: 'سراييفو',

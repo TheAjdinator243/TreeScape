@@ -109,6 +109,8 @@ export const bs: Dictionary = {
     lead: 'Dovoljno blizu da se lako stigne, dovoljno daleko da se čuje samo šuma.',
     directions: 'Tačnu adresu i uputstva za dolazak šaljemo nakon potvrde rezervacije.',
     mapTitle: 'Karta lokacije vile TreeScape',
+    openInMaps: 'Otvori u Google Mapama',
+    opensInNewTab: 'otvara se u novoj kartici',
     driveTime: (minutes) => `${minutes} min vožnje`,
     places: {
       city: 'Sarajevo',

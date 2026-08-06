@@ -110,6 +110,8 @@ export const en: Dictionary = {
     lead: 'Close enough to reach easily, far enough to hear nothing but the forest.',
     directions: 'We send the exact address and directions once your booking is confirmed.',
     mapTitle: 'Map of the TreeScape villa location',
+    openInMaps: 'Open in Google Maps',
+    opensInNewTab: 'opens in a new tab',
     driveTime: (minutes) => `${minutes} min drive`,
     places: {
       city: 'Sarajevo',
