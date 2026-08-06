@@ -88,7 +88,13 @@ export const ar: Dictionary = {
     lead: 'كل شيء موجود بالفعل — لا تحمل معك سوى حقيبتك.',
     items: {
       pool: { label: 'مسبح', note: 'مُدفّأ بمضخة حرارية' },
-      fountain: { label: 'نافورة', note: 'في الفناء، بجوار مكان الجلوس' },
+      // Isti razlog kao u engleskom: نافورة je bilo koja fontana, pa se u
+      // opisu kaže da je osmanska. Riječ شاذروان jeste tačna, ali je danas
+      // mnogi ne bi prepoznali, pa ostaje kao objašnjenje uz nju.
+      fountain: {
+        label: 'نافورة عثمانية',
+        note: 'شاذروان تقليدي في الفناء، بجوار مكان الجلوس',
+      },
       wifi: { label: 'إنترنت', note: 'واي فاي في المنزل كله' },
       kitchen: { label: 'مطبخ مجهّز', note: 'كل الأواني والأجهزة' },
       fire: { label: 'مدفأة حطب', note: 'الحطب متوفر' },

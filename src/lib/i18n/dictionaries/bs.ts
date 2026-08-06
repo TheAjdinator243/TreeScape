@@ -88,7 +88,7 @@ export const bs: Dictionary = {
     lead: 'Sve je već tu — vi ponesite samo torbu.',
     items: {
       pool: { label: 'Bazen', note: 'Grijan toplotnom pumpom' },
-      fountain: { label: 'Šadrvan', note: 'U dvorištu, uz sjedište' },
+      fountain: { label: 'Šadrvan', note: 'U dvorištu, uz sjedeću garnituru' },
       wifi: { label: 'Internet', note: 'Bežični, u cijeloj kući' },
       kitchen: { label: 'Opremljena kuhinja', note: 'Sve posuđe i aparati' },
       fire: { label: 'Kamin', note: 'Drva su obezbijeđena' },

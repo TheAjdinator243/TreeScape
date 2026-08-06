@@ -83,7 +83,13 @@ export const en: Dictionary = {
     lead: 'Everything is already here — just bring your bag.',
     items: {
       pool: { label: 'Swimming pool', note: 'Heated by a heat pump' },
-      fountain: { label: 'Fountain', note: 'In the yard, next to the seating' },
+      // A šadrvan is an Ottoman courtyard fountain, not a garden ornament —
+      // plain "Fountain" loses the thing entirely, so the label names what it
+      // is and the note keeps the local word.
+      fountain: {
+        label: 'Ottoman fountain',
+        note: 'A traditional šadrvan in the yard, by the seating',
+      },
       wifi: { label: 'Internet', note: 'Wi-Fi throughout the house' },
       kitchen: { label: 'Equipped kitchen', note: 'All cookware and appliances' },
       fire: { label: 'Fireplace', note: 'Firewood provided' },
