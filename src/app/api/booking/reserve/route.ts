@@ -5,7 +5,6 @@ import { createBooking } from '@/lib/booking-service';
 import {
   sendGuestCashRequest,
   sendGuestConfirmation,
-  sendGuestTransferInstructions,
   sendOwnerNotification,
 } from '@/lib/email';
 import { localeFromRequest } from '@/lib/i18n';
@@ -51,16 +50,9 @@ export async function POST(request: Request) {
 }
 
 async function notifyByMethod(result: Extract<Awaited<ReturnType<typeof createBooking>>, { ok: true }>) {
-  const { booking, settings } = result;
+  const { booking } = result;
 
   switch (booking.payment_method) {
-    case 'bank_transfer':
-      await Promise.all([
-        sendGuestTransferInstructions(booking, settings),
-        sendOwnerNotification(booking, 'bank_transfer'),
-      ]);
-      break;
-
     case 'cash':
       await Promise.all([
         sendGuestCashRequest(booking),

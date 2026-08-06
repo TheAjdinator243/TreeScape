@@ -2,7 +2,7 @@ import 'server-only';
 
 import { Resend } from 'resend';
 
-import { formatDateTime, formatRange } from './dates';
+import { formatRange } from './dates';
 import { env, isEmailConfigured } from './env';
 import {
   DEFAULT_LOCALE,
@@ -11,9 +11,8 @@ import {
   normalizeLocale,
   type Locale,
 } from './i18n';
-import { transferInstructions } from './payments';
 import { formatMoney } from './pricing';
-import type { Booking, Settings } from './types';
+import type { Booking } from './types';
 
 /**
  * Mailovi su NEOBAVEZNI. Bez RESEND_API_KEY aplikacija radi potpuno normalno —
@@ -131,52 +130,6 @@ export async function sendGuestConfirmation(booking: Booking): Promise<void> {
   );
 }
 
-/** Gostu — podaci za uplatu na račun. Ovo je mail koji stvarno mora stići. */
-export async function sendGuestTransferInstructions(
-  booking: Booking,
-  settings: Settings
-): Promise<void> {
-  if (!booking.guest_email) return;
-
-  const locale = bookingLocale(booking);
-  const t = getStrings(locale);
-  const dir = directionOf(locale);
-  const start = dir === 'rtl' ? 'right' : 'left';
-  const end = dir === 'rtl' ? 'left' : 'right';
-
-  const p = transferInstructions(booking, settings);
-  const row = (label: string, value: string, big = false) =>
-    `<tr>
-       <td style="padding:10px 0;color:#6b6157;font-size:14px;text-align:${start}">${label}</td>
-       <td style="padding:10px 0;text-align:${end};font-weight:600;font-size:${big ? '18px' : '14px'};font-family:${big ? 'monospace' : 'inherit'}">${value}</td>
-     </tr>`;
-
-  await send(
-    booking.guest_email,
-    subject(locale, t.email.transferSubject),
-    layout(
-      locale,
-      t.email.transferTitle,
-      `${intro(booking, locale, t.email.transferBody)}
-       ${detailRows(booking, locale)}
-       <div style="background:#f4ede0;border-radius:12px;padding:18px;margin:20px 0 0">
-         <p style="margin:0 0 10px;font-weight:600;color:#1f4436;font-size:15px">${t.email.transferHeading}</p>
-         <table style="width:100%;border-collapse:collapse">
-           ${row(t.email.transferRecipient, p.accountName)}
-           ${p.bankName ? row(t.email.transferBank, p.bankName) : ''}
-           ${row(t.email.transferIban, p.iban, true)}
-           ${row(t.email.transferReference, p.reference, true)}
-           ${row(t.email.transferAmount, formatMoney(p.amountCents, p.currencySymbol, locale), true)}
-           ${p.deadline ? row(t.email.transferDeadline, formatDateTime(p.deadline, locale)) : ''}
-         </table>
-       </div>
-       <p style="font-size:13px;line-height:1.6;color:#b7791f;margin:16px 0 0">
-         ${t.email.transferWarning}
-       </p>`
-    )
-  );
-}
-
 /** Gostu — zahtjev za plaćanje gotovinom je zaprimljen. */
 export async function sendGuestCashRequest(booking: Booking): Promise<void> {
   if (!booking.guest_email) return;
@@ -244,26 +197,15 @@ export async function sendGuestCashRejected(booking: Booking): Promise<void> {
  */
 export async function sendOwnerNotification(
   booking: Booking,
-  kind: 'cash' | 'bank_transfer' | 'card'
+  kind: 'cash' | 'card'
 ): Promise<void> {
   if (!env.email.ownerEmail) return;
 
   const locale = DEFAULT_LOCALE;
   const t = getStrings(locale);
 
-  const title =
-    kind === 'cash'
-      ? t.email.ownerCashTitle
-      : kind === 'bank_transfer'
-        ? t.email.ownerTransferTitle
-        : t.email.ownerCardTitle;
-
-  const hint =
-    kind === 'cash'
-      ? t.email.ownerCashHint
-      : kind === 'bank_transfer'
-        ? t.email.ownerTransferHint
-        : '';
+  const title = kind === 'cash' ? t.email.ownerCashTitle : t.email.ownerCardTitle;
+  const hint = kind === 'cash' ? t.email.ownerCashHint : '';
 
   const action =
     kind === 'card'

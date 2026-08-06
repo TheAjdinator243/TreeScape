@@ -6,7 +6,6 @@ import { useState, useTransition } from 'react';
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { formatDateTime, formatRange, todayStr } from '@/lib/dates';
 import { count } from '@/lib/i18n';
-import { paymentReference } from '@/lib/payments';
 import { formatMoney } from '@/lib/pricing';
 import type { Booking, RatePeriod, Settings } from '@/lib/types';
 
@@ -30,7 +29,6 @@ export function Dashboard({
   const [error, setError] = useState<string | null>(null);
 
   const requests = bookings.filter((b) => b.status === 'pending_cash');
-  const transfers = bookings.filter((b) => b.status === 'pending_transfer');
   const blocked = bookings.filter((b) => b.status === 'blocked' && b.end_date >= todayStr());
 
   /** Zajednički poziv admin API-ja: uradi, pa osvježi podatke sa servera. */
@@ -57,14 +55,7 @@ export function Dashboard({
   }
 
   async function decide(bookingId: string, decision: 'approve' | 'reject') {
-    const isTransfer = transfers.some((b) => b.id === bookingId);
-    const message =
-      decision === 'reject'
-        ? t.admin.rejectConfirm
-        : isTransfer
-          ? t.admin.markPaidConfirm
-          : t.admin.approveConfirm;
-
+    const message = decision === 'reject' ? t.admin.rejectConfirm : t.admin.approveConfirm;
     if (!window.confirm(message)) return;
 
     await call('/api/admin/bookings', {
@@ -84,7 +75,7 @@ export function Dashboard({
   }
 
   const tabs: { id: Tab; label: string; badge?: number }[] = [
-    { id: 'requests', label: t.admin.tabRequests, badge: requests.length + transfers.length },
+    { id: 'requests', label: t.admin.tabRequests, badge: requests.length },
     { id: 'bookings', label: t.admin.tabBookings },
     { id: 'calendar', label: t.admin.tabCalendar },
     { id: 'pricing', label: t.admin.tabPricing },
@@ -139,71 +130,7 @@ export function Dashboard({
         <div className={pending ? 'pointer-events-none opacity-60 transition-opacity' : ''}>
           {tab === 'requests' && (
             <>
-              {/* Uplate na račun idu prve — tu novac stvarno čeka na izvodu. */}
-              <Section heading={t.admin.transfersHeading}>
-                {transfers.length === 0 ? (
-                  <Empty>{t.admin.transfersEmpty}</Empty>
-                ) : (
-                  <ul className="space-y-4">
-                    {transfers.map((booking) => (
-                      <li key={booking.id} className="card p-5">
-                        <div className="flex flex-wrap items-start justify-between gap-4">
-                          <div className="min-w-0">
-                            <p className="font-display text-lg text-forest-900">
-                              {formatRange(booking.start_date, booking.end_date, locale)}
-                            </p>
-                            <p className="mt-1 text-sm text-ink-700">
-                              {booking.guest_name} ·{' '}
-                              {count(locale, booking.guests ?? 1, t.common.guests)}
-                            </p>
-                            <p className="mt-0.5 text-sm text-ink-500">
-                              {booking.guest_email} · {booking.guest_phone}
-                            </p>
-                            <p className="mt-2 text-sm">
-                              <span className="text-ink-500">{t.admin.transferRef}: </span>
-                              <span dir="ltr" className="font-mono font-semibold text-forest-800">
-                                {paymentReference(booking.public_token)}
-                              </span>
-                            </p>
-                            {booking.hold_expires_at && (
-                              <p className="mt-1 text-xs text-warn-600">
-                                {t.admin.deadlineAt}: {formatDateTime(booking.hold_expires_at, locale)}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="text-end">
-                            <p className="font-display text-2xl text-forest-800">
-                              {formatMoney(booking.total_cents, settings.currency_symbol, locale)}
-                            </p>
-                            <p className="text-xs text-ink-400">{t.admin.byTransfer}</p>
-                          </div>
-                        </div>
-
-                        <div className="mt-5 flex gap-3 border-t border-sand-200 pt-4">
-                          <button
-                            type="button"
-                            onClick={() => void decide(booking.id, 'approve')}
-                            className="btn-primary flex-1 py-2.5 text-xs"
-                          >
-                            {t.admin.markPaid}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void decide(booking.id, 'reject')}
-                            className="btn-ghost flex-1 py-2.5 text-xs"
-                          >
-                            {t.admin.reject}
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Section>
-
-              <div className="mt-12">
-                <Section heading={t.admin.requestsHeading}>
+              <Section heading={t.admin.requestsHeading}>
                   {requests.length === 0 ? (
                 <Empty>{t.admin.requestsEmpty}</Empty>
               ) : (
@@ -260,8 +187,7 @@ export function Dashboard({
                   ))}
                 </ul>
               )}
-                </Section>
-              </div>
+              </Section>
             </>
           )}
 
