@@ -120,7 +120,7 @@ Izričit izbor uvijek pobjeđuje preglednik. Ko je jednom kliknuo „English", n
 
 **Šta se sve prevodi.** Cijela stranica, administracija, poruke o greškama iz
 API-ja i mailovi. Jezik na kojem je gost rezervisao upisuje se uz rezervaciju
-(kolona `bookings.locale`, migracija 0003) — jer potvrda ili odbijanje zahtjeva
+(kolona `bookings.locale`) — jer potvrda ili odbijanje zahtjeva
 za gotovinu stižu danima kasnije, iz administracije, kad od gosta više nema ni
 kolačića ni zaglavlja. Mailovi vlasniku idu na bosanskom, ali nose podatak o
 tome kojim jezikom gost govori.
@@ -151,7 +151,7 @@ Rječnici i sve ostalo ovdje ostaju isti — mijenja se samo gdje se jezik čita
 3. Upiši ga u `DICTIONARIES` ([`src/lib/i18n/index.ts`](src/lib/i18n/index.ts))
 4. Dodaj oblike množine u `plural` ([`src/lib/i18n/plural.ts`](src/lib/i18n/plural.ts))
    i obrasce datuma u `PATTERNS` ([`src/lib/dates.ts`](src/lib/dates.ts))
-5. Proširi `bookings_locale_check` novom migracijom
+5. Proširi `bookings_locale_check` u [`0001_init.sql`](supabase/migrations/0001_init.sql)
 
 Ako nešto zaboraviš, TypeScript prijavi grešku prije nego što se sajt uopće
 pokrene — tip `Dictionary` traži svaki ključ.
@@ -165,15 +165,16 @@ promjene uživo u sve otvorene preglednike.
 
 **1.** Otvori nalog na [supabase.com](https://supabase.com) i napravi novi projekat.
 
-**2.** U Supabase-u idi na **SQL Editor** i pokreni **sve** migracije, redom:
+**2.** U Supabase-u idi na **SQL Editor** i pokreni **jednu jedinu** datoteku:
 
-1. [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
-2. [`supabase/migrations/0002_bez_stripea.sql`](supabase/migrations/0002_bez_stripea.sql)
-3. [`supabase/migrations/0003_jezik_gosta.sql`](supabase/migrations/0003_jezik_gosta.sql)
-4. [`supabase/migrations/0004_vikend_cijena.sql`](supabase/migrations/0004_vikend_cijena.sql)
+[`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
 
-Kopiraj cijeli sadržaj datoteke, zalijepi i klikni **Run**. Očekivani odgovor je
+Kopiraj cijeli sadržaj, zalijepi i klikni **Run**. Očekivani odgovor je
 _"Success. No rows returned"_ — to je uspjeh, migracije ne vraćaju redove.
+
+> Bezbjedno je pokrenuti i više puta: ništa se ne briše i postojeće rezervacije
+> ostaju netaknute. Ako ti se ikad učini da je baza u čudnom stanju, samo je
+> pokreni ponovo.
 
 **3.** Idi na **Project Settings → API** i prepiši tri vrijednosti u `.env.local`
 (ili pokreni `npm run setup`):
@@ -395,7 +396,7 @@ npm test
 - **`src/lib/i18n/i18n.test.ts`** — prepoznavanje jezika iz kolačića i zaglavlja,
   množina na sva tri jezika (uključujući arapsku dvojinu), obrasci datuma i novca,
   i provjera da nijedan prevod nije ostao prazan
-- **`src/lib/schema.test.ts`** — pokreće sve migracije na **pravom Postgresu**
+- **`src/lib/schema.test.ts`** — pokreće shemu na **pravom Postgresu**
   (PGlite, Postgres preveden u WebAssembly) i provjerava da je dvostruki booking
   zaista nemoguć, da otkazivanje oslobađa termin, da okidač održava kalendar i da
   isteklo držanje termina propada kako treba
@@ -447,7 +448,7 @@ src/
 ├── proxy.ts                      čuvar administracije
 └── assets/gallery/               fotografije
 
-supabase/migrations/              shema baze — pokreni sve, redom
+supabase/migrations/              shema baze — jedna datoteka, pokreni je jednom
 scripts/                          npm run setup i npm run doctor
 ```
 

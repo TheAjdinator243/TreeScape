@@ -108,46 +108,33 @@ if (!url || !anonKey || !serviceKey) {
     if (error) missing.push(table);
   }
 
-  // Tabela može postojati, a da joj fali kolona iz kasnije migracije — npr.
-  // ako je 0002 pukla na pola. Zato se provjeravaju i pojedine kolone.
+  // Tabela može postojati, a da joj fali kolona — npr. ako je migracija
+  // pukla na pola, ili ako baza još nosi stariju verziju sheme. Zato se
+  // provjeravaju i pojedine kolone, a ne samo postojanje tabela.
   const columnChecks = [
-    { table: 'bookings', column: 'payment_reference', migration: '0002' },
-    { table: 'settings', column: 'bank_iban', migration: '0002' },
-    { table: 'bookings', column: 'locale', migration: '0003' },
-    { table: 'settings', column: 'weekend_price_cents', migration: '0004' },
+    { table: 'bookings', column: 'payment_reference' },
+    { table: 'bookings', column: 'locale' },
+    { table: 'settings', column: 'bank_iban' },
+    { table: 'settings', column: 'weekend_price_cents' },
   ];
   const missingColumns = [];
 
-  for (const { table, column, migration } of columnChecks) {
+  for (const { table, column } of columnChecks) {
     if (missing.includes(table)) continue;
     const { error } = await db.from(table).select(column).limit(1);
-    if (error) missingColumns.push(`${table}.${column} (migracija ${migration})`);
+    if (error) missingColumns.push(`${table}.${column}`);
   }
 
+  const RUN_IT = 'Supabase → SQL Editor → zalijepi supabase/migrations/0001_init.sql → Run';
+
   if (missing.length === tables.length) {
-    bad(
-      'nijedna tabela ne postoji — migracije nisu pokrenute',
-      'Supabase → SQL Editor → pokreni sve migracije iz supabase/migrations, redom'
-    );
-  } else if (missing.includes('payment_events') && missing.length === 1) {
-    bad(
-      'druga migracija nije pokrenuta',
-      'Supabase → SQL Editor → zalijepi supabase/migrations/0002_bez_stripea.sql → Run'
-    );
+    bad('nijedna tabela ne postoji — shema nije pokrenuta', RUN_IT);
   } else if (missing.length > 0) {
-    bad(
-      `nedostaju tabele: ${missing.join(', ')}`,
-      'pokreni migracije iz supabase/migrations redom, u SQL Editoru'
-    );
+    bad(`nedostaju tabele: ${missing.join(', ')}`, RUN_IT);
   } else if (missingColumns.length > 0) {
-    // Poruka imenuje najstariju migraciju koja fali — nju treba pokrenuti prvu.
-    const oldest = missingColumns
-      .map((entry) => entry.slice(entry.lastIndexOf('migracija ') + 'migracija '.length, -1))
-      .sort()[0];
-    bad(
-      `shema je zastarjela — nedostaje: ${missingColumns.join(', ')}`,
-      `Supabase → SQL Editor → pokreni supabase/migrations/${oldest}_*.sql pa sve novije → Run`
-    );
+    // Shema je iz starije verzije projekta. Datoteka je pisana tako da se
+    // smije pokrenuti i preko postojeće baze — ništa se ne briše.
+    bad(`shema je zastarjela — nedostaje: ${missingColumns.join(', ')}`, RUN_IT);
   } else {
     ok('sve tabele postoje', tables.join(', '));
 

@@ -15,12 +15,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
  */
 
 const MIGRATIONS_DIR = path.resolve(import.meta.dirname, '../../supabase/migrations');
-const MIGRATIONS = [
-  '0001_init.sql',
-  '0002_bez_stripea.sql',
-  '0003_jezik_gosta.sql',
-  '0004_vikend_cijena.sql',
-];
+const MIGRATION = '0001_init.sql';
 
 let db: PGlite;
 
@@ -61,16 +56,11 @@ beforeAll(async () => {
   // PGlite nema Supabase-ove role (anon/authenticated) ni publikaciju
   // supabase_realtime. Ta dva mjesta izbacujemo; sve ostalo — tabele,
   // ograničenja, okidači, funkcije — testira se tačno onako kako će raditi.
-  //
-  // Migracije se puštaju redom, kao na pravoj bazi, pa se usput provjerava
-  // i da svaka sljedeća uredno legne na shemu koju je ostavila prethodna.
-  for (const file of MIGRATIONS) {
-    const sql = readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8')
-      .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
-      .replace(/^\s*to anon, authenticated\s*$/gim, '');
+  const sql = readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')
+    .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
+    .replace(/^\s*to anon, authenticated\s*$/gim, '');
 
-    await db.exec(sql);
-  }
+  await db.exec(sql);
 }, 60_000);
 
 afterAll(async () => {
@@ -78,6 +68,32 @@ afterAll(async () => {
 });
 
 describe('migracija', () => {
+  it('može se pokrenuti dva puta bez štete', async () => {
+    // Vlasnik ne mora pamtiti je li već pokrenuo — a ni backup ne smije
+    // obrisati ono što u bazi već stoji.
+    await db.query(
+      `insert into bookings
+         (public_token, guest_name, guest_email, start_date, end_date, status, payment_method)
+       values ('preziveo','Gost','g@primjer.ba','2030-05-01','2030-05-03','confirmed','cash')`
+    );
+
+    const sql = readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')
+      .replace(/do \$\$\s*begin\s*alter publication[\s\S]*?end;\s*\$\$;/i, '')
+      .replace(/^\s*to anon, authenticated\s*$/gim, '');
+    await db.exec(sql);
+
+    const { rows } = await db.query<{ count: string }>(
+      `select count(*) from bookings where public_token = 'preziveo'`
+    );
+    expect(Number(rows[0]?.count)).toBe(1);
+
+    // Postavke i dalje imaju tačno jedan red
+    const settings = await db.query<{ count: string }>('select count(*) from settings');
+    expect(Number(settings.rows[0]?.count)).toBe(1);
+
+    await db.query(`delete from bookings where public_token = 'preziveo'`);
+  });
+
   it('kreira sve tabele', async () => {
     const { rows } = await db.query<{ table_name: string }>(
       `select table_name from information_schema.tables
@@ -92,7 +108,7 @@ describe('migracija', () => {
     ]);
   });
 
-  it('nema više ničega vezanog za Stripe', async () => {
+  it('nigdje nije ostalo ništa vezano za Stripe', async () => {
     const { rows } = await db.query<{ column_name: string }>(
       `select column_name from information_schema.columns
         where table_schema = 'public' and column_name like '%stripe%'`
