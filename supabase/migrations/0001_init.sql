@@ -97,29 +97,64 @@ create table if not exists public.bookings (
 --  Bez ovoga migracija pukne s "column ... does not exist" i baza ostane
 --  na pola posla.
 
--- Nazivi iz vremena Stripe-a → neutralni. Preimenovanje čuva podatke.
+-- Nazivi iz vremena Stripe-a → neutralni.
+--
+--  Preimenovanje čuva podatke, za razliku od brisanja i ponovnog pravljenja.
+--  Ali se radi SAMO ako novo ime još ne postoji: baza kroz koju je nekoliko
+--  puta prošla i stara i nova shema zna imati oba imena istovremeno, i tada
+--  `rename` pukne s "relation already exists". Tada se stari ostatak ostavlja
+--  na miru — ništa se ne briše — samo mu se uključi RLS da ne bude javno
+--  čitljiv kroz anon ključ.
 do $$
+declare
+  has_old boolean;
+  has_new boolean;
 begin
-  if exists (select 1 from information_schema.columns
-              where table_schema = 'public' and table_name = 'bookings'
-                and column_name = 'stripe_session_id') then
+  -- bookings.stripe_session_id → payment_reference
+  select count(*) filter (where column_name = 'stripe_session_id') > 0,
+         count(*) filter (where column_name = 'payment_reference') > 0
+    into has_old, has_new
+    from information_schema.columns
+   where table_schema = 'public' and table_name = 'bookings';
+
+  if has_old and not has_new then
     alter table public.bookings rename column stripe_session_id to payment_reference;
   end if;
 
-  if exists (select 1 from information_schema.columns
-              where table_schema = 'public' and table_name = 'bookings'
-                and column_name = 'stripe_payment_intent_id') then
+  -- bookings.stripe_payment_intent_id → payment_id
+  select count(*) filter (where column_name = 'stripe_payment_intent_id') > 0,
+         count(*) filter (where column_name = 'payment_id') > 0
+    into has_old, has_new
+    from information_schema.columns
+   where table_schema = 'public' and table_name = 'bookings';
+
+  if has_old and not has_new then
     alter table public.bookings rename column stripe_payment_intent_id to payment_id;
   end if;
 
-  if exists (select 1 from information_schema.tables
-              where table_schema = 'public' and table_name = 'stripe_events') then
+  -- stripe_events → payment_events
+  select count(*) filter (where table_name = 'stripe_events') > 0,
+         count(*) filter (where table_name = 'payment_events') > 0
+    into has_old, has_new
+    from information_schema.tables
+   where table_schema = 'public';
+
+  if has_old and not has_new then
     alter table public.stripe_events rename to payment_events;
+  elsif has_old and has_new then
+    -- Obje postoje: ostatak ranijih pokušaja. Ne diramo ga, samo zatvaramo.
+    execute 'alter table public.stripe_events enable row level security';
+    raise notice 'Zatečena je i stara tabela stripe_events — ostavljena je netaknuta, samo joj je uključen RLS. Možeš je obrisati ručno kad se uvjeriš da je prazna.';
   end if;
 
-  if exists (select 1 from information_schema.columns
-              where table_schema = 'public' and table_name = 'payment_events'
-                and column_name = 'event_id') then
+  -- payment_events.event_id → external_id
+  select count(*) filter (where column_name = 'event_id') > 0,
+         count(*) filter (where column_name = 'external_id') > 0
+    into has_old, has_new
+    from information_schema.columns
+   where table_schema = 'public' and table_name = 'payment_events';
+
+  if has_old and not has_new then
     alter table public.payment_events rename column event_id to external_id;
   end if;
 end;

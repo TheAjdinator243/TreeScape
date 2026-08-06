@@ -126,6 +126,48 @@ describe('nadogradnja sa starije sheme', () => {
 
     await old.close();
   }, 60_000);
+
+  /**
+   * Baza kroz koju je nekoliko puta prošla i stara i nova shema zna imati
+   * OBA imena istovremeno — i `stripe_events` i `payment_events`. Tada
+   * `rename` pukne s "relation payment_events already exists" i migracija
+   * stane na pola.
+   *
+   * Dovoljno je pokrenuti staru shemu, preimenovati, pa pokrenuti staru
+   * ponovo: `create table if not exists` opet napravi stripe_events.
+   */
+  it('preživi bazu koja ima i staro i novo ime tabele', async () => {
+    const messy = new PGlite();
+    const stara = prepare(readFileSync(path.join(FIXTURES_DIR, 'stara-shema.sql'), 'utf8'));
+
+    await messy.exec(stara);
+    await messy.exec('alter table public.stripe_events rename to payment_events');
+    await messy.exec(stara);
+
+    const before = await messy.query<{ table_name: string }>(
+      `select table_name from information_schema.tables
+        where table_schema = 'public' and table_name like '%events%'`
+    );
+    expect(before.rows).toHaveLength(2);
+
+    // Ovo je puklo prije nego su preimenovanja dobila i provjeru odredišta.
+    await expect(
+      messy.exec(prepare(readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')))
+    ).resolves.toBeDefined();
+
+    const settings = await messy.query<{ weekend_price_cents: number }>(
+      'select weekend_price_cents from settings where id = 1'
+    );
+    expect(settings.rows[0]?.weekend_price_cents).toBe(30000);
+
+    // Ostatak se ne briše, ali ne smije ostati javno čitljiv.
+    const rls = await messy.query<{ relrowsecurity: boolean }>(
+      `select relrowsecurity from pg_class where relname = 'stripe_events'`
+    );
+    expect(rls.rows[0]?.relrowsecurity).toBe(true);
+
+    await messy.close();
+  }, 60_000);
 });
 
 describe('migracija', () => {
