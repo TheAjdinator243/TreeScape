@@ -20,6 +20,7 @@
 --    7. sigurnost (RLS)
 --    8. Realtime
 --    9. početni red postavki
+--   10. osvježavanje keša sheme (bez ovoga aplikacija ne vidi nove kolone)
 -- ═══════════════════════════════════════════════════════════════════════════
 
 
@@ -519,7 +520,26 @@ on conflict (id) do nothing;
 
 
 -- ───────────────────────────────────────────────────────────────────────────
---  10. PROVJERA
+--  10. OSVJEŽAVANJE KEŠA SHEME  ← NE BRIŠI OVAJ DIO
+--
+--  Aplikacija ne razgovara s Postgresom direktno nego preko PostgREST-a, a
+--  on drži KEŠIRANU sliku sheme. Kad se tabeli doda kolona, taj keš zna
+--  ostati star — i tada `select('*')` vrati red BEZ nove kolone. Bez greške,
+--  bez ijednog traga.
+--
+--  Tako je `weekend_price_cents` jednom stajao u bazi na 30000, SQL Editor ga
+--  je uredno pokazivao, a sajt je subotu i dalje naplaćivao po osnovnoj
+--  cijeni. Nijedno ponovno pokretanje migracije to nije moglo popraviti, jer
+--  problem nije bio u bazi nego u sloju iznad nje.
+--
+--  Ovaj jedan red mu kaže da ponovo pročita shemu.
+-- ───────────────────────────────────────────────────────────────────────────
+
+notify pgrst, 'reload schema';
+
+
+-- ───────────────────────────────────────────────────────────────────────────
+--  11. PROVJERA
 --
 --  Ako je ovdje sve prošlo, u izlazu piše "TreeScape: shema je spremna."
 --  Ako nešto fali, migracija pukne s jasnom porukom umjesto da tiho ostavi

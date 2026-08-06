@@ -51,9 +51,6 @@ export interface GalleryImage {
 /** Velika slika na vrhu stranice. Opis stoji u rječniku (`hero.imageAlt`). */
 export const HERO_IMAGE = slika01;
 
-/** Slika za dijeljenje na društvenim mrežama (Open Graph). */
-export const OG_IMAGE = slika01;
-
 /** Slika uz tekst "O kući". Opis stoji u rječniku (`about.imageAlt`). */
 export const ABOUT_IMAGE = slika03;
 

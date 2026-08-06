@@ -210,11 +210,6 @@ export function formatLong(value: DateStr, locale: Locale = DEFAULT_LOCALE): str
   return format(fromDateStr(value), patterns(locale).long, { locale: dateLocale(locale) });
 }
 
-/** npr. "5. aug" */
-export function formatShort(value: DateStr, locale: Locale = DEFAULT_LOCALE): string {
-  return format(fromDateStr(value), patterns(locale).short, { locale: dateLocale(locale) });
-}
-
 /** npr. "5.8.2026." */
 export function formatNumeric(value: DateStr, locale: Locale = DEFAULT_LOCALE): string {
   return format(fromDateStr(value), patterns(locale).numeric, { locale: dateLocale(locale) });

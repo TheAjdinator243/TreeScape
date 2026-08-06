@@ -65,6 +65,68 @@ export async function getRatePeriods(): Promise<RatePeriod[]> {
   return (data ?? []) as RatePeriod[];
 }
 
+/**
+ * Postavke iz baze, s popunjenim rupama i glasnom prijavom ako ih ima.
+ *
+ * ── Zašto ovo postoji ──────────────────────────────────────────────────────
+ * `select('*')` ne pita Postgres direktno nego PostgREST, koji drži KEŠIRANU
+ * sliku sheme. Kad se tabeli doda kolona, taj keš zna ostati star — i tada
+ * `*` vrati red BEZ nove kolone. Bez greške, bez ijednog traga u logu.
+ *
+ * To se već desilo: `weekend_price_cents` je u bazi stajao na 30000, SQL
+ * Editor ga je uredno pokazivao, a aplikacija ga nije vidjela. Posljedica je
+ * bila `undefined > 0` → `false`, pa je vikend tiho išao po osnovnoj cijeni.
+ * Gost je plaćao 250 umjesto 300, a nigdje se nije imalo šta pročitati.
+ *
+ * Zato se svaka vrijednost sada provjerava. Ako je nema, uzima se
+ * podrazumijevana (da sajt radi ispravno) i ispisuje se tačno koja kolona
+ * fali i šta uraditi (da se problem vidi, umjesto da se plaća).
+ */
+function normalizeSettings(row: Record<string, unknown>): Settings {
+  const missing: string[] = [];
+
+  function pick<K extends keyof Settings>(key: K): Settings[K] {
+    const value = row[key as string];
+    const expected = typeof DEMO_SETTINGS[key];
+
+    if (typeof value === expected && value !== null) return value as Settings[K];
+
+    missing.push(key as string);
+    return DEMO_SETTINGS[key];
+  }
+
+  const settings: Settings = {
+    id: pick('id'),
+    default_nightly_cents: pick('default_nightly_cents'),
+    weekend_price_cents: pick('weekend_price_cents'),
+    cleaning_fee_cents: pick('cleaning_fee_cents'),
+    currency: pick('currency'),
+    currency_symbol: pick('currency_symbol'),
+    min_nights: pick('min_nights'),
+    max_nights: pick('max_nights'),
+    max_guests: pick('max_guests'),
+    checkin_time: pick('checkin_time'),
+    checkout_time: pick('checkout_time'),
+    hold_minutes: pick('hold_minutes'),
+    bank_account_name: pick('bank_account_name'),
+    bank_name: pick('bank_name'),
+    bank_iban: pick('bank_iban'),
+    transfer_days: pick('transfer_days'),
+  };
+
+  if (missing.length > 0) {
+    console.error(
+      `[treescape] POSTAVKE NEPOTPUNE — baza ne vraća kolone: ${missing.join(', ')}.\n` +
+        '  Umjesto njih su uzete podrazumijevane vrijednosti, pa cijene možda nisu one koje si postavio.\n' +
+        '  1) Pokreni supabase/migrations/0001_init.sql u Supabase → SQL Editor\n' +
+        "  2) Pa pokreni: notify pgrst, 'reload schema';\n" +
+        '  (Druga stavka je bitna: PostgREST drži keširanu shemu i ne vidi nove kolone dok mu se ne kaže.)'
+    );
+  }
+
+  return settings;
+}
+
 export async function getSettings(): Promise<Settings> {
   if (!isDatabaseConfigured) return DEMO_SETTINGS;
 
@@ -75,7 +137,7 @@ export async function getSettings(): Promise<Settings> {
     return DEMO_SETTINGS;
   }
 
-  return data as Settings;
+  return normalizeSettings(data as Record<string, unknown>);
 }
 
 /** Sve što kalendaru treba za prvi prikaz — u jednom prolazu. */
