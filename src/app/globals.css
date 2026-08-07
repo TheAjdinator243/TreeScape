@@ -40,6 +40,31 @@
   --color-warn-600: #b7791f;
   --color-danger-600: #b3402f;
 
+  /* ── "Pro" izgled (/treescapepro) ──────────────────────────────────────
+     Druga koža istog sajta: isti tekst, isti podaci, ista baza — samo
+     skuplji izgled. Umjesto toplog pijeska i šume ide noć, slonovača i
+     mesing: manje boje, više praznog prostora, tanje linije.
+
+     Boje stoje ovdje, u @theme, a ne kao obične varijable — tako postaju
+     prave Tailwind klase (`bg-onyx-950`, `text-brass-400`) i pišu se u
+     komponentama isto kao i sve ostalo. Tailwind v4 ispisuje samo ono što
+     se stvarno koristi, pa neiskorišteni tonovi ne koštaju ništa. */
+  --color-onyx-950: #0b0c0b;
+  --color-onyx-900: #121413;
+  --color-onyx-850: #171a18;
+  --color-onyx-800: #1e2220;
+  --color-onyx-700: #2b302d;
+
+  --color-ivory-50: #f7f4ee;
+  --color-ivory-100: #ece7dd;
+  --color-ivory-200: #ddd6c8;
+  --color-ivory-400: #a89f8f;
+  --color-ivory-500: #857c6e;
+
+  --color-brass-300: #dcc492;
+  --color-brass-400: #c9a86c;
+  --color-brass-500: #ad8b55;
+
   /* Tipografija — varijable dolaze iz next/font (vidi layout.tsx) */
   --font-display: var(--font-fraunces), Georgia, 'Times New Roman', serif;
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
@@ -98,6 +123,63 @@
   }
 }
 
+/* ── "Pro" izgled: pismo ─────────────────────────────────────────────────
+   Ovo stoji IZNAD arapskog bloka namjerno. Oba su neslojevita i iste
+   specifičnosti, pa odlučuje redoslijed — a arapski mora pobijediti, jer
+   ni Cormorant ni Jost nemaju arapske glifove.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.pro {
+  /*
+   * Ova dva reda MORAJU stajati ovdje, a ne gore u @theme — i to je stajalo
+   * jedan pokušaj da se shvati zašto naslovi ostaju bez serifa.
+   *
+   * Promjenljiva se razrješava na elementu na kojem je NAPISANA, a ne tamo
+   * gdje se koristi. Da `--font-pro-display` stoji u :root, tražila bi
+   * `--font-cormorant` na <html> — a nje tamo nema, jer je next/font stavlja
+   * na omotač /treescapepro. Cijela vrijednost bi tada bila neispravna i
+   * naslovi bi tiho pali na zadano pismo preglednika, čak i bez greške.
+   *
+   * Ovdje, na istom elementu na kojem stoji i `--font-cormorant`, sve se
+   * razriješi kako treba i naslijedi niže.
+   */
+  --font-pro-display: var(--font-cormorant), Georgia, 'Times New Roman', serif;
+  --font-pro-sans: var(--font-jost), system-ui, -apple-system, sans-serif;
+
+  font-family: var(--font-pro-sans);
+  /* Jost je uži i svjetliji od Inter-a; bez ovoga tekst djeluje zgusnuto. */
+  letter-spacing: 0.01em;
+
+  /*
+   * Cormorant zadano crta stare brojke — one koje se penju i spuštaju kao mala
+   * slova. U tekstu su lijepe, u cijeni nisu: "8" je bilo za glavu više od
+   * "2", pa je red brojeva izgledao neporavnato, a cijena od 120 KM kao da je
+   * pisana dvjema veličinama. Ovo ih vraća na jednaku visinu.
+   */
+  font-variant-numeric: lining-nums;
+}
+
+.pro h1,
+.pro h2,
+.pro h3 {
+  font-family: var(--font-pro-display);
+  /* Tanak rez velikog serifa je ono što razlikuje "skupo" od "veliko". */
+  font-weight: 300;
+  letter-spacing: 0;
+}
+
+/*
+ * Izlaz iz pravila iznad.
+ *
+ * Ponegdje je i naslov zapravo sitna oznaka razmaknutim velikim slovima —
+ * tamo serif nije ni čitljiv ni na mjestu. Tailwindova klasa za pismo to ne
+ * može preokrenuti: pravilo iznad je neslojevito, a utility klase su u sloju,
+ * pa uvijek gube. Ova klasa je specifičnija od njega, pa vraća grotesk.
+ */
+.pro .pro-sans {
+  font-family: var(--font-pro-sans);
+}
+
 /* ── Arapski ─────────────────────────────────────────────────────────────
    Tri stvari koje se ne mogu riješiti u komponentama:
 
@@ -136,6 +218,18 @@ html[lang='ar'] body * {
   @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3
          text-sm font-semibold tracking-wide transition-all duration-200
          disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+/*
+ * Isti razlog kao kod `btn` gore: `@apply` u Tailwindu v4 prima samo prave
+ * utility klase, pa `pro-btn` mora biti @utility — inače ga `.pro-btn-solid`
+ * odbije s "Cannot apply unknown utility class".
+ */
+@utility pro-btn {
+  @apply inline-flex items-center justify-center gap-3 border px-9 py-4
+         text-[0.7rem] font-medium uppercase tracking-[0.22em]
+         transition-all duration-300
+         disabled:cursor-not-allowed disabled:opacity-40;
 }
 
 @layer components {
@@ -187,6 +281,142 @@ html[lang='ar'] body * {
   .section-lead {
     @apply mt-4 max-w-2xl text-lg leading-relaxed text-ink-500;
   }
+
+  /* ── "Pro" izgled: komponente ─────────────────────────────────────────
+     Nema zaobljenja i nema sjena. Oboje čini stranicu prijatnom i jeftinom;
+     oštra ivica i vlas-linija čine je skupom. Dugmad su pravougaona, s
+     razmaknutim velikim slovima — kako ih pišu hoteli, a ne aplikacije. */
+
+  .pro-btn-solid {
+    @apply pro-btn border-brass-400 bg-brass-400 text-onyx-950
+           hover:border-brass-300 hover:bg-brass-300;
+  }
+
+  .pro-btn-outline {
+    @apply pro-btn border-ivory-100/35 bg-transparent text-ivory-50
+           hover:border-brass-400 hover:text-brass-300;
+  }
+
+  /* Isto dugme, ali na svijetloj podlozi. */
+  .pro-btn-dark {
+    @apply pro-btn border-onyx-800/30 bg-transparent text-onyx-900
+           hover:border-brass-500 hover:text-brass-500;
+  }
+
+  .pro-eyebrow {
+    @apply text-[0.68rem] font-medium uppercase tracking-[0.34em] text-brass-400;
+  }
+
+  .pro-title {
+    @apply text-[2.6rem] leading-[1.08] sm:text-5xl lg:text-[3.6rem];
+  }
+
+  .pro-lead {
+    @apply mt-6 max-w-xl text-[1.05rem] font-light leading-[1.85] text-ivory-200;
+  }
+
+  /* Polja bez okvira — samo vlas-linija ispod, kao na papiru. */
+  .pro-field {
+    @apply w-full border-0 border-b border-ivory-100/25 bg-transparent px-0 py-3
+           font-light text-ivory-50 transition-colors
+           placeholder:text-ivory-500
+           focus:border-brass-400 focus:outline-none focus:ring-0
+           disabled:opacity-40;
+  }
+
+  .pro-label {
+    @apply mb-1 block text-[0.66rem] font-medium uppercase tracking-[0.2em] text-ivory-400;
+  }
+
+  .pro-section {
+    @apply mx-auto w-full max-w-6xl px-6 py-24 sm:px-10 md:py-36;
+  }
+}
+
+/*
+ * Padajući spisak u tamnoj formi.
+ *
+ * `<select>` svoju listu crta operativni sistem, a ne stranica — bez ovoga bi
+ * na tamnoj pozadini ostao bijeli okvir s bijelim tekstom, pa se ponuđeni
+ * brojevi gostiju ne bi vidjeli.
+ */
+.pro select.pro-field option {
+  background-color: var(--color-onyx-900);
+  color: var(--color-ivory-50);
+}
+
+/* ── "Pro" izgled: kalendar ──────────────────────────────────────────────
+   react-day-picker se boji varijablama, pa se cijeli kalendar prelije na
+   tamnu podlogu bez ijedne prepisane komponente. */
+
+.pro .rdp-root {
+  --rdp-accent-color: var(--color-brass-400);
+  --rdp-accent-background-color: var(--color-onyx-800);
+  --rdp-day_button-border-radius: 0;
+  /* Inače bi datumi ostali u Inter-u s glavnog sajta, usred stranice na Jost-u. */
+  --rdp-font-family: var(--font-pro-sans);
+  color: var(--color-ivory-100);
+}
+
+/* Legenda ispod kalendara — tri boje koje na tamnoj podlozi ne rade. */
+.pro .stay-legend {
+  color: var(--color-ivory-400);
+}
+
+.pro .stay-legend [data-tone='free'] {
+  background-color: transparent;
+  border-color: color-mix(in srgb, var(--color-ivory-100) 40%, transparent);
+}
+
+.pro .stay-legend [data-tone='taken'] {
+  background-color: var(--color-onyx-700);
+}
+
+.pro .stay-legend [data-tone='selected'] {
+  background-color: var(--color-brass-400);
+}
+
+.pro .rdp-month_caption {
+  font-family: var(--font-pro-display);
+  font-size: 1.35rem;
+  color: var(--color-ivory-50);
+}
+
+.pro .rdp-weekday {
+  color: var(--color-ivory-500);
+}
+
+.pro .rdp-day_button:hover:not([disabled]) {
+  background-color: var(--color-onyx-800);
+}
+
+.pro .rdp-day.day-taken .rdp-day_button {
+  color: var(--color-ivory-500);
+  background-color: transparent;
+}
+
+.pro .rdp-day.day-taken-pending .rdp-day_button {
+  color: var(--color-brass-500);
+  background-color: transparent;
+}
+
+.pro .rdp-range_start .rdp-day_button,
+.pro .rdp-range_end .rdp-day_button {
+  background-color: var(--color-brass-400) !important;
+  color: var(--color-onyx-950) !important;
+}
+
+.pro .rdp-range_middle .rdp-day_button {
+  background-color: var(--color-onyx-800) !important;
+  color: var(--color-ivory-50) !important;
+}
+
+.pro .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: var(--color-brass-300);
+}
+
+.pro :focus-visible {
+  outline-color: var(--color-brass-400);
 }
 
 /* ── Kalendar (react-day-picker) ─────────────────────────────────────────── */

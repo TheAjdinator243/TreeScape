@@ -17,7 +17,7 @@ import { useI18n } from './LocaleProvider';
  * osvježenje sa servera. Bez toga bi stranica na trenutak stajala s arapskim
  * tekstom u lijevo-desnom rasporedu, dok ne stigne novi odgovor.
  */
-export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
+export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' | 'pro' }) {
   const { locale, t } = useI18n();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -32,10 +32,16 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }
     startTransition(() => router.refresh());
   }
 
-  const styles =
-    tone === 'dark'
-      ? 'border-white/30 bg-white/10 text-white hover:bg-white/20'
-      : 'border-sand-300 bg-white text-ink-700 hover:border-forest-600';
+  /**
+   * `pro` nije samo druga boja nego i drugi oblik: bez zaobljenja i s
+   * razmaknutim velikim slovima, da se ne razlikuje od ostatka tog izgleda.
+   * Zato oblik ide uz ton, a ne u zajednički dio klase.
+   */
+  const styles = {
+    light: 'rounded-full border-sand-300 bg-white text-ink-700 hover:border-forest-600',
+    dark: 'rounded-full border-white/30 bg-white/10 text-white hover:bg-white/20',
+    pro: 'border-ivory-100/25 bg-transparent text-ivory-100 text-[0.7rem] uppercase tracking-[0.16em] hover:border-brass-400 hover:text-brass-300',
+  }[tone];
 
   return (
     <label className="relative inline-flex items-center">
@@ -47,12 +53,12 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }
         value={locale}
         disabled={pending}
         onChange={(e) => choose(e.target.value)}
-        className={`cursor-pointer appearance-none rounded-full border py-1.5 pe-7 ps-8 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-forest-600/30 disabled:opacity-60 ${styles}`}
+        className={`cursor-pointer appearance-none border py-1.5 pe-7 ps-8 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-forest-600/30 disabled:opacity-60 ${styles}`}
       >
         {LOCALES.map((option) => (
           // Nazivi jezika su uvijek na svom jeziku — "العربية", a ne "arapski".
           // Onaj ko traži svoj jezik ne razumije nužno onaj u kojem trenutno gleda sajt.
-          <option key={option} value={option} className="text-ink-900">
+          <option key={option} value={option} className="bg-white text-ink-900">
             {t.language.names[option]}
           </option>
         ))}

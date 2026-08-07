@@ -20,6 +20,7 @@ dobija.
 - [Podešavanje Supabase baze](#podešavanje-supabase-baze)
 - [Načini plaćanja](#načini-plaćanja)
 - [Objava na Vercel](#objava-na-vercel)
+- [Drugi izgled: /treescapepro](#drugi-izgled-treescapepro)
 - [Obavijesti o novim zahtjevima](#obavijesti-o-novim-zahtjevima)
 - [Zamjena fotografija i teksta](#zamjena-fotografija-i-teksta)
 - [Administracija](#administracija)
@@ -289,6 +290,42 @@ kojima je istekao rok za uplatu.
 > samo dnevni cron.
 
 Od tada Vercel objavljuje svaku izmjenu automatski, čim je pošalješ na GitHub.
+
+---
+
+## Drugi izgled: `/treescapepro`
+
+Isti sajt, druga koža. Otvori `/treescapepro` — dobiješ istu kuću, isti tekst,
+iste cijene i istu rezervaciju, ali u tamnijem i skupljem izgledu.
+
+**Šta je zajedničko (i mora ostati zajedničko):**
+
+| | Gdje živi |
+|---|---|
+| Tekst na tri jezika | `src/lib/i18n/dictionaries/` |
+| Cijene, sezone, provjere | `src/lib/pricing.ts` |
+| Cijela pamet rezervacije | `src/components/booking/useStayForm.ts` |
+| Kalendar | `src/components/booking/StayCalendar.tsx` |
+| Uvećane slike | `src/components/site/Lightbox.tsx` |
+| Koordinate i karta | `src/lib/location.ts` |
+| Kontakt telefon i mail | `src/components/site/Footer.tsx` (`CONTACT`) |
+
+Oba izgleda gađaju **istu bazu i iste API rute**. Termin zauzet na jednoj
+verziji istog trena je zauzet i na drugoj — nema dvije kopije podataka, pa se
+ne mogu razići.
+
+**Šta se razlikuje:** samo izgled, u `src/components/pro/` i u `.pro` dijelu
+`src/app/globals.css`. Druga pisma (Cormorant Garamond i Jost), druga paleta
+(noć, slonovača, mesing), oštre ivice umjesto zaobljenih, više praznog prostora.
+
+Pisma se preuzimaju **samo** kad neko otvori `/treescapepro` — posjetilac
+glavnog sajta ih nikad ne dobije (`preload: false` u `app/treescapepro/layout.tsx`).
+
+Stranica je označena s `noindex`: pokazuje se kupcu, a ne gostima, i ne treba
+da se u Googleu takmiči s pravim sajtom za iste riječi.
+
+> Ako ti se ovaj izgled više svidi, prebacivanje je zamjena komponenti u
+> `src/app/page.tsx` — logika ispod je već ista.
 
 ---
 

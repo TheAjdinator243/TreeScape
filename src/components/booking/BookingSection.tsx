@@ -1,29 +1,18 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import type { DateRange } from 'react-day-picker';
-
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { Reveal } from '@/components/site/Reveal';
-import { addDaysStr, daysBetween, formatLong, toDateStr } from '@/lib/dates';
+import { daysBetween, formatLong } from '@/lib/dates';
 import { count } from '@/lib/i18n';
-import {
-  WEEKEND_PERIOD,
-  formatMoney,
-  quoteStay,
-  rangeHasConflict,
-  validateStay,
-} from '@/lib/pricing';
-import type { BookingContext, PaymentMethod } from '@/lib/types';
+import { WEEKEND_PERIOD, formatMoney } from '@/lib/pricing';
+import type { BookingContext } from '@/lib/types';
 
 import { StayCalendar } from './StayCalendar';
-import { useAvailability } from './useAvailability';
+import { scrollToSummary, useStayForm } from './useStayForm';
 
 export function BookingSection({ context }: { context: BookingContext }) {
-  const router = useRouter();
   const { locale, t } = useI18n();
-  const { periods, settings, paymentMethods } = context;
+  const { settings, paymentMethods } = context;
 
   const methodCopy: Record<string, { label: string; hint: string }> = {
     bank_transfer: { label: t.booking.payTransfer, hint: t.booking.payTransferHint },
@@ -31,121 +20,26 @@ export function BookingSection({ context }: { context: BookingContext }) {
     test: { label: t.booking.payTest, hint: t.booking.payTestHint },
   };
 
-  const slots = useAvailability(context.slots);
-
-  const [range, setRange] = useState<DateRange | undefined>();
-  const [guests, setGuests] = useState(2);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [note, setNote] = useState('');
-  const [method, setMethod] = useState<PaymentMethod | null>(paymentMethods[0] ?? null);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const start = range?.from ? toDateStr(range.from) : null;
-
-  /**
-   * Kraj boravka je uvijek ISKLJUČIV — baš kao `daterange(..., '[)')` u bazi.
-   *
-   * Zato se za odabir jednog jedinog dana (od = do) kraj pomjeri za jedan dan
-   * naprijed: tako taj dan stvarno bude zauzet, a rezervacija bez noćenja
-   * postane moguća. Za višednevni boravak kraj ostaje kakav je odabran, pa
-   * dan odlaska ostaje slobodan sljedećem gostu (odjava u 09:00, prijava u 11:00).
-   */
-  const lastSelected = range?.to ? toDateStr(range.to) : null;
-  const singleDay = Boolean(start && lastSelected && start === lastSelected);
-  const end = lastSelected ? (singleDay ? addDaysStr(lastSelected, 1) : lastSelected) : null;
-
-  const complete = Boolean(start && end);
-
-  const quote = useMemo(
-    () => (complete && start && end ? quoteStay(start, end, periods, settings) : null),
-    [complete, start, end, periods, settings]
-  );
-
-  const stayError = useMemo(() => {
-    if (!complete || !start || !end) return null;
-    if (rangeHasConflict(start, end, slots)) return t.booking.unavailableRange;
-    const result = validateStay(start, end, guests, periods, settings, locale);
-    return result.ok ? null : result.message;
-  }, [complete, start, end, guests, periods, settings, slots, locale, t]);
-
-  function formError(): string | null {
-    if (!complete) return t.booking.selectDatesFirst;
-    if (name.trim().length < 2) return t.errors.REQUIRED_NAME;
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return t.errors.REQUIRED_EMAIL;
-    if (phone.trim().length < 6) return t.errors.REQUIRED_PHONE;
-    if (!method) return t.errors.REQUIRED_METHOD;
-    return stayError;
-  }
-
-  async function submit() {
-    const problem = formError();
-    if (problem) {
-      setError(problem);
-      return;
-    }
-
-    setError(null);
-    setSubmitting(true);
-
-    try {
-      const res = await fetch('/api/booking/reserve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          start_date: start,
-          end_date: end,
-          guests,
-          // Cijena se NE šalje — server je računa sam iz baze.
-          guest_name: name.trim(),
-          guest_email: email.trim(),
-          guest_phone: phone.trim(),
-          note: note.trim() || null,
-          payment_method: method,
-        }),
-      });
-
-      const data = (await res.json()) as { token?: string; error?: string };
-
-      if (!res.ok || !data.token) {
-        setError(data.error ?? t.errors.SERVER_ERROR);
-        setSubmitting(false);
-        return;
-      }
-
-      // Spinner namjerno ostaje upaljen — stranica odlazi na potvrdu.
-      router.push(`/rezervacija/${data.token}`);
-    } catch {
-      setError(t.errors.SERVER_ERROR);
-      setSubmitting(false);
-    }
-  }
-
-  const busy = submitting;
-
-  /**
-   * Skrol do pregleda BEZ diranja adrese.
-   *
-   * Ranije je ovo bio `<a href="#pregled">`, pa je nakon klika u adresi ostajao
-   * `#pregled`. Preglednik onda pri svakom sljedećem otvaranju ili osvježavanju
-   * skoči pravo na pregled umjesto na vrh stranice — a to je gost primijetio.
-   */
-  function scrollToSummary() {
-    document.getElementById('pregled')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  /**
-   * Čišćenje adrese za one koji su `#pregled` već sačuvali u prečici na
-   * početnom ekranu ili u zabilješkama — inače bi im stranica zauvijek
-   * otvarala na pregledu.
-   */
-  useEffect(() => {
-    if (window.location.hash !== '#pregled') return;
-    history.replaceState(null, '', window.location.pathname + window.location.search);
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, []);
+  // Stanje, cijena i provjere žive u `useStayForm` — dijeli ih i `pro` izgled,
+  // pa se rezervacija ne može razići između dva izgleda istog sajta.
+  const form = useStayForm(context);
+  const {
+    slots,
+    range,
+    guests,
+    name,
+    email,
+    phone,
+    note,
+    method,
+    start,
+    end,
+    singleDay,
+    quote,
+    stayError,
+    error,
+    busy,
+  } = form;
 
   return (
     <section id="rezervacija" className="bg-sand-100">
@@ -165,10 +59,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
             <StayCalendar
               slots={slots}
               range={range}
-              onRangeChange={(next) => {
-                setRange(next);
-                setError(null);
-              }}
+              onRangeChange={form.setRange}
               maxNights={settings.max_nights}
             />
           </Reveal>
@@ -220,7 +111,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
               {range?.from && (
                 <button
                   type="button"
-                  onClick={() => setRange(undefined)}
+                  onClick={form.clearRange}
                   className="mt-3 text-xs font-medium text-forest-600 underline underline-offset-4 hover:text-forest-800"
                 >
                   {t.booking.clearDates}
@@ -268,7 +159,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
                   <select
                     id="guests"
                     value={guests}
-                    onChange={(e) => setGuests(Number(e.target.value))}
+                    onChange={(e) => form.setGuests(Number(e.target.value))}
                     className="field-input"
                     disabled={busy}
                   >
@@ -284,7 +175,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
                   id="name"
                   label={t.booking.name}
                   value={name}
-                  onChange={setName}
+                  onChange={form.setName}
                   placeholder={t.booking.namePlaceholder}
                   autoComplete="name"
                   disabled={busy}
@@ -294,7 +185,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
                   label={t.booking.email}
                   type="email"
                   value={email}
-                  onChange={setEmail}
+                  onChange={form.setEmail}
                   placeholder={t.booking.emailPlaceholder}
                   autoComplete="email"
                   disabled={busy}
@@ -304,7 +195,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
                   label={t.booking.phone}
                   type="tel"
                   value={phone}
-                  onChange={setPhone}
+                  onChange={form.setPhone}
                   placeholder={t.booking.phonePlaceholder}
                   autoComplete="tel"
                   disabled={busy}
@@ -318,7 +209,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
                   <textarea
                     id="note"
                     value={note}
-                    onChange={(e) => setNote(e.target.value)}
+                    onChange={(e) => form.setNote(e.target.value)}
                     rows={3}
                     maxLength={500}
                     placeholder={t.booking.notePlaceholder}
@@ -354,10 +245,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
                           value={id}
                           checked={selected}
                           disabled={busy}
-                          onChange={() => {
-                            setMethod(id);
-                            setError(null);
-                          }}
+                          onChange={() => form.setMethod(id)}
                           className="mt-1 h-4 w-4 shrink-0 accent-forest-700"
                         />
                         <span className="min-w-0">
@@ -389,7 +277,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
 
               <button
                 type="button"
-                onClick={() => void submit()}
+                onClick={() => void form.submit()}
                 disabled={busy || paymentMethods.length === 0}
                 className="btn-accent mt-6 w-full"
               >

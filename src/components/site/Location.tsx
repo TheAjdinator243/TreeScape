@@ -1,49 +1,7 @@
-import type { PlaceKey } from '@/lib/i18n';
 import { getServerStrings } from '@/lib/i18n/server';
+import { GOOGLE_MAPS_URL, MAP_SRC, TRAVEL } from '@/lib/location';
 
 import { Reveal } from './Reveal';
-
-/**
- * Karta je OpenStreetMap iframe — radi bez API ključa i bez naplate.
- * (Google Maps Embed traži ključ i naplaćuje se preko besplatne kvote.)
- *
- * Ispod je i link na Google Mape, jer većina gostiju do kuće ide njima.
- * Link ne treba ključ: otvara se u novoj kartici, kao obična adresa.
- *
- * Koordinate promijeni SAMO ovdje — i karta i link ih čitaju iz istog mjesta,
- * pa ne mogu razići jedna od druge.
- */
-const MAP_MARKER = { lat: 43.92036062376055, lon: 18.281697249204257 };
-
-/** Koliko se karte vidi oko oznake. Manji broj = više uvećano. */
-const DELTA = 0.03;
-
-const MAP_BBOX = [
-  MAP_MARKER.lon - DELTA,
-  MAP_MARKER.lat - DELTA / 2,
-  MAP_MARKER.lon + DELTA,
-  MAP_MARKER.lat + DELTA / 2,
-].join(',');
-
-const MAP_SRC =
-  `https://www.openstreetmap.org/export/embed.html?bbox=${MAP_BBOX}` +
-  `&layer=mapnik&marker=${MAP_MARKER.lat},${MAP_MARKER.lon}`;
-
-/**
- * Zvanični oblik Google linka (`?api=1`) — jedini koji Google obećava da neće
- * mijenjati. Na mobitelu ga preuzme aplikacija Mapa, na računaru se otvori u
- * pregledniku.
- */
-const GOOGLE_MAPS_URL =
-  `https://www.google.com/maps/search/?api=1&query=${MAP_MARKER.lat}%2C${MAP_MARKER.lon}`;
-
-/** Minute vožnje su činjenica o kući, pa stoje ovdje; nazivi su u rječnicima. */
-const TRAVEL: { key: PlaceKey; minutes: number }[] = [
-  { key: 'city', minutes: 35 },
-  { key: 'airport', minutes: 45 },
-  { key: 'shop', minutes: 8 },
-  { key: 'ski', minutes: 25 },
-];
 
 export async function Location() {
   const { t } = await getServerStrings();

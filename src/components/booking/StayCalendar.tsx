@@ -75,19 +75,41 @@ export function StayCalendar({
         classNames={{ months: 'flex flex-col sm:flex-row gap-6 sm:gap-10' }}
       />
 
-      <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ink-500">
-        <Legend className="border border-sand-300 bg-white" label={t.booking.legendFree} />
-        <Legend className="bg-sand-200 line-through" label={t.booking.legendTaken} />
-        <Legend className="bg-forest-700" label={t.booking.legendSelected} />
+      {/*
+        `stay-legend` i `data-tone` nisu ukras nego rukohvat: "pro" izgled je
+        taman, pa ove tri boje tamo moraju biti druge. Preko imena i oznake se
+        prebojaju iz CSS-a (vidi globals.css), bez ijedne nove zastavice u
+        komponenti koju oba izgleda dijele.
+      */}
+      <ul className="stay-legend mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ink-500">
+        <Legend
+          tone="free"
+          className="border border-sand-300 bg-white"
+          label={t.booking.legendFree}
+        />
+        <Legend
+          tone="taken"
+          className="bg-sand-200 line-through"
+          label={t.booking.legendTaken}
+        />
+        <Legend tone="selected" className="bg-forest-700" label={t.booking.legendSelected} />
       </ul>
     </div>
   );
 }
 
-function Legend({ className, label }: { className: string; label: string }) {
+function Legend({
+  tone,
+  className,
+  label,
+}: {
+  tone: 'free' | 'taken' | 'selected';
+  className: string;
+  label: string;
+}) {
   return (
     <li className="flex items-center gap-2">
-      <span className={`h-4 w-4 rounded-full ${className}`} aria-hidden="true" />
+      <span className={`h-4 w-4 rounded-full ${className}`} data-tone={tone} aria-hidden="true" />
       {label}
     </li>
   );
