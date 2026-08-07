@@ -25,15 +25,7 @@ const SENDER_NAME = getStrings(DEFAULT_LOCALE).site.name;
 async function send(to: string, subject: string, html: string): Promise<SendResult> {
   const transport = emailTransport();
 
-  if (!transport) {
-    return {
-      ok: false,
-      detail:
-        'Mail nije podešen. Ili GMAIL_USER + GMAIL_APP_PASSWORD (šalje odmah, bilo kome), ' +
-        'ili RESEND_API_KEY (traži vlastiti domen). Dodaj u Vercel → Settings → ' +
-        'Environment Variables, pa pokreni Redeploy.',
-    };
-  }
+  if (!transport) return { ok: false, detail: missingTransportDetail() };
 
   try {
     const result =
@@ -65,6 +57,32 @@ async function send(to: string, subject: string, html: string): Promise<SendResu
     console.error('[treescape] slanje maila nije uspjelo:', err);
     return { ok: false, detail: `Slanje nije prošlo (${transport}): ${String(err)}` };
   }
+}
+
+/**
+ * Šta tačno nedostaje da bi mail mogao otići.
+ *
+ * "Mail nije podešen" je tačno, ali ne pomaže: onaj ko je varijable upravo
+ * unio u Vercel s pravom pomisli da laže. Zato se ispisuje IMENOM svaka od njih
+ * i je li je ova objava vidjela ili nije.
+ *
+ * Vrijednosti se nikada ne ispisuju — samo postoji ili ne postoji.
+ */
+function missingTransportDetail(): string {
+  const vidi = (v: string | undefined) => (v ? 'IMA' : 'NEMA');
+
+  return (
+    'Mail nije podešen — ova objava ne vidi nijedan put za slanje.\n\n' +
+    `  GMAIL_USER: ${vidi(env.gmail.user)}\n` +
+    `  GMAIL_APP_PASSWORD: ${vidi(env.gmail.appPassword)}\n` +
+    `  RESEND_API_KEY: ${vidi(env.email.apiKey)}\n` +
+    `  OWNER_EMAIL: ${vidi(env.email.ownerEmail)}\n\n` +
+    'Za Gmail trebaju PRVA DVA, oba. Ako gore piše NEMA a ti si ih dodao, ' +
+    'skoro uvijek je jedno od ovoga:\n' +
+    '  1) nije pokrenut Redeploy — varijable se čitaju pri gradnji, stara objava ih ne vidi;\n' +
+    '  2) varijabla je snimljena samo za Preview ili Development, a ne za Production;\n' +
+    '  3) ime je pogrešno prepisano — mora biti tačno GMAIL_APP_PASSWORD.'
+  );
 }
 
 /**

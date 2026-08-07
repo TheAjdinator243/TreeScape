@@ -97,6 +97,36 @@ describe('send bez podešenog puta', () => {
     expect(rezultat.detail).toContain('GMAIL_USER');
     expect(rezultat.detail).toContain('RESEND_API_KEY');
   });
+
+  it('imenuje koja varijabla nedostaje, a koja je tu', async () => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    // Najčešći slučaj: adresa unesena, lozinka za aplikacije nije.
+    vi.stubEnv('GMAIL_USER', 'vlasnik@gmail.com');
+    vi.stubEnv('OWNER_EMAIL', 'vlasnik@gmail.com');
+
+    const { testGuestEmail } = await import('./email');
+    const { detail } = await testGuestEmail();
+
+    expect(detail).toContain('GMAIL_USER: IMA');
+    expect(detail).toContain('GMAIL_APP_PASSWORD: NEMA');
+    // Tri najčešća uzroka moraju biti ponuđena, inače se traži naslijepo.
+    expect(detail).toContain('Redeploy');
+    expect(detail).toContain('Production');
+  });
+
+  it('nikada ne ispisuje same vrijednosti', async () => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    vi.stubEnv('GMAIL_USER', 'vlasnik@gmail.com');
+    vi.stubEnv('RESEND_API_KEY', '');
+
+    const { testGuestEmail } = await import('./email');
+    const { detail } = await testGuestEmail();
+
+    // Poruka ide na ekran i u dnevnik — tajne u njoj nemaju šta tražiti.
+    expect(detail).not.toContain('vlasnik@gmail.com');
+  });
 });
 
 describe('lozinka za aplikacije s razmacima', () => {
