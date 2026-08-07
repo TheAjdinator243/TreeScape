@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 
 import {
   describeIssues,
@@ -58,9 +58,21 @@ export async function POST(request: Request) {
   }
 
   const booking = data as Booking;
-  void (decision === 'approve'
-    ? sendGuestCashApproved(booking)
-    : sendGuestCashRejected(booking));
+
+  /**
+   * Mail gostu ide kroz `after`, a NE kao goli `void`.
+   *
+   * Ovo je ista greška koja je već jednom popravljena u ruti za rezervaciju, a
+   * ovdje je ostala — i zato gost nije dobijao obavijest o odobrenju. Čim se
+   * odgovor pošalje, Vercel smije zamrznuti i ugasiti funkciju, a sve što je
+   * tada još u zraku nestane s njom. Mail ne stigne ni otići, i nigdje se ne
+   * pojavi greška: u administraciji piše da je odobreno, jer jeste — u bazi.
+   *
+   * `after` platformi kaže da funkciju drži živom dok se posao ne završi.
+   */
+  after(() =>
+    decision === 'approve' ? sendGuestCashApproved(booking) : sendGuestCashRejected(booking)
+  );
 
   return NextResponse.json({ ok: true, status: nextStatus });
 }
