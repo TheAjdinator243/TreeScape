@@ -279,6 +279,9 @@ export interface Dictionary {
 
     requestsHeading: string;
     requestsEmpty: string;
+    /** Provjera kanala obavijesti — šalje probnu poruku na Telegram. */
+    testNotification: string;
+    testNotificationSending: string;
     approve: string;
     reject: string;
     approveConfirm: string;

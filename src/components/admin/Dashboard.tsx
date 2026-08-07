@@ -28,6 +28,7 @@ export function Dashboard({
   const [tab, setTab] = useState<Tab>('requests');
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   // Novi zahtjev se pojavi sam, bez osvježavanja stranice.
   useLiveRequests();
@@ -71,6 +72,31 @@ export function Dashboard({
   async function cancel(bookingId: string, confirmText: string) {
     if (!window.confirm(confirmText)) return;
     await call(`/api/admin/bookings?id=${bookingId}`, { method: 'DELETE' });
+  }
+
+  /**
+   * Probna obavijest — jedini način da se vidi GDJE je stala, bez pravljenja
+   * lažne rezervacije. Odgovor nosi i Telegramov razlog odbijanja.
+   */
+  async function testNotification() {
+    setError(null);
+    setNotice(t.admin.testNotificationSending);
+
+    try {
+      const res = await fetch('/api/admin/test-notification', { method: 'POST' });
+      const data = (await res.json()) as { telegram?: { ok?: boolean; detail?: string } };
+      const detail = data.telegram?.detail ?? t.errors.SERVER_ERROR;
+
+      if (data.telegram?.ok) {
+        setNotice(detail);
+      } else {
+        setNotice(null);
+        setError(detail);
+      }
+    } catch {
+      setNotice(null);
+      setError(t.errors.SERVER_ERROR);
+    }
   }
 
   async function logout() {
@@ -131,10 +157,28 @@ export function Dashboard({
           </p>
         )}
 
+        {notice && (
+          <p
+            role="status"
+            className="mb-6 rounded-xl border border-success-600/25 bg-success-600/5 px-4 py-3 text-sm text-success-600"
+          >
+            {notice}
+          </p>
+        )}
+
         <div className={pending ? 'pointer-events-none opacity-60 transition-opacity' : ''}>
           {tab === 'requests' && (
             <>
               <Section heading={t.admin.requestsHeading}>
+                <p className="-mt-4 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => void testNotification()}
+                    className="btn-ghost px-4 py-2 text-xs"
+                  >
+                    {t.admin.testNotification}
+                  </button>
+                </p>
                   {requests.length === 0 ? (
                 <Empty>{t.admin.requestsEmpty}</Empty>
               ) : (

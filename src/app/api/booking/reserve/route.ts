@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 
 import { invalidInput, readJson, requireDatabase } from '@/lib/api-helpers';
 import { createBooking } from '@/lib/booking-service';
@@ -36,9 +36,19 @@ export async function POST(request: Request) {
     );
   }
 
-  // Obavijesti ne smiju blokirati odgovor gostu — termin je već siguran u
-  // bazi, a neuspjela obavijest nije razlog da gost vidi grešku.
-  void notifyByMethod(result);
+  /**
+   * Obavijesti ne smiju blokirati odgovor gostu — termin je već siguran u
+   * bazi, a neuspjela obavijest nije razlog da gost vidi grešku.
+   *
+   * Ali NE smije stajati ni obično `void notifyByMethod(result)`. Lokalno to
+   * radi, na Vercelu ne: čim se odgovor pošalje, funkcija se smije zamrznuti i
+   * ugasiti, a sve što je tada još u zraku nestane s njom. Poziv Telegramu
+   * jednostavno ne stigne otići i nigdje se ne pojavi ni greška.
+   *
+   * `after` upravo to rješava — Next javi platformi da funkciju drži živom dok
+   * se ovaj posao ne završi, a gost odgovor dobija odmah.
+   */
+  after(() => notifyByMethod(result));
 
   return NextResponse.json({
     token: result.booking.public_token,

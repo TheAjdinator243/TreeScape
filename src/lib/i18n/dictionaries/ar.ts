@@ -310,6 +310,8 @@ export const ar: Dictionary = {
 
     requestsHeading: 'طلبات الدفع نقدًا',
     requestsEmpty: 'لا توجد طلبات تنتظر الموافقة حاليًا.',
+    testNotification: 'إرسال إشعار تجريبي',
+    testNotificationSending: 'جارٍ الإرسال…',
     approve: 'موافقة',
     reject: 'رفض',
     approveConfirm: 'تأكيد هذا الحجز؟',

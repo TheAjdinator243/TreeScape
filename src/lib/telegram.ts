@@ -74,6 +74,50 @@ function message(booking: Booking, kind: 'cash' | 'card'): string {
   return lines.join('\n');
 }
 
+/**
+ * Probna poruka iz administracije.
+ *
+ * Postoji zato što je "ne stiže mi ništa" najgora vrsta kvara: rezervacija
+ * prođe, sajt izgleda ispravno, a obavijesti nema i ne zna se gdje je stala.
+ * Ovo prođe isti put kao prava obavijest, ali vrati ono što Telegram kaže —
+ * pa se odmah vidi je li kriv token, broj razgovora ili nešto treće.
+ */
+export async function testTelegram(): Promise<{ ok: boolean; detail: string }> {
+  if (!isTelegramConfigured) {
+    const missing = [
+      !env.telegram.botToken && 'TELEGRAM_BOT_TOKEN',
+      !env.telegram.chatId && 'TELEGRAM_CHAT_ID',
+    ].filter(Boolean);
+
+    return {
+      ok: false,
+      detail:
+        `Nedostaje: ${missing.join(' i ')}. Dodaj u Vercel → Settings → ` +
+        'Environment Variables, pa OBAVEZNO pokreni Redeploy — varijable se ' +
+        'čitaju pri gradnji, stara objava ih ne vidi.',
+    };
+  }
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${env.telegram.botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: env.telegram.chatId,
+        text: 'TreeScape — probna poruka. Obavijesti rade. ✅',
+      }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+      cache: 'no-store',
+    });
+
+    if (res.ok) return { ok: true, detail: 'Poruka je poslana. Provjeri telefon.' };
+
+    return { ok: false, detail: `Telegram je odbio (${res.status}): ${await res.text()}` };
+  } catch (err) {
+    return { ok: false, detail: `Poziv Telegramu nije prošao: ${String(err)}` };
+  }
+}
+
 export async function sendOwnerTelegram(booking: Booking, kind: 'cash' | 'card'): Promise<boolean> {
   if (!isTelegramConfigured) return false;
 
