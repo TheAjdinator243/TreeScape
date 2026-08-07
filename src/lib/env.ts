@@ -46,6 +46,22 @@ export const env = {
     ownerEmail: optional('OWNER_EMAIL'),
   },
   /**
+   * Gmail — mail se šalje s obične Google adrese, preko Googleovog servera.
+   *
+   * Ovo NIJE isto što i Resend s nepotvrđenim domenom. Resend do potvrde domena
+   * prima samo adresu s kojom je nalog otvoren, pa se pravom gostu ne može
+   * pisati. Gmail može odmah, svakome — jer adresa s koje se šalje već postoji
+   * i već je Googleova.
+   *
+   * Lozinka NIJE ona kojom se prijavljuješ na Google. To je zasebna
+   * "lozinka za aplikacije" od 16 znakova, koja se pravi tek kad je na nalogu
+   * uključena dvostruka provjera, i koja se može poništiti bez diranja naloga.
+   */
+  gmail: {
+    user: optional('GMAIL_USER'),
+    appPassword: optional('GMAIL_APP_PASSWORD'),
+  },
+  /**
    * Telegram — obavijest vlasniku koja stigne na telefon za koju sekundu.
    *
    * Postoji uz mail, a ne umjesto njega: mail traži verifikovan domen i lako
@@ -63,7 +79,25 @@ export const isDatabaseConfigured = Boolean(
   env.supabase.url && env.supabase.anonKey && env.supabase.serviceRoleKey
 );
 
-export const isEmailConfigured = Boolean(env.email.apiKey && env.email.ownerEmail);
+/**
+ * Kojim putem ide mail.
+ *
+ * Gmail ima prednost kad je podešen: ne traži vlastiti domen, a šalje bilo
+ * kome. Resend ostaje za kasnije — kad kuća dobije svoj domen, pa mailovi
+ * krenu s `rezervacije@treescape.ba` umjesto s lične Gmail adrese.
+ *
+ * `null` znači da mailova jednostavno nema. To nije greška: sajt radi i bez
+ * njih, a obavijesti vlasniku svejedno stižu na Telegram.
+ */
+export type EmailTransport = 'gmail' | 'resend';
+
+export function emailTransport(): EmailTransport | null {
+  if (env.gmail.user && env.gmail.appPassword) return 'gmail';
+  if (env.email.apiKey) return 'resend';
+  return null;
+}
+
+export const isEmailConfigured = emailTransport() !== null;
 
 export const isTelegramConfigured = Boolean(env.telegram.botToken && env.telegram.chatId);
 

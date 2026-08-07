@@ -375,12 +375,36 @@ if (!site) {
   ok('adresa sajta', site);
 }
 
-if (!env.RESEND_API_KEY) {
-  warn('email nije podešen — potvrde se neće slati', 'opcionalno: resend.com');
-} else if (!env.OWNER_EMAIL) {
-  warn('nema OWNER_EMAIL — nećeš dobijati obavijesti o rezervacijama');
+const gmail = Boolean(env.GMAIL_USER && env.GMAIL_APP_PASSWORD);
+const posta = gmail ? 'Gmail' : env.RESEND_API_KEY ? 'Resend' : null;
+
+if (!posta) {
+  warn(
+    'email nije podešen — potvrde se neće slati gostima',
+    'najlakše: GMAIL_USER + GMAIL_APP_PASSWORD (ne traži vlastiti domen)'
+  );
 } else {
-  ok('email podešen', env.OWNER_EMAIL);
+  ok(`email podešen (${posta})`, env.OWNER_EMAIL ?? '');
+}
+
+if (env.GMAIL_USER && !env.GMAIL_APP_PASSWORD) {
+  warn(
+    'ima GMAIL_USER ali nema GMAIL_APP_PASSWORD',
+    'to je zasebna lozinka za aplikacije, ne lozinka naloga: myaccount.google.com → Security → App passwords'
+  );
+}
+
+if (posta && !env.OWNER_EMAIL) {
+  warn('nema OWNER_EMAIL — gost dobija mail, ali ti ne dobijaš obavijest mailom');
+}
+
+// Resend bez potvrđenog domena ume da prevari: proba na vlastitu adresu prođe,
+// pa se čini da radi — a prvom pravom gostu mail nikad ne stigne.
+if (posta === 'Resend' && (env.EMAIL_FROM ?? '').includes('onboarding@resend.dev')) {
+  warn(
+    'Resend šalje s onboarding@resend.dev — do potvrde domena prima SAMO tvoju adresu',
+    'za prave goste: potvrdi domen u Resend-u, ili koristi Gmail'
+  );
 }
 
 const telegram = Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID);

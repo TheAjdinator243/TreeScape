@@ -359,13 +359,44 @@ TELEGRAM_CHAT_ID=987654321
 
 ### Email
 
+Mail ide i vlasniku i **gostu** (potvrda zahtjeva, odobrenje, odbijanje). Za
+slanje postoje dva načina — dovoljan je jedan. Ako su podešena oba, prednost
+ima Gmail.
+
+**Gmail — najlakši, ne traži vlastiti domen.** Šalje s tvoje Google adrese,
+bilo kome, odmah:
+
 ```
-RESEND_API_KEY=re_...
+GMAIL_USER=tvoja.adresa@gmail.com
+GMAIL_APP_PASSWORD=abcd efgh ijkl mnop
 OWNER_EMAIL=vlasnik@primjer.ba
 ```
 
-Ključ se dobija na [resend.com](https://resend.com). `EMAIL_FROM` mora biti s
-domena koji je tamo potvrđen, inače mail ne prolazi.
+`GMAIL_APP_PASSWORD` **nije** lozinka kojom se prijavljuješ na Google. To je
+zasebna *lozinka za aplikacije* od 16 znakova:
+
+1. Uključi dvostruku provjeru na Google nalogu — bez nje se ova opcija ne
+   pojavljuje
+2. [myaccount.google.com](https://myaccount.google.com) → Security →
+   App passwords → napravi novu
+3. Prepiši 16 znakova (razmaci nisu bitni)
+
+Može se poništiti kad god, bez diranja same lozinke naloga. Google dozvoljava
+oko 500 poruka dnevno s obične adrese — za jednu kuću je to daleko iznad
+potrebe.
+
+**Resend — za kasnije, kad kuća dobije svoj domen.** Tada mailovi idu s
+`rezervacije@treescape.ba` umjesto s lične Gmail adrese:
+
+```
+RESEND_API_KEY=re_...
+EMAIL_FROM=TreeScape <rezervacije@treescape.ba>
+```
+
+> Zamka: dok domen nije potvrđen u Resend-u, on prima **samo adresu s kojom je
+> nalog otvoren**. Proba na vlastitu adresu prođe i djeluje kao da sve radi, a
+> prvom pravom gostu mail nikad ne stigne. Zato je Gmail prvi izbor sve dok
+> domena nema. `npm run doctor` posebno upozori na ovaj slučaj.
 
 > Nakon dodavanja varijabli **obavezno pokreni novu objavu** (Vercel → Redeploy).
 > Varijable se čitaju pri gradnji, pa ih stari build ne vidi.
@@ -376,6 +407,17 @@ pojavi jasna poruka `NEMA OBAVIJESTI VLASNIKU` s uputom šta podesiti.
 
 Bez obzira na kanale, otvorena `/admin` stranica se **osvježava sama** čim
 stigne novi zahtjev — brojka uz karticu „Zahtjevi" poraste bez pritiska na F5.
+
+### Provjera, bez pravljenja lažnih rezervacija
+
+`/admin` → **Zahtjevi** ima dva dugmeta:
+
+- **Pošalji probnu obavijest** — provjerava Telegram
+- **Pošalji probni mail gostu** — šalje TAČNO onaj mail koji gost dobije nakon
+  zahtjeva za gotovinu, na `OWNER_EMAIL`
+
+Oba vraćaju pravi razlog neuspjeha na ekran (pogrešan ključ, nepotvrđen domen,
+`chat not found`…), a ne samo „došlo je do greške".
 
 ---
 

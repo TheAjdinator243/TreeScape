@@ -3,7 +3,7 @@ import 'server-only';
 import { Resend } from 'resend';
 
 import { formatRange } from './dates';
-import { env, isEmailConfigured } from './env';
+import { emailTransport, env } from './env';
 import {
   DEFAULT_LOCALE,
   directionOf,
@@ -14,40 +14,106 @@ import {
 import { formatMoney } from './pricing';
 import type { Booking } from './types';
 
+/** Ime pošiljaoca — isto ono koje stoji na sajtu, a ne zaseban natpis. */
+const SENDER_NAME = getStrings(DEFAULT_LOCALE).site.name;
+
 /**
- * Mailovi su NEOBAVEZNI. Bez RESEND_API_KEY aplikacija radi potpuno normalno —
- * samo se ništa ne šalje. Nikada ne rušimo rezervaciju zbog toga što mail
- * nije prošao: gost je platio, to je važnije od obavijesti.
+ * Mailovi su NEOBAVEZNI. Bez ijednog podešenog puta aplikacija radi potpuno
+ * normalno — samo se ništa ne šalje. Nikada ne rušimo rezervaciju zbog toga
+ * što mail nije prošao: termin je već upisan, to je važnije od obavijesti.
  */
 async function send(to: string, subject: string, html: string): Promise<SendResult> {
-  if (!isEmailConfigured || !env.email.apiKey) {
-    const missing = [
-      !env.email.apiKey && 'RESEND_API_KEY',
-      !env.email.ownerEmail && 'OWNER_EMAIL',
-    ].filter(Boolean);
+  const transport = emailTransport();
 
+  if (!transport) {
     return {
       ok: false,
       detail:
-        `Mail nije podešen — nedostaje: ${missing.join(' i ')}. Dodaj u Vercel → ` +
-        'Settings → Environment Variables, pa pokreni Redeploy.',
+        'Mail nije podešen. Ili GMAIL_USER + GMAIL_APP_PASSWORD (šalje odmah, bilo kome), ' +
+        'ili RESEND_API_KEY (traži vlastiti domen). Dodaj u Vercel → Settings → ' +
+        'Environment Variables, pa pokreni Redeploy.',
     };
   }
 
   try {
-    const resend = new Resend(env.email.apiKey);
-    const { error } = await resend.emails.send({ from: env.email.from, to, subject, html });
+    const result =
+      transport === 'gmail'
+        ? await sendViaGmail(to, subject, html)
+        : await sendViaResend(to, subject, html);
 
-    if (error) {
-      console.error('[treescape] slanje maila nije uspjelo:', error.message);
-      return { ok: false, detail: `Resend je odbio: ${error.message}` };
-    }
-
-    return { ok: true, detail: `Poslano na ${to}.` };
+    if (!result.ok) console.error('[treescape] slanje maila nije uspjelo:', result.detail);
+    return result;
   } catch (err) {
     console.error('[treescape] slanje maila nije uspjelo:', err);
-    return { ok: false, detail: `Poziv Resend-u nije prošao: ${String(err)}` };
+    return { ok: false, detail: `Slanje nije prošlo (${transport}): ${String(err)}` };
   }
+}
+
+/**
+ * Gmail preko SMTP-a.
+ *
+ * `nodemailer` se uvozi tek ovdje, i to dinamički: bez toga bi cijela
+ * biblioteka ušla u svaki serverski paket koji ikako dodirne ovu datoteku,
+ * uključujući i one koji nikad ne pošalju nijedan mail.
+ *
+ * Pošiljalac MORA biti ista adresa s koje se prijavljujemo. Google svaku drugu
+ * tiho prepiše u svoju, pa bi `EMAIL_FROM` ovdje samo lagao o tome šta gost
+ * zaista vidi u pretincu.
+ */
+async function sendViaGmail(to: string, subject: string, html: string): Promise<SendResult> {
+  const { user, appPassword } = env.gmail;
+  if (!user || !appPassword) return { ok: false, detail: 'Gmail nije podešen.' };
+
+  const nodemailer = (await import('nodemailer')).default;
+
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
+    auth: { user, pass: appPassword },
+
+    /**
+     * Rokovi nisu ukras — nodemailer ih sam po sebi NEMA.
+     *
+     * Ovo se vidjelo tek na probi: kad se do Googlea ne može, `sendMail` ne
+     * javi grešku nego jednostavno visi. Na Vercelu bi to značilo funkciju
+     * koja ostaje živa dok je platforma ne ubije, i to pri svakoj rezervaciji
+     * — jer obavijesti idu kroz `after()`, dakle nakon što je gost već dobio
+     * odgovor i niko više ne gleda.
+     *
+     * Ovako padne za desetak sekundi, s jasnim razlogom u dnevniku.
+     */
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 15_000,
+  });
+
+  await transporter.sendMail({
+    from: `${SENDER_NAME} <${user}>`,
+    to,
+    subject,
+    html,
+  });
+
+  return { ok: true, detail: `Poslano na ${to} (Gmail).` };
+}
+
+async function sendViaResend(to: string, subject: string, html: string): Promise<SendResult> {
+  const resend = new Resend(env.email.apiKey);
+  const { error } = await resend.emails.send({ from: env.email.from, to, subject, html });
+
+  if (error) {
+    return {
+      ok: false,
+      detail:
+        `Resend je odbio: ${error.message}` +
+        (/testing emails|own email/i.test(error.message)
+          ? ' — dok domen nije potvrđen, Resend prima samo adresu s kojom je nalog otvoren.'
+          : ''),
+    };
+  }
+
+  return { ok: true, detail: `Poslano na ${to} (Resend).` };
 }
 
 /**
