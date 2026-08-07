@@ -130,7 +130,30 @@ async function sendViaResend(to: string, subject: string, html: string): Promise
 
   if (error) return { ok: false, detail: `Resend je odbio: ${error.message}${resendHint(error.message)}` };
 
-  return { ok: true, detail: `Poslano na ${to} (Resend).` };
+  return { ok: true, detail: `Poslano na ${to} (Resend).${resendFalsePositive()}` };
+}
+
+/**
+ * Zelena poruka koja ne znači ono što izgleda da znači.
+ *
+ * Probni mail ide na OWNER_EMAIL — a to je tačno ona adresa kojoj Resend
+ * dozvoljava slanje i bez potvrđenog domena. Proba dakle prođe, dugme pozeleni,
+ * i sve djeluje riješeno — dok prvom pravom gostu mail ne stigne, jer njegova
+ * adresa nije vlasnikova.
+ *
+ * To je najgori mogući ishod: kvar koji se ne vidi dok ne bude kasno. Zato uz
+ * uspjeh ide i upozorenje kad se šalje s Resendove zajedničke adrese.
+ */
+function resendFalsePositive(): string {
+  if (!/@resend\.dev/i.test(env.email.from)) return '';
+
+  return (
+    '\n\nALI PAŽNJA: ovo NE dokazuje da gost dobija mail. Šalje se s ' +
+    'onboarding@resend.dev, a s te adrese Resend prima samo tvoju vlastitu — ' +
+    'baš onu na koju je proba i otišla. Pravom gostu neće stići.\n' +
+    'Da bi stizalo svima: podesi GMAIL_USER i GMAIL_APP_PASSWORD (odmah, bez domena), ' +
+    'ili potvrdi vlastiti domen na resend.com/domains i upiši ga u EMAIL_FROM.'
+  );
 }
 
 /**

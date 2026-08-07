@@ -170,3 +170,45 @@ describe('poruka o grešci objašnjava zašto', () => {
     expect(detalj).toContain('napola podešen');
   });
 });
+
+describe('lažno zelena proba', () => {
+  it('uspjeh preko onboarding@resend.dev nosi upozorenje da gost svejedno neće dobiti', async () => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    vi.stubEnv('RESEND_API_KEY', 're_test');
+    vi.stubEnv('OWNER_EMAIL', 'vlasnik@gmail.com');
+    // Zadana vrijednost EMAIL_FROM — Resendova zajednička adresa.
+    vi.doMock('resend', () => ({
+      Resend: class {
+        emails = { send: async () => ({ error: null }) };
+      },
+    }));
+
+    const { testGuestEmail } = await import('./email');
+    const rezultat = await testGuestEmail();
+
+    // Poslano jeste — ali samo vlasniku, i to ništa ne dokazuje.
+    expect(rezultat.ok).toBe(true);
+    expect(rezultat.detail).toContain('NE dokazuje');
+    expect(rezultat.detail).toContain('GMAIL_USER');
+  });
+
+  it('s potvrđenim domenom nema upozorenja', async () => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    vi.stubEnv('RESEND_API_KEY', 're_test');
+    vi.stubEnv('OWNER_EMAIL', 'vlasnik@treescape.ba');
+    vi.stubEnv('EMAIL_FROM', 'TreeScape <rezervacije@treescape.ba>');
+    vi.doMock('resend', () => ({
+      Resend: class {
+        emails = { send: async () => ({ error: null }) };
+      },
+    }));
+
+    const { testGuestEmail } = await import('./email');
+    const rezultat = await testGuestEmail();
+
+    expect(rezultat.ok).toBe(true);
+    expect(rezultat.detail).not.toContain('NE dokazuje');
+  });
+});
