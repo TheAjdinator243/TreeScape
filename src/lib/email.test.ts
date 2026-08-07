@@ -125,3 +125,48 @@ describe('lozinka za aplikacije s razmacima', () => {
     expect(poslano[0]?.pass).toBe('alzxzksqyxucodbp');
   });
 });
+
+describe('poruka o grešci objašnjava zašto', () => {
+  async function sResendom(env: Record<string, string>, poruka: string) {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    for (const [k, v] of Object.entries(env)) vi.stubEnv(k, v);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.doMock('resend', () => ({
+      Resend: class {
+        emails = { send: async () => ({ error: { message: poruka } }) };
+      },
+    }));
+    const { testGuestEmail } = await import('./email');
+    return (await testGuestEmail()).detail;
+  }
+
+  it('Gmail adresa preko Resenda je slijepa ulica, i to se kaže', async () => {
+    const detalj = await sResendom(
+      {
+        RESEND_API_KEY: 're_test',
+        OWNER_EMAIL: 'vlasnik@gmail.com',
+        EMAIL_FROM: 'TreeScape <vlasnik@gmail.com>',
+      },
+      'The gmail.com domain is not verified. Please, add and verify your domain on https://resend.com/domains'
+    );
+
+    // Ključno: ne smije zvučati kao "potvrdi domen gmail.com", jer to je nemoguće.
+    expect(detalj).toContain('ne može slati');
+    expect(detalj).toContain('GMAIL_APP_PASSWORD');
+  });
+
+  it('napola podešen Gmail se prijavi kao pravi uzrok', async () => {
+    const detalj = await sResendom(
+      {
+        RESEND_API_KEY: 're_test',
+        OWNER_EMAIL: 'vlasnik@gmail.com',
+        GMAIL_USER: 'vlasnik@gmail.com',
+      },
+      'The gmail.com domain is not verified.'
+    );
+
+    expect(detalj).toContain('GMAIL_APP_PASSWORD');
+    expect(detalj).toContain('napola podešen');
+  });
+});

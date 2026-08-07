@@ -41,7 +41,25 @@ async function send(to: string, subject: string, html: string): Promise<SendResu
         ? await sendViaGmail(to, subject, html)
         : await sendViaResend(to, subject, html);
 
-    if (!result.ok) console.error('[treescape] slanje maila nije uspjelo:', result.detail);
+    if (!result.ok) {
+      console.error('[treescape] slanje maila nije uspjelo:', result.detail);
+
+      /**
+       * Kad padne Resend, a Gmail je bio napola podešen, to je gotovo uvijek
+       * pravi uzrok: nedostaje jedna od dvije varijable, pa se tiho uzeo drugi
+       * put. Bez ove rečenice se traži greška u Resendu, gdje je nema.
+       */
+      if (transport === 'resend' && (env.gmail.user || env.gmail.appPassword)) {
+        const missing = !env.gmail.user ? 'GMAIL_USER' : 'GMAIL_APP_PASSWORD';
+        return {
+          ...result,
+          detail:
+            `${result.detail}\n\nUZGRED: Gmail je napola podešen — nedostaje ${missing}, ` +
+            'pa se mail poslao preko Resenda. Dodaj i tu varijablu, pa Redeploy.',
+        };
+      }
+    }
+
     return result;
   } catch (err) {
     console.error('[treescape] slanje maila nije uspjelo:', err);
@@ -110,18 +128,39 @@ async function sendViaResend(to: string, subject: string, html: string): Promise
   const resend = new Resend(env.email.apiKey);
   const { error } = await resend.emails.send({ from: env.email.from, to, subject, html });
 
-  if (error) {
-    return {
-      ok: false,
-      detail:
-        `Resend je odbio: ${error.message}` +
-        (/testing emails|own email/i.test(error.message)
-          ? ' — dok domen nije potvrđen, Resend prima samo adresu s kojom je nalog otvoren.'
-          : ''),
-    };
-  }
+  if (error) return { ok: false, detail: `Resend je odbio: ${error.message}${resendHint(error.message)}` };
 
   return { ok: true, detail: `Poslano na ${to} (Resend).` };
+}
+
+/**
+ * Šta Resendova odbijenica zapravo znači.
+ *
+ * Njegove poruke su tačne, ali objašnjavaju samo svoj svijet — ne kažu da
+ * postoji i drugi put. Najgori je slučaj kad neko pokuša slati s Gmail adrese
+ * PREKO Resenda: Resend traži potvrdu domena gmail.com, što niko ne može
+ * uraditi. Poruka zvuči kao korak koji fali, a zapravo je slijepa ulica.
+ */
+function resendHint(message: string): string {
+  const gmailUrl = /(?:@|\s)(gmail|googlemail)\.com/i.test(env.email.from);
+
+  if (/not verified|verify your domain/i.test(message)) {
+    return gmailUrl
+      ? '\n\nEMAIL_FROM je Gmail adresa, a Gmail se preko Resenda ne može slati — domen ' +
+          'gmail.com nije tvoj da ga potvrdiš. Za slanje s Gmaila podesi GMAIL_USER i ' +
+          'GMAIL_APP_PASSWORD (tada Resend uopće ne učestvuje), pa pokreni Redeploy.'
+      : '\n\nEMAIL_FROM mora biti s domena koji je potvrđen na resend.com/domains. ' +
+          'Ako domen još nemaš, podesi GMAIL_USER i GMAIL_APP_PASSWORD — Gmail ne traži domen.';
+  }
+
+  if (/testing emails|own email/i.test(message)) {
+    return (
+      '\n\nDok domen nije potvrđen, Resend prima samo adresu s kojom je nalog otvoren. ' +
+      'Pravom gostu ne prolazi. Gmail prolazi odmah.'
+    );
+  }
+
+  return '';
 }
 
 /**
