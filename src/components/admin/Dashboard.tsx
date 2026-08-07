@@ -14,6 +14,45 @@ import { useLiveRequests } from './useLiveRequests';
 
 type Tab = 'requests' | 'bookings' | 'calendar' | 'pricing';
 
+/** Statusi koje vlasnik još može otkazati — na jednom mjestu, za obje liste. */
+const CANCELLABLE: string[] = ['confirmed', 'pending_cash', 'pending_payment'];
+
+/**
+ * Kontakt gosta — kao linkovi, ne kao goli tekst.
+ *
+ * Administracija se najčešće otvara na telefonu: tamo dodir na broj odmah
+ * zove, a dodir na mail otvara pisanje poruke. Prepisivanje broja s ekrana je
+ * jedini korak u kojem se stvarno lako pogriješi.
+ */
+function Contact({
+  email,
+  phone,
+  className = 'text-xs',
+}: {
+  email: string | null;
+  phone: string | null;
+  className?: string;
+}) {
+  if (!email && !phone) return null;
+
+  return (
+    <p className={`mt-1 text-ink-500 ${className}`}>
+      {phone && (
+        // Razmaci u broju su za oko, ne za pozivanje — `tel:` ih ne voli.
+        <a href={`tel:${phone.replace(/\s+/g, '')}`} className="underline underline-offset-2">
+          {phone}
+        </a>
+      )}
+      {phone && email && <span className="text-ink-300"> · </span>}
+      {email && (
+        <a href={`mailto:${email}`} className="break-all underline underline-offset-2">
+          {email}
+        </a>
+      )}
+    </p>
+  );
+}
+
 export function Dashboard({
   bookings,
   periods,
@@ -119,7 +158,11 @@ export function Dashboard({
             <p className="font-display text-lg text-forest-900">{t.site.name}</p>
             <p className="text-xs text-ink-400">{t.admin.title}</p>
           </div>
-          <button type="button" onClick={() => void logout()} className="btn-ghost px-4 py-2 text-xs">
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="btn-ghost px-4 py-2 text-xs"
+          >
             {t.admin.logout}
           </button>
         </div>
@@ -179,62 +222,64 @@ export function Dashboard({
                     {t.admin.testNotification}
                   </button>
                 </p>
-                  {requests.length === 0 ? (
-                <Empty>{t.admin.requestsEmpty}</Empty>
-              ) : (
-                <ul className="space-y-4">
-                  {requests.map((booking) => (
-                    <li key={booking.id} className="card p-5">
-                      <div className="flex flex-wrap items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <p className="font-display text-lg text-forest-900">
-                            {formatRange(booking.start_date, booking.end_date, locale)}
-                          </p>
-                          <p className="mt-1 text-sm text-ink-700">
-                            {booking.guest_name} ·{' '}
-                            {count(locale, booking.guests ?? 1, t.common.guests)}
-                          </p>
-                          <p className="mt-0.5 text-sm text-ink-500">
-                            {booking.guest_email} · {booking.guest_phone}
-                          </p>
-                          <p className="mt-2 text-xs text-ink-400">
-                            {t.admin.receivedAt(formatDateTime(booking.created_at, locale))}
-                          </p>
-                          {booking.note && (
-                            <p className="mt-3 rounded-lg bg-sand-100 px-3 py-2 text-sm text-ink-700">
-                              {booking.note}
+                {requests.length === 0 ? (
+                  <Empty>{t.admin.requestsEmpty}</Empty>
+                ) : (
+                  <ul className="space-y-4">
+                    {requests.map((booking) => (
+                      <li key={booking.id} className="card p-5">
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <p className="font-display text-lg text-forest-900">
+                              {formatRange(booking.start_date, booking.end_date, locale)}
                             </p>
-                          )}
+                            <p className="mt-1 text-sm text-ink-700">
+                              {booking.guest_name} ·{' '}
+                              {count(locale, booking.guests ?? 1, t.common.guests)}
+                            </p>
+                            <Contact
+                              email={booking.guest_email}
+                              phone={booking.guest_phone}
+                              className="text-sm"
+                            />
+                            <p className="mt-2 text-xs text-ink-400">
+                              {t.admin.receivedAt(formatDateTime(booking.created_at, locale))}
+                            </p>
+                            {booking.note && (
+                              <p className="mt-3 rounded-lg bg-sand-100 px-3 py-2 text-sm text-ink-700">
+                                {booking.note}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="text-end">
+                            <p className="font-display text-2xl text-forest-800">
+                              {formatMoney(booking.total_cents, settings.currency_symbol, locale)}
+                            </p>
+                            <p className="text-xs text-ink-400">{t.admin.byCash}</p>
+                          </div>
                         </div>
 
-                        <div className="text-end">
-                          <p className="font-display text-2xl text-forest-800">
-                            {formatMoney(booking.total_cents, settings.currency_symbol, locale)}
-                          </p>
-                          <p className="text-xs text-ink-400">{t.admin.byCash}</p>
+                        <div className="mt-5 flex gap-3 border-t border-sand-200 pt-4">
+                          <button
+                            type="button"
+                            onClick={() => void decide(booking.id, 'approve')}
+                            className="btn-primary flex-1 py-2.5 text-xs"
+                          >
+                            {t.admin.approve}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void decide(booking.id, 'reject')}
+                            className="btn-ghost flex-1 py-2.5 text-xs"
+                          >
+                            {t.admin.reject}
+                          </button>
                         </div>
-                      </div>
-
-                      <div className="mt-5 flex gap-3 border-t border-sand-200 pt-4">
-                        <button
-                          type="button"
-                          onClick={() => void decide(booking.id, 'approve')}
-                          className="btn-primary flex-1 py-2.5 text-xs"
-                        >
-                          {t.admin.approve}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => void decide(booking.id, 'reject')}
-                          className="btn-ghost flex-1 py-2.5 text-xs"
-                        >
-                          {t.admin.reject}
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </Section>
             </>
           )}
@@ -244,60 +289,111 @@ export function Dashboard({
               {bookings.length === 0 ? (
                 <Empty>{t.admin.bookingsEmpty}</Empty>
               ) : (
-                <div className="card overflow-x-auto">
-                  <table className="w-full min-w-[720px] text-start text-sm">
-                    <thead className="border-b border-sand-200 text-xs uppercase tracking-wider text-ink-400">
-                      <tr>
-                        <th className="px-5 py-3 font-medium">{t.admin.colStay}</th>
-                        <th className="px-5 py-3 font-medium">{t.admin.colGuest}</th>
-                        <th className="px-5 py-3 font-medium">{t.admin.colMethod}</th>
-                        <th className="px-5 py-3 font-medium">{t.admin.colStatus}</th>
-                        <th className="px-5 py-3 text-end font-medium">{t.admin.colAmount}</th>
-                        <th className="px-5 py-3" />
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-sand-200">
-                      {bookings.map((booking) => (
-                        <tr key={booking.id}>
-                          <td className="px-5 py-3.5 font-medium text-ink-900">
+                <>
+                  {/*
+                    Na telefonu se tabela od 720px mora vući postrance, pa
+                    kontakt gosta ostane iza ivice ekrana — a upravo on tu
+                    najviše treba, jer nakon odobrenja zahtjev nestane iz
+                    kartice "Zahtjevi" i broj se više nigdje ne vidi.
+                    Zato uski ekran dobija kartice, a tabela ide od tableta naviše.
+                  */}
+                  <ul className="space-y-3 sm:hidden">
+                    {bookings.map((booking) => (
+                      <li key={booking.id} className="card p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-medium text-ink-900">
                             {formatRange(booking.start_date, booking.end_date, locale)}
-                          </td>
-                          <td className="px-5 py-3.5 text-ink-700">
-                            {booking.guest_name ?? (
-                              <span className="text-ink-400">{booking.admin_note ?? '—'}</span>
-                            )}
-                          </td>
-                          <td className="px-5 py-3.5 text-ink-500">
+                          </p>
+                          <StatusBadge status={booking.status} />
+                        </div>
+
+                        <p className="mt-2 text-sm text-ink-700">
+                          {booking.guest_name ?? (
+                            <span className="text-ink-400">{booking.admin_note ?? '—'}</span>
+                          )}
+                        </p>
+                        <Contact
+                          email={booking.guest_email}
+                          phone={booking.guest_phone}
+                          className="text-sm"
+                        />
+
+                        <div className="mt-3 flex items-center justify-between border-t border-sand-200 pt-3 text-sm">
+                          <span className="text-ink-500">
                             {t.admin.methodLabels[booking.payment_method]}
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <StatusBadge status={booking.status} />
-                          </td>
-                          <td className="px-5 py-3.5 text-end tabular-nums text-ink-900">
+                          </span>
+                          <span className="tabular-nums text-ink-900">
                             {booking.total_cents > 0
                               ? formatMoney(booking.total_cents, settings.currency_symbol, locale)
                               : '—'}
-                          </td>
-                          <td className="px-5 py-3.5 text-end">
-                            {['confirmed', 'pending_cash', 'pending_payment'].includes(
-                              booking.status
-                            ) && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  void cancel(booking.id, t.admin.cancelConfirm)
-                                }
-                                className="text-xs font-medium text-danger-600 underline underline-offset-4"
-                              >
-                                {t.admin.cancel}
-                              </button>
-                            )}
-                          </td>
+                          </span>
+                        </div>
+
+                        {CANCELLABLE.includes(booking.status) && (
+                          <button
+                            type="button"
+                            onClick={() => void cancel(booking.id, t.admin.cancelConfirm)}
+                            className="mt-3 text-xs font-medium text-danger-600 underline underline-offset-4"
+                          >
+                            {t.admin.cancel}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="card hidden overflow-x-auto sm:block">
+                    <table className="w-full min-w-[720px] text-start text-sm">
+                      <thead className="border-b border-sand-200 text-xs uppercase tracking-wider text-ink-400">
+                        <tr>
+                          <th className="px-5 py-3 font-medium">{t.admin.colStay}</th>
+                          <th className="px-5 py-3 font-medium">{t.admin.colGuest}</th>
+                          <th className="px-5 py-3 font-medium">{t.admin.colMethod}</th>
+                          <th className="px-5 py-3 font-medium">{t.admin.colStatus}</th>
+                          <th className="px-5 py-3 text-end font-medium">{t.admin.colAmount}</th>
+                          <th className="px-5 py-3" />
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-sand-200">
+                        {bookings.map((booking) => (
+                          <tr key={booking.id}>
+                            <td className="px-5 py-3.5 font-medium text-ink-900">
+                              {formatRange(booking.start_date, booking.end_date, locale)}
+                            </td>
+                            <td className="px-5 py-3.5 text-ink-700">
+                              {booking.guest_name ?? (
+                                <span className="text-ink-400">{booking.admin_note ?? '—'}</span>
+                              )}
+                              <Contact email={booking.guest_email} phone={booking.guest_phone} />
+                            </td>
+                            <td className="px-5 py-3.5 text-ink-500">
+                              {t.admin.methodLabels[booking.payment_method]}
+                            </td>
+                            <td className="px-5 py-3.5">
+                              <StatusBadge status={booking.status} />
+                            </td>
+                            <td className="px-5 py-3.5 text-end tabular-nums text-ink-900">
+                              {booking.total_cents > 0
+                                ? formatMoney(booking.total_cents, settings.currency_symbol, locale)
+                                : '—'}
+                            </td>
+                            <td className="px-5 py-3.5 text-end">
+                              {CANCELLABLE.includes(booking.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => void cancel(booking.id, t.admin.cancelConfirm)}
+                                  className="text-xs font-medium text-danger-600 underline underline-offset-4"
+                                >
+                                  {t.admin.cancel}
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </Section>
           )}
@@ -312,9 +408,7 @@ export function Dashboard({
             />
           )}
 
-          {tab === 'pricing' && (
-            <PricingTab settings={settings} periods={periods} onCall={call} />
-          )}
+          {tab === 'pricing' && <PricingTab settings={settings} periods={periods} onCall={call} />}
         </div>
       </div>
     </main>
