@@ -309,6 +309,7 @@ export const bs: Dictionary = {
     requestsHeading: 'Zahtjevi za plaćanje u gotovini',
     requestsEmpty: 'Trenutno nema zahtjeva koji čekaju odobrenje.',
     testNotification: 'Pošalji probnu obavijest',
+    testGuestEmail: 'Pošalji probni mail gostu',
     testNotificationSending: 'Šaljem…',
     approve: 'Odobri',
     reject: 'Odbij',

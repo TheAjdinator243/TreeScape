@@ -306,6 +306,7 @@ export const en: Dictionary = {
     requestsHeading: 'Cash payment requests',
     requestsEmpty: 'There are no requests waiting for approval.',
     testNotification: 'Send a test notification',
+    testGuestEmail: 'Send a test guest email',
     testNotificationSending: 'Sending…',
     approve: 'Approve',
     reject: 'Reject',

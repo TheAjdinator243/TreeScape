@@ -117,16 +117,18 @@ export function Dashboard({
    * Probna obavijest — jedini način da se vidi GDJE je stala, bez pravljenja
    * lažne rezervacije. Odgovor nosi i Telegramov razlog odbijanja.
    */
-  async function testNotification() {
+  async function testNotification(kanal?: 'mail') {
     setError(null);
     setNotice(t.admin.testNotificationSending);
 
     try {
-      const res = await fetch('/api/admin/test-notification', { method: 'POST' });
-      const data = (await res.json()) as { telegram?: { ok?: boolean; detail?: string } };
-      const detail = data.telegram?.detail ?? t.errors.SERVER_ERROR;
+      const res = await fetch(`/api/admin/test-notification${kanal ? `?kanal=${kanal}` : ''}`, {
+        method: 'POST',
+      });
+      const data = (await res.json()) as { ok?: boolean; detail?: string };
+      const detail = data.detail ?? t.errors.SERVER_ERROR;
 
-      if (data.telegram?.ok) {
+      if (data.ok) {
         setNotice(detail);
       } else {
         setNotice(null);
@@ -213,7 +215,7 @@ export function Dashboard({
           {tab === 'requests' && (
             <>
               <Section heading={t.admin.requestsHeading}>
-                <p className="-mt-4 mb-6">
+                <div className="-mt-4 mb-6 flex flex-wrap gap-3">
                   <button
                     type="button"
                     onClick={() => void testNotification()}
@@ -221,7 +223,14 @@ export function Dashboard({
                   >
                     {t.admin.testNotification}
                   </button>
-                </p>
+                  <button
+                    type="button"
+                    onClick={() => void testNotification('mail')}
+                    className="btn-ghost px-4 py-2 text-xs"
+                  >
+                    {t.admin.testGuestEmail}
+                  </button>
+                </div>
                 {requests.length === 0 ? (
                   <Empty>{t.admin.requestsEmpty}</Empty>
                 ) : (

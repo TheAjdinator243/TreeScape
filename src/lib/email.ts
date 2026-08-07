@@ -19,16 +19,49 @@ import type { Booking } from './types';
  * samo se ništa ne šalje. Nikada ne rušimo rezervaciju zbog toga što mail
  * nije prošao: gost je platio, to je važnije od obavijesti.
  */
-async function send(to: string, subject: string, html: string): Promise<void> {
-  if (!isEmailConfigured || !env.email.apiKey) return;
+async function send(to: string, subject: string, html: string): Promise<SendResult> {
+  if (!isEmailConfigured || !env.email.apiKey) {
+    const missing = [
+      !env.email.apiKey && 'RESEND_API_KEY',
+      !env.email.ownerEmail && 'OWNER_EMAIL',
+    ].filter(Boolean);
+
+    return {
+      ok: false,
+      detail:
+        `Mail nije podešen — nedostaje: ${missing.join(' i ')}. Dodaj u Vercel → ` +
+        'Settings → Environment Variables, pa pokreni Redeploy.',
+    };
+  }
 
   try {
     const resend = new Resend(env.email.apiKey);
     const { error } = await resend.emails.send({ from: env.email.from, to, subject, html });
-    if (error) console.error('[treescape] slanje maila nije uspjelo:', error.message);
+
+    if (error) {
+      console.error('[treescape] slanje maila nije uspjelo:', error.message);
+      return { ok: false, detail: `Resend je odbio: ${error.message}` };
+    }
+
+    return { ok: true, detail: `Poslano na ${to}.` };
   } catch (err) {
     console.error('[treescape] slanje maila nije uspjelo:', err);
+    return { ok: false, detail: `Poziv Resend-u nije prošao: ${String(err)}` };
   }
+}
+
+/**
+ * Zašto `send` vraća razlog umjesto da samo šuti.
+ *
+ * Pozivaocima iz toka rezervacije je i dalje svejedno — oni ovo namjerno
+ * ignorišu, jer neuspio mail ne smije oboriti već upisanu rezervaciju. Ali
+ * probno slanje iz administracije mora znati ŠTA je pošlo po zlu: bez toga
+ * "gostu ne stiže mail" ostaje pogađanje između pogrešnog ključa, nepotvrđene
+ * domene i Resendovog ograničenja na vlastitu adresu.
+ */
+export interface SendResult {
+  ok: boolean;
+  detail: string;
 }
 
 /**
@@ -108,6 +141,65 @@ function intro(booking: Booking, locale: Locale, message: string): string {
 
 function footNote(text: string): string {
   return `<p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">${text}</p>`;
+}
+
+/**
+ * Probni mail GOSTU — isti onaj koji stigne nakon zahtjeva za gotovinu.
+ *
+ * Šalje se na `OWNER_EMAIL`, a ne na izmišljenu adresu, i to s razlogom: dok
+ * domen nije potvrđen u Resend-u, Resend dozvoljava slanje SAMO na adresu s
+ * kojom je nalog otvoren. Proba na tuđu adresu bi tada pala s greškom koja
+ * djeluje kao kvar, a nije.
+ *
+ * Podaci u probnom mailu su očigledno lažni; jedini tekst dolazi iz rječnika,
+ * kao i u pravom mailu.
+ */
+export async function testGuestEmail(): Promise<SendResult> {
+  if (!env.email.ownerEmail) {
+    return { ok: false, detail: 'Nedostaje OWNER_EMAIL — nema se gdje poslati proba.' };
+  }
+
+  const locale = DEFAULT_LOCALE;
+  const t = getStrings(locale);
+  const today = new Date();
+  const iso = (offsetDays: number) =>
+    new Date(today.getTime() + offsetDays * 86_400_000).toISOString().slice(0, 10);
+
+  const primjer: Booking = {
+    id: 'proba',
+    public_token: 'probaproba',
+    guest_name: t.booking.namePlaceholder,
+    guest_email: env.email.ownerEmail,
+    guest_phone: null,
+    guests: 2,
+    note: null,
+    start_date: iso(7),
+    end_date: iso(9),
+    status: 'pending_cash',
+    payment_method: 'cash',
+    total_cents: 60000,
+    currency: 'BAM',
+    price_breakdown: null,
+    payment_reference: null,
+    payment_id: null,
+    hold_expires_at: null,
+    admin_note: null,
+    locale,
+    created_at: today.toISOString(),
+    updated_at: today.toISOString(),
+  };
+
+  return send(
+    env.email.ownerEmail,
+    subject(locale, t.email.cashRequestSubject),
+    layout(
+      locale,
+      t.email.cashRequestTitle,
+      `${intro(primjer, locale, t.email.cashRequestBody)}
+       ${detailRows(primjer, locale)}
+       ${footNote(t.email.payOnArrival)}`
+    )
+  );
 }
 
 /** Gostu — rezervacija je plaćena i potvrđena. */

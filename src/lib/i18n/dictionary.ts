@@ -281,6 +281,8 @@ export interface Dictionary {
     requestsEmpty: string;
     /** Provjera kanala obavijesti — šalje probnu poruku na Telegram. */
     testNotification: string;
+    /** Šalje gostov mail na vlasnikovu adresu, radi provjere. */
+    testGuestEmail: string;
     testNotificationSending: string;
     approve: string;
     reject: string;
