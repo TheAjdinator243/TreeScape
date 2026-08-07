@@ -383,6 +383,26 @@ if (!env.RESEND_API_KEY) {
   ok('email podešen', env.OWNER_EMAIL);
 }
 
+const telegram = Boolean(env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_CHAT_ID);
+if (telegram) {
+  ok('Telegram obavijesti podešene');
+} else if (env.TELEGRAM_BOT_TOKEN) {
+  warn('ima TELEGRAM_BOT_TOKEN ali nema TELEGRAM_CHAT_ID', 'oba su potrebna, inače se preskače');
+} else if (env.TELEGRAM_CHAT_ID) {
+  warn('ima TELEGRAM_CHAT_ID ali nema TELEGRAM_BOT_TOKEN', 'oba su potrebna, inače se preskače');
+}
+
+// Zahtjev za gotovinu drži termin samo neko vrijeme. Ako ni mail ni Telegram
+// nisu podešeni, on tiho stoji u /admin dok ne istekne. Lokalno to nije
+// problem, pa ostaje upozorenje — ali na pravom sajtu je ovo ono što se ne
+// smije previdjeti.
+if (!telegram && !(env.RESEND_API_KEY && env.OWNER_EMAIL)) {
+  warn(
+    'nijedan kanal obavijesti nije podešen — za nove zahtjeve nećeš saznati',
+    'podesi TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID (najbrže) ili RESEND_API_KEY + OWNER_EMAIL'
+  );
+}
+
 // ── Zaključak ───────────────────────────────────────────────────────────────
 console.log();
 console.log('─'.repeat(48));

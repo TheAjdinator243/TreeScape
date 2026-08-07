@@ -20,6 +20,7 @@ dobija.
 - [Podešavanje Supabase baze](#podešavanje-supabase-baze)
 - [Načini plaćanja](#načini-plaćanja)
 - [Objava na Vercel](#objava-na-vercel)
+- [Obavijesti o novim zahtjevima](#obavijesti-o-novim-zahtjevima)
 - [Zamjena fotografija i teksta](#zamjena-fotografija-i-teksta)
 - [Administracija](#administracija)
 - [Kako je spriječen dvostruki booking](#kako-je-spriječen-dvostruki-booking)
@@ -42,8 +43,9 @@ dobija.
 
 **Za vlasnika** (`/admin`, iza tajnog koda)
 
+- **Obavijest čim stigne zahtjev** — na Telegram (na telefon, za koju sekundu)
+  i/ili na mail; lista zahtjeva se osvježava sama, bez pritiska na F5
 - Odobravanje i odbijanje zahtjeva
-- Potvrda primljenih uplata na račun
 - Pregled svih rezervacija
 - Ručno blokiranje termina (održavanje, lični boravak)
 - Uređivanje cijena: osnovna, vikend (subota i nedjelja) i sezonski cjenovnik
@@ -287,6 +289,56 @@ kojima je istekao rok za uplatu.
 > samo dnevni cron.
 
 Od tada Vercel objavljuje svaku izmjenu automatski, čim je pošalješ na GitHub.
+
+---
+
+## Obavijesti o novim zahtjevima
+
+Kad gost pošalje zahtjev za plaćanje gotovinom, termin se odmah zauzme — ali
+samo privremeno. Ako vlasnik ne odluči na vrijeme, zahtjev istekne i termin se
+oslobodi. Zato je bitno da obavijest stigne **odmah**, a ne kad se neko sjeti
+otvoriti `/admin`.
+
+Postoje dva kanala. Mogu se uključiti oba, ili samo jedan — šalje se na sve što
+je podešeno, a svaki ide nezavisno (ako mail padne, Telegram svejedno stigne).
+
+### Telegram (preporučeno)
+
+Stiže kao poruka na telefon, za koju sekundu. Besplatno je i ne traži domen.
+
+1. U Telegramu potraži **@BotFather** → pošalji `/newbot` → dobiješ **token**
+2. **Napiši svom novom botu bilo šta** (npr. „zdravo"). Dok mu ne napišeš prvi,
+   Telegram mu ne dozvoljava da tebi šalje poruke — ovaj korak se najčešće
+   preskoči, pa onda ništa ne stiže.
+3. Otvori `https://api.telegram.org/bot<TOKEN>/getUpdates` i prepiši broj iz
+   `"chat":{"id": ... }`
+
+U Vercel → Settings → Environment Variables dodaj:
+
+```
+TELEGRAM_BOT_TOKEN=123456789:AA...
+TELEGRAM_CHAT_ID=987654321
+```
+
+### Email
+
+```
+RESEND_API_KEY=re_...
+OWNER_EMAIL=vlasnik@primjer.ba
+```
+
+Ključ se dobija na [resend.com](https://resend.com). `EMAIL_FROM` mora biti s
+domena koji je tamo potvrđen, inače mail ne prolazi.
+
+> Nakon dodavanja varijabli **obavezno pokreni novu objavu** (Vercel → Redeploy).
+> Varijable se čitaju pri gradnji, pa ih stari build ne vidi.
+
+Ako nijedan kanal nije podešen, sajt i dalje radi normalno i zahtjev se uredno
+upiše — ali o njemu niko nije obaviješten. Tada se u dnevniku (Vercel → Logs)
+pojavi jasna poruka `NEMA OBAVIJESTI VLASNIKU` s uputom šta podesiti.
+
+Bez obzira na kanale, otvorena `/admin` stranica se **osvježava sama** čim
+stigne novi zahtjev — brojka uz karticu „Zahtjevi" poraste bez pritiska na F5.
 
 ---
 

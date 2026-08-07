@@ -45,6 +45,17 @@ export const env = {
     from: optional('EMAIL_FROM') ?? 'TreeScape <onboarding@resend.dev>',
     ownerEmail: optional('OWNER_EMAIL'),
   },
+  /**
+   * Telegram — obavijest vlasniku koja stigne na telefon za koju sekundu.
+   *
+   * Postoji uz mail, a ne umjesto njega: mail traži verifikovan domen i lako
+   * završi u promocijama, a zahtjev za gotovinu vrijedi samo dok se termin
+   * drži. Telegram je besplatan i ne traži ništa osim bota.
+   */
+  telegram: {
+    botToken: optional('TELEGRAM_BOT_TOKEN'),
+    chatId: optional('TELEGRAM_CHAT_ID'),
+  },
 } as const;
 
 /** Je li baza uopće podešena? Ako nije, sajt radi na demo podacima. */
@@ -53,5 +64,7 @@ export const isDatabaseConfigured = Boolean(
 );
 
 export const isEmailConfigured = Boolean(env.email.apiKey && env.email.ownerEmail);
+
+export const isTelegramConfigured = Boolean(env.telegram.botToken && env.telegram.chatId);
 
 export { required as requireEnv };

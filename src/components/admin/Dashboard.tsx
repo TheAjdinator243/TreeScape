@@ -10,6 +10,7 @@ import { formatMoney } from '@/lib/pricing';
 import type { Booking, RatePeriod, Settings } from '@/lib/types';
 
 import { PricingTab } from './PricingTab';
+import { useLiveRequests } from './useLiveRequests';
 
 type Tab = 'requests' | 'bookings' | 'calendar' | 'pricing';
 
@@ -27,6 +28,9 @@ export function Dashboard({
   const [tab, setTab] = useState<Tab>('requests');
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  // Novi zahtjev se pojavi sam, bez osvježavanja stranice.
+  useLiveRequests();
 
   const requests = bookings.filter((b) => b.status === 'pending_cash');
   const blocked = bookings.filter((b) => b.status === 'blocked' && b.end_date >= todayStr());

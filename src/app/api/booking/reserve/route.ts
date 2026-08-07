@@ -2,12 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { invalidInput, readJson, requireDatabase } from '@/lib/api-helpers';
 import { createBooking } from '@/lib/booking-service';
-import {
-  sendGuestCashRequest,
-  sendGuestConfirmation,
-  sendOwnerNotification,
-} from '@/lib/email';
+import { sendGuestCashRequest, sendGuestConfirmation } from '@/lib/email';
 import { localeFromRequest } from '@/lib/i18n';
+import { notifyOwner } from '@/lib/notify';
 import { bookingRequestSchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
@@ -39,8 +36,8 @@ export async function POST(request: Request) {
     );
   }
 
-  // Mailovi ne smiju blokirati odgovor gostu — termin je već siguran u bazi,
-  // a neuspio mail nije razlog da gost vidi grešku.
+  // Obavijesti ne smiju blokirati odgovor gostu — termin je već siguran u
+  // bazi, a neuspjela obavijest nije razlog da gost vidi grešku.
   void notifyByMethod(result);
 
   return NextResponse.json({
@@ -54,10 +51,7 @@ async function notifyByMethod(result: Extract<Awaited<ReturnType<typeof createBo
 
   switch (booking.payment_method) {
     case 'cash':
-      await Promise.all([
-        sendGuestCashRequest(booking),
-        sendOwnerNotification(booking, 'cash'),
-      ]);
+      await Promise.all([sendGuestCashRequest(booking), notifyOwner(booking, 'cash')]);
       break;
 
     case 'test':

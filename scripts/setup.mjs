@@ -146,6 +146,15 @@ values.RESEND_API_KEY = await ask('RESEND_API_KEY', {
 });
 values.EMAIL_FROM = existing.EMAIL_FROM ?? 'TreeScape <onboarding@resend.dev>';
 
+values.TELEGRAM_BOT_TOKEN = await ask('TELEGRAM_BOT_TOKEN', {
+  label: 'Telegram bot (opcionalno)',
+  hint: 'obavijest na telefon za koju sekundu — u Telegramu: @BotFather → /newbot',
+});
+values.TELEGRAM_CHAT_ID = await ask('TELEGRAM_CHAT_ID', {
+  label: 'Telegram broj razgovora',
+  hint: 'napiši botu "zdravo", pa otvori api.telegram.org/bot<TOKEN>/getUpdates',
+});
+
 rl.close();
 
 const content = `# Lokalne postavke — NE commita se (vidi .gitignore).
@@ -172,6 +181,10 @@ NEXT_PUBLIC_SITE_URL=${values.NEXT_PUBLIC_SITE_URL}
 RESEND_API_KEY=${values.RESEND_API_KEY}
 EMAIL_FROM=${values.EMAIL_FROM}
 OWNER_EMAIL=${values.OWNER_EMAIL}
+
+# ── Telegram (opcionalno) ──
+TELEGRAM_BOT_TOKEN=${values.TELEGRAM_BOT_TOKEN}
+TELEGRAM_CHAT_ID=${values.TELEGRAM_CHAT_ID}
 `;
 
 writeFileSync(ENV_PATH, content, 'utf8');
