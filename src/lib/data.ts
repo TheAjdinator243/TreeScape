@@ -8,15 +8,44 @@ import { supabaseAdmin } from './supabase/admin';
 import type { AvailabilitySlot, BookingContext, RatePeriod, Settings } from './types';
 
 /**
- * Oslobađa termine kojima je istekao rok — uplate na račun koje nikad nisu
- * stigle i eventualne online uplate koje gost nije dovršio.
+ * Koliko najmanje vremena mora proći između dva čišćenja isteklih termina.
  *
- * Poziva se prije svakog čitanja dostupnosti i prije svakog upisa. Ne oslanjamo
- * se samo na cron: da cron zakaže, termin bi ostao zaključan zauvijek, a ovako
- * ga oslobodi prvi sljedeći posjetilac stranice.
+ * Bez ovoga se pri SVAKOM učitavanju stranice išlo do baze i pokretao UPDATE.
+ * Trenutno taj UPDATE ne može pogoditi nijedan red — `hold_expires_at` postavlja
+ * samo način plaćanja koji ima rok, a gotovina ga nema (`holdHours: null`) —
+ * pa je to bio odlazak preko mreže koji svakom posjetiocu doda kašnjenje, a ne
+ * uradi ništa.
+ *
+ * Minuta je bezopasna: rokovi se mjere satima i danima, a dnevni cron ostaje
+ * kao druga mreža.
  */
-export async function releaseExpiredHolds(): Promise<void> {
+const HOLD_SWEEP_MS = 60_000;
+
+/**
+ * Kad je čišćenje zadnji put pokrenuto — po instanci servera.
+ *
+ * Na Vercelu svaka instanca ima svoje pamćenje i gubi ga pri hladnom startu.
+ * To je u redu: gubitak pamćenja znači jedno čišćenje viška, nikad manjak.
+ */
+let lastHoldSweep = 0;
+
+/**
+ * Oslobađa termine kojima je istekao rok — online uplate koje gost nije
+ * dovršio i eventualne buduće uplate s rokom.
+ *
+ * Zove se prije čitanja dostupnosti i prije svakog upisa. Ne oslanjamo se samo
+ * na cron: da cron zakaže, termin bi ostao zaključan zauvijek, a ovako ga
+ * oslobodi prvi sljedeći posjetilac stranice.
+ *
+ * `force` preskače ograničenje — upis rezervacije ga koristi, jer tamo tačnost
+ * u toj sekundi vrijedi više od jednog odlaska do baze.
+ */
+export async function releaseExpiredHolds(force = false): Promise<void> {
   if (!isDatabaseConfigured) return;
+
+  const now = Date.now();
+  if (!force && now - lastHoldSweep < HOLD_SWEEP_MS) return;
+  lastHoldSweep = now;
 
   const { error } = await supabaseAdmin().rpc('release_expired_holds');
   if (error) {

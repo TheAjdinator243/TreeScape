@@ -24,14 +24,22 @@ const sans = Inter({
 
 /**
  * Ni Inter ni Fraunces nemaju arapsko pismo — bez ovoga bi arapska verzija
- * pala na ono što posjetilac slučajno ima instalirano. `globals.css` je uključi
- * samo kad je stranica na arapskom.
+ * pala na ono što posjetilac slučajno ima instalirano.
+ *
+ * `preload: false` je ovdje bitan, i to mjerljivo: dok ga nije bilo, Next je
+ * ovaj font preuzimao SVAKOM posjetiocu, jer je njegova promjenljiva stajala
+ * na <html> bez obzira na jezik. To je bilo 162 KB od ukupno 361 KB stranice —
+ * skoro polovina, za pismo koje bosanski i engleski gost nikad ne vide.
+ *
+ * Sada se promjenljiva dodaje samo arapskoj stranici (vidi `RootLayout`), pa
+ * font preuzme samo onaj kome zaista treba.
  */
 const arabic = Noto_Sans_Arabic({
   subsets: ['arabic'],
   variable: '--font-arabic',
   display: 'swap',
   weight: ['400', '500', '600'],
+  preload: false,
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -86,7 +94,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       // galeriji, poravnanje u tabelama — visi o ovom jednom atributu, pa se
       // po komponentama nigdje ne provjerava koji je jezik u pitanju.
       dir={directionOf(locale)}
-      className={`${display.variable} ${sans.variable} ${arabic.variable}`}
+      // Arapski font ide u paket samo arapskoj stranici — vidi `preload: false` gore.
+      className={[display.variable, sans.variable, locale === 'ar' && arabic.variable]
+        .filter(Boolean)
+        .join(' ')}
     >
       <head>
         {/* Bez JavaScripta nema ni animacije pojavljivanja — sadržaj se

@@ -42,7 +42,8 @@ export async function createBooking(
 ): Promise<CreateResult> {
   const t = getStrings(locale);
 
-  await releaseExpiredHolds();
+  // `force`: pred upis se ne štedi na tačnosti — vidi HOLD_SWEEP_MS u data.ts.
+  await releaseExpiredHolds(true);
 
   const [periods, settings] = await Promise.all([getRatePeriods(), getSettings()]);
 
