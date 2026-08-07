@@ -64,13 +64,21 @@ async function sendViaGmail(to: string, subject: string, html: string): Promise<
   const { user, appPassword } = env.gmail;
   if (!user || !appPassword) return { ok: false, detail: 'Gmail nije podešen.' };
 
+  /**
+   * Google lozinku za aplikacije POKAZUJE u četiri grupe po četiri znaka
+   * ("alzx zksq yxuc odbp"), pa se tako i prepiše. Razmaci su samo za oko —
+   * sama lozinka je šesnaest znakova bez njih, a s razmacima prijava padne na
+   * "Username and Password not accepted", što izgleda kao pogrešna lozinka.
+   */
+  const lozinka = appPassword.replace(/\s+/g, '');
+
   const nodemailer = (await import('nodemailer')).default;
 
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,
-    auth: { user, pass: appPassword },
+    auth: { user, pass: lozinka },
 
     /**
      * Rokovi nisu ukras — nodemailer ih sam po sebi NEMA.

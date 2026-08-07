@@ -98,3 +98,30 @@ describe('send bez podešenog puta', () => {
     expect(rezultat.detail).toContain('RESEND_API_KEY');
   });
 });
+
+describe('lozinka za aplikacije s razmacima', () => {
+  it('razmaci iz Googleovog prikaza ne obaraju prijavu', async () => {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    // Tačno onako kako Google pokaže i kako se prepiše.
+    vi.stubEnv('GMAIL_USER', 'vlasnik@gmail.com');
+    vi.stubEnv('GMAIL_APP_PASSWORD', 'alzx zksq yxuc odbp');
+    vi.stubEnv('OWNER_EMAIL', 'vlasnik@gmail.com');
+
+    const poslano: { pass?: string }[] = [];
+    vi.doMock('nodemailer', () => ({
+      default: {
+        createTransport: (opts: { auth?: { pass?: string } }) => {
+          poslano.push({ pass: opts.auth?.pass });
+          return { sendMail: async () => ({}) };
+        },
+      },
+    }));
+
+    const { testGuestEmail } = await import('./email');
+    const rezultat = await testGuestEmail();
+
+    expect(rezultat.ok).toBe(true);
+    expect(poslano[0]?.pass).toBe('alzxzksqyxucodbp');
+  });
+});
