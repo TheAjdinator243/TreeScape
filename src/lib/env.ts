@@ -23,6 +23,41 @@ function required(name: string): string {
   return value;
 }
 
+/** Bez kose crte na kraju — inače link postane `.../ /rezervacija/...`. */
+function normalizeUrl(raw: string): string {
+  const trimmed = raw.trim().replace(/\/+$/, '');
+  // Platforme daju goli domen ("moj-sajt.vercel.app"), bez sheme.
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+/**
+ * Adresa sajta — ona koja završi u linkovima u mailu.
+ *
+ * Ovo je jedini podatak koji, kad je pogrešan, ne pokvari ništa na sajtu nego
+ * TEK u gostovom pretincu: sve radi, mail stigne, a dugme u njemu vodi na
+ * Vercelovu stranicu "DEPLOYMENT_NOT_FOUND". Otkrije se tek kad gost klikne.
+ *
+ * Zato se ne oslanja samo na `NEXT_PUBLIC_SITE_URL`. Ako on nije podešen,
+ * uzima se ono što platforma sama zna o sebi — na Vercelu produkcijski domen,
+ * na Railway-u javni domen. Tako je pogrešan link moguć samo ako je neko
+ * IZRIČITO upisao pogrešnu adresu, a ne zato što je zaboravio varijablu.
+ */
+function resolveSiteUrl(): string {
+  const explicit = optional('NEXT_PUBLIC_SITE_URL');
+  if (explicit) return normalizeUrl(explicit);
+
+  // Vercel: stalni produkcijski domen ima prednost nad adresom pojedine objave,
+  // koja se mijenja pri svakoj gradnji i gostu ništa ne znači.
+  const platform =
+    optional('VERCEL_PROJECT_PRODUCTION_URL') ??
+    optional('RAILWAY_PUBLIC_DOMAIN') ??
+    optional('VERCEL_URL');
+
+  if (platform) return normalizeUrl(platform);
+
+  return 'http://localhost:3000';
+}
+
 export const env = {
   supabase: {
     url: optional('NEXT_PUBLIC_SUPABASE_URL'),
@@ -39,7 +74,7 @@ export const env = {
     sessionSecret: optional('ADMIN_SESSION_SECRET'),
   },
   cronSecret: optional('CRON_SECRET'),
-  siteUrl: optional('NEXT_PUBLIC_SITE_URL') ?? 'http://localhost:3000',
+  siteUrl: resolveSiteUrl(),
   email: {
     apiKey: optional('RESEND_API_KEY'),
     from: optional('EMAIL_FROM') ?? 'TreeScape <onboarding@resend.dev>',
@@ -98,6 +133,22 @@ export function emailTransport(): EmailTransport | null {
 }
 
 export const isEmailConfigured = emailTransport() !== null;
+
+/**
+ * Adresa koju platforma sama prijavljuje o sebi.
+ *
+ * Služi samo za provjeru: ako je `NEXT_PUBLIC_SITE_URL` upisan RUČNO i ne
+ * poklapa se s ovim, linkovi u mailu vode na pogrešno mjesto — a to se inače
+ * otkrije tek kad gost klikne i dobije "DEPLOYMENT_NOT_FOUND".
+ */
+export function platformSiteUrl(): string | null {
+  const platform =
+    optional('VERCEL_PROJECT_PRODUCTION_URL') ??
+    optional('RAILWAY_PUBLIC_DOMAIN') ??
+    optional('VERCEL_URL');
+
+  return platform ? normalizeUrl(platform) : null;
+}
 
 export const isTelegramConfigured = Boolean(env.telegram.botToken && env.telegram.chatId);
 
