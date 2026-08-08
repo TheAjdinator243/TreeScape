@@ -8,6 +8,7 @@ import { formatLong, formatRange } from '@/lib/dates';
 import { isDatabaseConfigured } from '@/lib/env';
 import { getServerStrings } from '@/lib/i18n/server';
 import { formatMoney } from '@/lib/pricing';
+import { bookingReference } from '@/lib/reference';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,7 +106,7 @@ export default async function ConfirmationPage({
               {/* Broj rezervacije je latinični niz — čita se slijeva nadesno
                   i na arapskoj stranici. */}
               <span dir="ltr" className="font-mono text-base tracking-wider text-forest-800">
-                {booking.public_token.slice(0, 8).toUpperCase()}
+                {bookingReference(booking.public_token)}
               </span>
             </Row>
 

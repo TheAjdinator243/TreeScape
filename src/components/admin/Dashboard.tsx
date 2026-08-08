@@ -7,6 +7,7 @@ import { useI18n } from '@/components/i18n/LocaleProvider';
 import { formatDateTime, formatRange, todayStr } from '@/lib/dates';
 import { count } from '@/lib/i18n';
 import { formatMoney } from '@/lib/pricing';
+import { bookingReference } from '@/lib/reference';
 import type { Booking, RatePeriod, Settings } from '@/lib/types';
 
 import { PricingTab } from './PricingTab';
@@ -50,6 +51,24 @@ function Contact({
         </a>
       )}
     </p>
+  );
+}
+
+/**
+ * Broj rezervacije, onako kako ga gost vidi.
+ *
+ * Gost ga dobije u mailu i pročita preko telefona ("moj broj je ABCDEF12").
+ * Bez njega u administraciji domaćin nije imao s čim uporediti, pa je
+ * rezervaciju tražio po imenu i datumu — a imena se ponavljaju.
+ *
+ * `select-all` da se označi jednim klikom; `dir="ltr"` jer je niz latinični i
+ * čita se slijeva nadesno i na arapskoj stranici.
+ */
+function Reference({ token }: { token: string }) {
+  return (
+    <span dir="ltr" className="select-all font-mono text-xs tracking-wider text-ink-500">
+      {bookingReference(token)}
+    </span>
   );
 }
 
@@ -251,8 +270,11 @@ export function Dashboard({
                               phone={booking.guest_phone}
                               className="text-sm"
                             />
-                            <p className="mt-2 text-xs text-ink-400">
-                              {t.admin.receivedAt(formatDateTime(booking.created_at, locale))}
+                            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-400">
+                              <span>
+                                {t.admin.receivedAt(formatDateTime(booking.created_at, locale))}
+                              </span>
+                              <Reference token={booking.public_token} />
                             </p>
                             {booking.note && (
                               <p className="mt-3 rounded-lg bg-sand-100 px-3 py-2 text-sm text-ink-700">
@@ -310,9 +332,12 @@ export function Dashboard({
                     {bookings.map((booking) => (
                       <li key={booking.id} className="card p-4">
                         <div className="flex items-start justify-between gap-3">
-                          <p className="font-medium text-ink-900">
-                            {formatRange(booking.start_date, booking.end_date, locale)}
-                          </p>
+                          <div className="min-w-0">
+                            <p className="font-medium text-ink-900">
+                              {formatRange(booking.start_date, booking.end_date, locale)}
+                            </p>
+                            <Reference token={booking.public_token} />
+                          </div>
                           <StatusBadge status={booking.status} />
                         </div>
 
@@ -366,8 +391,12 @@ export function Dashboard({
                       <tbody className="divide-y divide-sand-200">
                         {bookings.map((booking) => (
                           <tr key={booking.id}>
-                            <td className="px-5 py-3.5 font-medium text-ink-900">
-                              {formatRange(booking.start_date, booking.end_date, locale)}
+                            <td className="px-5 py-3.5 text-ink-900">
+                              <span className="font-medium">
+                                {formatRange(booking.start_date, booking.end_date, locale)}
+                              </span>
+                              <br />
+                              <Reference token={booking.public_token} />
                             </td>
                             <td className="px-5 py-3.5 text-ink-700">
                               {booking.guest_name ?? (

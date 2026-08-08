@@ -4,6 +4,7 @@ import { formatRange } from './dates';
 import { env, isTelegramConfigured } from './env';
 import { DEFAULT_LOCALE, getStrings, normalizeLocale } from './i18n';
 import { formatMoney } from './pricing';
+import { bookingReference } from './reference';
 import type { Booking } from './types';
 
 /**
@@ -55,7 +56,7 @@ function message(booking: Booking, kind: 'cash' | 'card'): string {
         DEFAULT_LOCALE
       )
     ),
-    row(t.email.rowReference, booking.public_token.slice(0, 8).toUpperCase()),
+    row(t.email.rowReference, bookingReference(booking.public_token)),
     '',
     row(t.email.rowGuest, booking.guest_name),
     row(t.email.rowEmail, booking.guest_email),

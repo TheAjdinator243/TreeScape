@@ -12,6 +12,7 @@ import {
   type Locale,
 } from './i18n';
 import { formatMoney } from './pricing';
+import { bookingReference } from './reference';
 import type { Booking } from './types';
 
 /** Ime pošiljaoca — isto ono koje stoji na sajtu, a ne zaseban natpis. */
@@ -323,7 +324,7 @@ function detailRows(booking: Booking, locale: Locale): string {
       ${row(t.email.rowStay, stay)}
       ${row(t.email.rowGuests, String(booking.guests ?? '—'))}
       ${row(t.email.rowAmount, total)}
-      ${row(t.email.rowReference, booking.public_token.slice(0, 8).toUpperCase(), true)}
+      ${row(t.email.rowReference, bookingReference(booking.public_token), true)}
     </table>`;
 }
 
