@@ -100,13 +100,7 @@ async function sendViaGmail(to: string, subject: string, html: string): Promise<
   const { user, appPassword } = env.gmail;
   if (!user || !appPassword) return { ok: false, detail: 'Gmail nije podešen.' };
 
-  /**
-   * Google lozinku za aplikacije POKAZUJE u četiri grupe po četiri znaka
-   * ("alzx zksq yxuc odbp"), pa se tako i prepiše. Razmaci su samo za oko —
-   * sama lozinka je šesnaest znakova bez njih, a s razmacima prijava padne na
-   * "Username and Password not accepted", što izgleda kao pogrešna lozinka.
-   */
-  const lozinka = appPassword.replace(/\s+/g, '');
+  const lozinka = ocistiLozinku(appPassword);
 
   const nodemailer = (await import('nodemailer')).default;
 
@@ -132,14 +126,63 @@ async function sendViaGmail(to: string, subject: string, html: string): Promise<
     socketTimeout: 15_000,
   });
 
-  await transporter.sendMail({
-    from: `${SENDER_NAME} <${user}>`,
-    to,
-    subject,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `${SENDER_NAME} <${user}>`,
+      to,
+      subject,
+      html,
+    });
+  } catch (err) {
+    return { ok: false, detail: `Gmail je odbio: ${String(err)}${gmailHint(err, user, lozinka)}` };
+  }
 
   return { ok: true, detail: `Poslano na ${to} (Gmail).` };
+}
+
+/**
+ * Lozinka za aplikacije, očišćena od onoga što se uz nju zalijepi pri prepisu.
+ *
+ * Dvije stvari, obje viđene uživo:
+ *
+ * 1. RAZMACI. Google je pokazuje u četiri grupe po četiri znaka
+ *    ("alzx zksq yxuc odbp"), pa se tako i prepiše. Sama lozinka ih nema.
+ * 2. NAVODNICI. Raw editor u Railway-u i uvoz .env datoteke rado ostave
+ *    `"alzx..."` s navodnicima kao dijelom vrijednosti.
+ *
+ * Oba slučaja Google odbije istom porukom — "Username and Password not
+ * accepted" — koja zvuči kao pogrešna lozinka i šalje čovjeka da pravi novu.
+ * Nova onda pukne na isti način.
+ */
+function ocistiLozinku(raw: string): string {
+  return raw.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+}
+
+/** Koliko znakova ima ispravna lozinka za aplikacije. */
+const DUZINA_LOZINKE = 16;
+
+/**
+ * Googleova poruka o lošoj prijavi ne kaže ŠTA je loše. Ovo nabraja uzroke
+ * po vjerovatnoći, a prvo provjeri ono što se može provjeriti odavde: dužinu.
+ * Sama lozinka se nikada ne ispisuje — samo koliko znakova ima.
+ */
+function gmailHint(err: unknown, user: string, lozinka: string): string {
+  if (!/BadCredentials|Invalid login|535/i.test(String(err))) return '';
+
+  const duzina =
+    lozinka.length === DUZINA_LOZINKE
+      ? ''
+      : `\n\nPRVO OVO: lozinka ima ${lozinka.length} znakova, a treba tačno ${DUZINA_LOZINKE}. ` +
+        'Znači da nije prepisana cijela, ili je uz nju ušlo nešto što ne pripada. ' +
+        'Prepiši je ponovo, bez navodnika.';
+
+  return (
+    `${duzina}\n\nGoogle ne kaže šta je loše, pa po redu vjerovatnoće:\n` +
+    `  1) lozinka je poništena — ako si napravio novu, stara odmah prestaje raditi;\n` +
+    `  2) GMAIL_USER (${user}) nije nalog na kojem je lozinka napravljena — mora biti isti;\n` +
+    '  3) dvostruka provjera je isključena na nalogu — tada lozinke za aplikacije ne rade;\n' +
+    '  4) prepisana je obična lozinka naloga umjesto one za aplikacije od 16 znakova.'
+  );
 }
 
 async function sendViaResend(to: string, subject: string, html: string): Promise<SendResult> {

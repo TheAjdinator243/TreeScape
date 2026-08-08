@@ -242,3 +242,81 @@ describe('lažno zelena proba', () => {
     expect(rezultat.detail).not.toContain('NE dokazuje');
   });
 });
+
+describe('lozinka za aplikacije: šta se sve zalijepi pri prepisu', () => {
+  async function posalji(lozinka: string) {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    vi.stubEnv('GMAIL_USER', 'vlasnik@gmail.com');
+    vi.stubEnv('GMAIL_APP_PASSWORD', lozinka);
+    vi.stubEnv('OWNER_EMAIL', 'vlasnik@gmail.com');
+
+    const vidjeno: string[] = [];
+    vi.doMock('nodemailer', () => ({
+      default: {
+        createTransport: (o: { auth?: { pass?: string } }) => {
+          vidjeno.push(o.auth?.pass ?? '');
+          return { sendMail: async () => ({}) };
+        },
+      },
+    }));
+
+    const { testGuestEmail } = await import('./email');
+    const rezultat = await testGuestEmail();
+    return { poslana: vidjeno[0], rezultat };
+  }
+
+  it('navodnici iz raw editora se skidaju', async () => {
+    // Railway raw editor i uvoz .env rado ostave navodnike u vrijednosti.
+    const { poslana, rezultat } = await posalji('"alzx zksq yxuc odbp"');
+    expect(poslana).toBe('alzxzksqyxucodbp');
+    expect(rezultat.ok).toBe(true);
+  });
+
+  it('novi red i razmaci na krajevima se skidaju', async () => {
+    const { poslana } = await posalji('  alzx zksq yxuc odbp\n');
+    expect(poslana).toBe('alzxzksqyxucodbp');
+  });
+});
+
+describe('Googleova odbijenica', () => {
+  async function odbij(lozinka: string) {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    vi.stubEnv('GMAIL_USER', 'vlasnik@gmail.com');
+    vi.stubEnv('GMAIL_APP_PASSWORD', lozinka);
+    vi.stubEnv('OWNER_EMAIL', 'vlasnik@gmail.com');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    vi.doMock('nodemailer', () => ({
+      default: {
+        createTransport: () => ({
+          sendMail: async () => {
+            throw new Error('Invalid login: 535-5.7.8 Username and Password not accepted.');
+          },
+        }),
+      },
+    }));
+
+    const { testGuestEmail } = await import('./email');
+    return (await testGuestEmail()).detail;
+  }
+
+  it('nabraja uzroke, jer Google ne kaže koji je', async () => {
+    const detalj = await odbij('alzx zksq yxuc odbp');
+    expect(detalj).toContain('poništena');
+    expect(detalj).toContain('dvostruka provjera');
+  });
+
+  it('pogrešnu dužinu javi prvu — nju jedinu možemo provjeriti sami', async () => {
+    const detalj = await odbij('prekratka');
+    expect(detalj).toContain('9 znakova');
+    expect(detalj).toContain('16');
+  });
+
+  it('nikada ne ispisuje samu lozinku', async () => {
+    const detalj = await odbij('alzx zksq yxuc odbp');
+    expect(detalj).not.toContain('alzx');
+    expect(detalj).not.toContain('alzxzksqyxucodbp');
+  });
+});
