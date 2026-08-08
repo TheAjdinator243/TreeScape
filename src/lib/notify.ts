@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { sendOwnerNotification } from './email';
+import { sendOwnerGuestCancelled, sendOwnerNotification } from './email';
 import { isEmailConfigured, isTelegramConfigured } from './env';
 import { sendOwnerTelegram } from './telegram';
 import type { Booking } from './types';
@@ -40,5 +40,22 @@ export async function notifyOwner(booking: Booking, kind: 'cash' | 'card'): Prom
   await Promise.allSettled([
     sendOwnerNotification(booking, kind),
     sendOwnerTelegram(booking, kind),
+  ]);
+}
+
+/**
+ * Gost je sam otkazao — vlasnika treba probuditi jednako kao za novu
+ * rezervaciju. Ovo je jedina promjena termina koju on ne pokreće, pa bi mu
+ * inače datum tiho nestao iz planova.
+ */
+export async function notifyOwnerGuestCancelled(
+  booking: Booking,
+  reason: string
+): Promise<void> {
+  warnIfSilent();
+
+  await Promise.allSettled([
+    sendOwnerGuestCancelled(booking, reason),
+    sendOwnerTelegram(booking, 'guest_cancelled', reason),
   ]);
 }

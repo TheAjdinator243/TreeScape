@@ -262,6 +262,13 @@ export const en: Dictionary = {
     whatNextBody:
       'We have emailed you the details. You will receive the exact address, directions and the host’s contact before arrival.',
     backHome: 'Back to the home page',
+    cancelBooking: 'Cancel booking',
+    cancelReasonLabel: 'Reason for cancelling',
+    cancelReasonPlaceholder: 'Tell us briefly why you are cancelling.',
+    cancelReasonRequired: 'Please write a reason for cancelling.',
+    cancelSubmit: 'Confirm cancellation',
+    cancelSubmitting: 'Cancelling…',
+    cancelAbort: 'Never mind',
   },
 
   errors: {
@@ -475,6 +482,8 @@ export const en: Dictionary = {
     cancelledBody:
       'unfortunately we have to cancel your confirmed booking. The dates have been released, and we are sorry for the inconvenience.',
     reasonLabel: 'Reason',
+    openBooking: 'Open your booking',
+    ownerGuestCancelledTitle: 'A guest cancelled their booking',
 
     cashRejectedSubject: 'Booking not confirmed',
     cashRejectedTitle: 'Unfortunately these dates are not available',

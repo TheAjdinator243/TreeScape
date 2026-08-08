@@ -267,6 +267,13 @@ export const ar: Dictionary = {
     whatNextBody:
       'أرسلنا إليك بريدًا إلكترونيًا بالتفاصيل. ستصلك قبل الوصول العنوان الدقيق وإرشادات الوصول وبيانات التواصل مع المضيف.',
     backHome: 'العودة إلى الصفحة الرئيسية',
+    cancelBooking: 'إلغاء الحجز',
+    cancelReasonLabel: 'سبب الإلغاء',
+    cancelReasonPlaceholder: 'أخبرنا باختصار لماذا تلغي الحجز.',
+    cancelReasonRequired: 'يرجى كتابة سبب الإلغاء.',
+    cancelSubmit: 'تأكيد الإلغاء',
+    cancelSubmitting: 'جارٍ الإلغاء…',
+    cancelAbort: 'تراجع',
   },
 
   errors: {
@@ -479,6 +486,8 @@ export const ar: Dictionary = {
     cancelledBody:
       'نأسف لاضطرارنا إلى إلغاء حجزك المؤكَّد. تم تحرير المواعيد، ونعتذر عن الإزعاج.',
     reasonLabel: 'السبب',
+    openBooking: 'افتح حجزك',
+    ownerGuestCancelledTitle: 'ألغى ضيف حجزه',
 
     cashRejectedSubject: 'لم يتم تأكيد الحجز',
     cashRejectedTitle: 'للأسف، الموعد غير متاح',

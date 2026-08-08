@@ -396,6 +396,28 @@ async function stayTimes(locale: Locale): Promise<string> {
   return footNote(t.booking.timesNote(settings.checkin_time, settings.checkout_time));
 }
 
+/**
+ * Dugme koje vodi na gostovu stranicu s rezervacijom.
+ *
+ * Ide u SVAKI mail gostu, bez obzira na ishod — i u onaj o odbijanju. Ta
+ * stranica uvijek pokazuje trenutno stanje, pa gost s jednim linkom u pretincu
+ * zna gdje provjeriti, umjesto da traži stari mail ili zove telefonom. Odatle
+ * i sam otkazuje.
+ *
+ * Adresa nosi `public_token`, a NE `id` iz baze: token je dug i nasumičan, pa
+ * se ne može pogoditi, a i ne odaje koliko rezervacija kuća uopće ima.
+ */
+function bookingButton(locale: Locale, booking: Booking): string {
+  const t = getStrings(locale);
+  const url = `${env.siteUrl}/rezervacija/${booking.public_token}`;
+
+  return `<p style="margin:24px 0 0">
+            <a href="${url}" style="display:inline-block;background:#2a5a47;color:#faf7f1;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
+              ${t.email.openBooking}
+            </a>
+          </p>`;
+}
+
 function footNote(text: string): string {
   return `<p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">${text}</p>`;
 }
@@ -476,6 +498,7 @@ export async function sendGuestConfirmation(booking: Booking): Promise<void> {
        ${detailRows(booking, locale)}
        ${await stayTimes(locale)}
        ${footNote(t.email.addressLater)}
+       ${bookingButton(locale, booking)}
        ${mapsButton(locale)}`
     )
   );
@@ -497,7 +520,8 @@ export async function sendGuestCashRequest(booking: Booking): Promise<void> {
       `${intro(booking, locale, t.email.cashRequestBody)}
        ${detailRows(booking, locale)}
        ${await stayTimes(locale)}
-       ${footNote(t.email.payOnArrival)}`
+       ${footNote(t.email.payOnArrival)}
+       ${bookingButton(locale, booking)}`
     )
   );
 }
@@ -519,7 +543,41 @@ export async function sendGuestCashApproved(booking: Booking): Promise<void> {
        ${detailRows(booking, locale)}
        ${await stayTimes(locale)}
        ${footNote(t.email.payOnArrival)}
+       ${bookingButton(locale, booking)}
        ${mapsButton(locale)}`
+    )
+  );
+}
+
+/**
+ * Vlasniku — gost je SAM otkazao svoju rezervaciju.
+ *
+ * Ovo je jedina promjena termina koju vlasnik ne pokreće, pa je i jedina o
+ * kojoj inače ne bi imao pojma: datum bi se tiho oslobodio u kalendaru, a on
+ * bi i dalje računao na tog gosta.
+ */
+export async function sendOwnerGuestCancelled(
+  booking: Booking,
+  reason: string
+): Promise<void> {
+  if (!env.email.ownerEmail) return;
+
+  const locale = DEFAULT_LOCALE;
+  const t = getStrings(locale);
+
+  await send(
+    env.email.ownerEmail,
+    subject(locale, t.email.ownerGuestCancelledTitle),
+    layout(
+      locale,
+      t.email.ownerGuestCancelledTitle,
+      `${detailRows(booking, locale)}
+       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:16px;border-top:1px solid #e9dcc7">
+         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowGuest}</td><td style="padding:8px 0;text-align:right">${booking.guest_name ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowEmail}</td><td style="padding:8px 0;text-align:right">${booking.guest_email ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowPhone}</td><td style="padding:8px 0;text-align:right">${booking.guest_phone ?? '—'}</td></tr>
+       </table>
+       ${reasonBlock(locale, reason)}`
     )
   );
 }
@@ -549,7 +607,8 @@ export async function sendGuestCancelled(booking: Booking, reason?: string | nul
       t.email.cancelledTitle,
       `${intro(booking, locale, t.email.cancelledBody)}
        ${detailRows(booking, locale)}
-       ${reasonBlock(locale, reason)}`
+       ${reasonBlock(locale, reason)}
+       ${bookingButton(locale, booking)}`
     )
   );
 }
@@ -572,7 +631,8 @@ export async function sendGuestCashRejected(
       t.email.cashRejectedTitle,
       `${intro(booking, locale, t.email.cashRejectedBody)}
        ${detailRows(booking, locale)}
-       ${reasonBlock(locale, reason)}`
+       ${reasonBlock(locale, reason)}
+       ${bookingButton(locale, booking)}`
     )
   );
 }

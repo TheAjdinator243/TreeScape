@@ -2,11 +2,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { CancelBooking } from '@/components/booking/CancelBooking';
 import { LiveStatus } from '@/components/booking/LiveStatus';
 import { Footer } from '@/components/site/Footer';
 import { getBookingByToken } from '@/lib/booking-service';
 import { getSettings } from '@/lib/data';
-import { formatLong, formatRange } from '@/lib/dates';
+import { formatLong, formatRange, todayStr } from '@/lib/dates';
 import { isDatabaseConfigured } from '@/lib/env';
 import { getServerStrings } from '@/lib/i18n/server';
 import { formatMoney } from '@/lib/pricing';
@@ -156,6 +157,11 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ t
               </p>
             </div>
           )}
+
+          {/* Otkazivanje nudimo samo dok ima šta otkazati: ne za već otkazane
+              i istekle, i ne za boravak koji je prošao. Server to ionako
+              provjerava ponovo — ovdje se dugme samo ne pokazuje uzalud. */}
+          {!isDead && booking.end_date > todayStr() && <CancelBooking token={token} />}
 
           <Link href="/" className="btn-ghost mt-8 w-full">
             {t.confirmation.backHome}

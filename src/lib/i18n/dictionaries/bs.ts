@@ -264,6 +264,13 @@ export const bs: Dictionary = {
     whatNextBody:
       'Poslali smo vam email s detaljima. Tačnu adresu, uputstva za dolazak i kontakt domaćina dobijate prije dolaska.',
     backHome: 'Nazad na početnu',
+    cancelBooking: 'Otkaži rezervaciju',
+    cancelReasonLabel: 'Razlog otkazivanja',
+    cancelReasonPlaceholder: 'Recite nam ukratko zašto otkazujete.',
+    cancelReasonRequired: 'Molimo upišite razlog otkazivanja.',
+    cancelSubmit: 'Potvrdi otkazivanje',
+    cancelSubmitting: 'Otkazujem…',
+    cancelAbort: 'Odustani',
   },
 
   errors: {
@@ -478,6 +485,8 @@ export const bs: Dictionary = {
     cancelledBody:
       'nažalost, moramo otkazati vašu već potvrđenu rezervaciju. Termin je oslobođen, a mi se izvinjavamo zbog neprilike.',
     reasonLabel: 'Razlog',
+    openBooking: 'Otvori rezervaciju',
+    ownerGuestCancelledTitle: 'Gost je otkazao rezervaciju',
 
     cashRejectedSubject: 'Rezervacija nije potvrđena',
     cashRejectedTitle: 'Nažalost, termin nije dostupan',

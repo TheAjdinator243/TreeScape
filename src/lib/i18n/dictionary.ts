@@ -242,6 +242,15 @@ export interface Dictionary {
     whatNext: string;
     whatNextBody: string;
     backHome: string;
+
+    /** Gost sam otkazuje svoju rezervaciju, sa stranice s potvrdom. */
+    cancelBooking: string;
+    cancelReasonLabel: string;
+    cancelReasonPlaceholder: string;
+    cancelReasonRequired: string;
+    cancelSubmit: string;
+    cancelSubmitting: string;
+    cancelAbort: string;
   };
 
   errors: {
@@ -433,6 +442,10 @@ export interface Dictionary {
     cancelledBody: string;
     /** Naslov iznad razloga koji je domaćin upisao. */
     reasonLabel: string;
+    /** Dugme u mailu koje vodi na stranicu s rezervacijom. */
+    openBooking: string;
+    /** Vlasniku — gost je sam otkazao. */
+    ownerGuestCancelledTitle: string;
 
     cashRejectedSubject: string;
     cashRejectedTitle: string;

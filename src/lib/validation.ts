@@ -43,6 +43,19 @@ export const bookingDecisionSchema = z.object({
   reason: z.string().trim().max(300).optional(),
 });
 
+/**
+ * Gost otkazuje svoju rezervaciju.
+ *
+ * Razlog je OBAVEZAN, za razliku od odbijanja iz administracije. Domaćin
+ * odgovara gostu i tako, a gost koji ode bez riječi ostavlja vlasnika da
+ * pogađa je li našao jeftinije, je li mu se nešto desilo, ili je nešto na
+ * sajtu pošlo po zlu.
+ */
+export const guestCancelSchema = z.object({
+  token: z.string().min(10).max(100),
+  reason: z.string().trim().min(3).max(300),
+});
+
 export const settingsSchema = z.object({
   default_nightly_cents: z.number().int().min(0).max(100_000_00),
   // 0 je dozvoljena i znači "vikend ide po osnovnoj cijeni".

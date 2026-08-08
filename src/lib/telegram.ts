@@ -37,11 +37,16 @@ function row(label: string, value: string | null | undefined): string {
   return `<b>${esc(label)}:</b> ${esc(value?.trim() || '—')}`;
 }
 
-function message(booking: Booking, kind: 'cash' | 'card'): string {
+function message(booking: Booking, kind: OwnerAlert, reason?: string): string {
   const t = getStrings(DEFAULT_LOCALE);
   const guestLocale = normalizeLocale(booking.locale) ?? DEFAULT_LOCALE;
 
-  const title = kind === 'cash' ? t.email.ownerCashTitle : t.email.ownerCardTitle;
+  const title =
+    kind === 'guest_cancelled'
+      ? t.email.ownerGuestCancelledTitle
+      : kind === 'cash'
+        ? t.email.ownerCashTitle
+        : t.email.ownerCardTitle;
 
   const lines = [
     `<b>${esc(title)}</b>`,
@@ -66,6 +71,10 @@ function message(booking: Booking, kind: 'cash' | 'card'): string {
 
   if (booking.note?.trim()) {
     lines.push('', row(t.email.rowNote, booking.note));
+  }
+
+  if (reason?.trim()) {
+    lines.push('', row(t.email.reasonLabel, reason));
   }
 
   if (kind === 'cash') {
@@ -119,7 +128,14 @@ export async function testTelegram(): Promise<{ ok: boolean; detail: string }> {
   }
 }
 
-export async function sendOwnerTelegram(booking: Booking, kind: 'cash' | 'card'): Promise<boolean> {
+/** Zbog čega se vlasnik zove: nova rezervacija, ili gost koji je otkazao. */
+export type OwnerAlert = 'cash' | 'card' | 'guest_cancelled';
+
+export async function sendOwnerTelegram(
+  booking: Booking,
+  kind: OwnerAlert,
+  reason?: string
+): Promise<boolean> {
   if (!isTelegramConfigured) return false;
 
   try {
@@ -128,7 +144,7 @@ export async function sendOwnerTelegram(booking: Booking, kind: 'cash' | 'card')
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: env.telegram.chatId,
-        text: message(booking, kind),
+        text: message(booking, kind, reason),
         parse_mode: 'HTML',
         // Link na administraciju je tu da se klikne, a ne da zauzme pola poruke
         // pretpregledom stranice.
