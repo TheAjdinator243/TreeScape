@@ -61,8 +61,19 @@
   --color-ivory-400: #a89f8f;
   --color-ivory-500: #857c6e;
 
-  /* Ploha sa sadržajima — topliji i dublji ton od slonovače. */
-  --color-parchment: #ece4d4;
+  /*
+   * Ploha sa sadržajima ("Šta vas čeka") — jedina koja nije crna.
+   *
+   * Duboka šumska zelena, a ne neutralna crna kao ostatak stranice: kuća se
+   * zove TreeScape i stoji u šumi, pa je ovo jedino mjesto gdje se boja imena
+   * zaista vidi. Dovoljno je tamna da mesingana rešetka na njoj svijetli, a
+   * dovoljno drugačija od okolnih ploha da se čita kao zaseban odjeljak.
+   *
+   * Ako se ikad poželi svijetla ploha umjesto ove, dovoljno je zamijeniti
+   * ovaj jedan ton (npr. pergament #ece4d4) i u ProAmenities.tsx vratiti tamne
+   * boje teksta.
+   */
+  --color-pro-panel: #101c17;
 
   --color-brass-300: #dcc492;
   --color-brass-400: #c9a86c;
@@ -192,7 +203,7 @@
    Pločica nosi cijelu zvijezdu u sredini i po četvrtinu u svakom uglu, pa se
    šara nastavlja preko ivica bez šava, ma koliko ploha bila velika.
 
-   Crta je namjerno jedva vidljiva (13% mesinga, pločica od 96px). Šara koja se PRIMIJETI
+   Crta je namjerno jedva vidljiva (16% mesinga, pločica od 96px). Šara koja se PRIMIJETI
    umjesto da se osjeti pretvara skupu plohu u tapetu.
 
    Sve je jedan SVG upisan u CSS — nema slike koja se preuzima, nema još jednog
@@ -200,8 +211,8 @@
    ─────────────────────────────────────────────────────────────────────── */
 
 .pro-pattern {
-  background-color: var(--color-parchment);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%238a6a3a' stroke-opacity='0.13' stroke-width='1'%3E%3Crect x='24' y='24' width='48' height='48'/%3E%3Crect x='24' y='24' width='48' height='48' transform='rotate(45 48 48)'/%3E%3Crect x='-24' y='-24' width='48' height='48'/%3E%3Crect x='-24' y='-24' width='48' height='48' transform='rotate(45 0 0)'/%3E%3Crect x='72' y='-24' width='48' height='48'/%3E%3Crect x='72' y='-24' width='48' height='48' transform='rotate(45 96 0)'/%3E%3Crect x='-24' y='72' width='48' height='48'/%3E%3Crect x='-24' y='72' width='48' height='48' transform='rotate(45 0 96)'/%3E%3Crect x='72' y='72' width='48' height='48'/%3E%3Crect x='72' y='72' width='48' height='48' transform='rotate(45 96 96)'/%3E%3C/g%3E%3C/svg%3E");
+  background-color: var(--color-pro-panel);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23c9a86c' stroke-opacity='0.16' stroke-width='1'%3E%3Crect x='24' y='24' width='48' height='48'/%3E%3Crect x='24' y='24' width='48' height='48' transform='rotate(45 48 48)'/%3E%3Crect x='-24' y='-24' width='48' height='48'/%3E%3Crect x='-24' y='-24' width='48' height='48' transform='rotate(45 0 0)'/%3E%3Crect x='72' y='-24' width='48' height='48'/%3E%3Crect x='72' y='-24' width='48' height='48' transform='rotate(45 96 0)'/%3E%3Crect x='-24' y='72' width='48' height='48'/%3E%3Crect x='-24' y='72' width='48' height='48' transform='rotate(45 0 96)'/%3E%3Crect x='72' y='72' width='48' height='48'/%3E%3Crect x='72' y='72' width='48' height='48' transform='rotate(45 96 96)'/%3E%3C/g%3E%3C/svg%3E");
   background-size: 96px 96px;
 }
 
@@ -220,14 +231,14 @@
 
 .pro-pattern::before {
   top: 0;
-  background: linear-gradient(to bottom, var(--color-onyx-900), transparent);
-  opacity: 0.14;
+  background: linear-gradient(to bottom, var(--color-onyx-950), transparent);
+  opacity: 0.7;
 }
 
 .pro-pattern::after {
   bottom: 0;
-  background: linear-gradient(to top, var(--color-onyx-900), transparent);
-  opacity: 0.14;
+  background: linear-gradient(to top, var(--color-onyx-950), transparent);
+  opacity: 0.7;
 }
 
 /* ── Arapski ─────────────────────────────────────────────────────────────

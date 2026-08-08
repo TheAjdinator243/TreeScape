@@ -10,9 +10,9 @@ import { getServerStrings } from '@/lib/i18n/server';
  * mreže razdvojene vlas-linijama, bez ijedne pozadine i bez ijednog kruga —
  * izgleda kao stranica iz kataloga, a ne kao spisak osobina.
  *
- * Ovo je jedina svijetla ploha na cijeloj stranici. Sve ostalo je noć, pa
- * jedan svijetli odsječak po sredini drži oko i razdvaja gornju polovinu
- * (kuća) od donje (rezervacija).
+ * Ovo je jedina ploha koja nije crna. Duboka šumska zelena drži oko i razdvaja
+ * gornju polovinu stranice (kuća) od donje (rezervacija) — bojom, a ne
+ * svjetlinom. Mesingana rešetka na njoj svijetli umjesto da se gubi.
  */
 export async function ProAmenities() {
   const { t } = await getServerStrings();
@@ -20,12 +20,12 @@ export async function ProAmenities() {
   return (
     // `relative` je nužan: blage sjene na vrhu i dnu (vidi `.pro-pattern` u
     // globals.css) postavljaju se apsolutno u odnosu na ovu plohu.
-    <section id="sadrzaji" className="pro-pattern relative text-onyx-900">
+    <section id="sadrzaji" className="pro-pattern relative text-ivory-100">
       <div className="pro-section">
         <Reveal className="max-w-2xl">
-          <p className="pro-eyebrow text-brass-500">{t.site.name}</p>
-          <h2 className="pro-title mt-6 text-onyx-900">{t.amenities.heading}</h2>
-          <p className="pro-lead text-onyx-800/70">{t.amenities.lead}</p>
+          <p className="pro-eyebrow">{t.site.name}</p>
+          <h2 className="pro-title mt-6 text-ivory-50">{t.amenities.heading}</h2>
+          <p className="pro-lead">{t.amenities.lead}</p>
         </Reveal>
 
         {/*
@@ -37,20 +37,20 @@ export async function ProAmenities() {
           ostajalo kao siv pravougaonik, jer se kroz njega vidjela pozadina mreže.
           Ovako praznog mjesta jednostavno nema.
         */}
-        <ul className="mt-16 grid border-s border-t border-onyx-900/20 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-16 grid border-s border-t border-ivory-100/12 sm:grid-cols-2 lg:grid-cols-3">
           {AMENITIES.map((key, i) => (
-            <li key={key} className="border-b border-e border-onyx-900/20">
+            <li key={key} className="border-b border-e border-ivory-100/12">
               <Reveal delay={Math.min(i, 8) * 45} className="h-full">
                 <div className="flex h-full flex-col p-8 lg:p-10">
-                  <span className="text-brass-500 [&_svg]:h-6 [&_svg]:w-6" aria-hidden="true">
+                  <span className="text-brass-400 [&_svg]:h-6 [&_svg]:w-6" aria-hidden="true">
                     <AmenityIcon name={key} />
                   </span>
 
-                  <h3 className="pro-sans mt-6 text-[0.8rem] font-medium uppercase tracking-[0.2em] text-onyx-900">
+                  <h3 className="pro-sans mt-6 text-[0.8rem] font-medium uppercase tracking-[0.2em] text-ivory-50">
                     {t.amenities.items[key].label}
                   </h3>
 
-                  <p className="mt-3 text-base font-light leading-[1.85] text-onyx-800/70">
+                  <p className="mt-3 text-base font-light leading-[1.85] text-ivory-200/70">
                     {t.amenities.items[key].note}
                   </p>
                 </div>
