@@ -44,11 +44,11 @@ export async function ProAmenities() {
                     <AmenityIcon name={key} />
                   </span>
 
-                  <h3 className="pro-sans mt-6 text-[0.72rem] font-medium uppercase tracking-[0.2em] text-onyx-900">
+                  <h3 className="pro-sans mt-6 text-[0.8rem] font-medium uppercase tracking-[0.2em] text-onyx-900">
                     {t.amenities.items[key].label}
                   </h3>
 
-                  <p className="mt-3 text-sm font-light leading-[1.85] text-onyx-800/60">
+                  <p className="mt-3 text-base font-light leading-[1.85] text-onyx-800/60">
                     {t.amenities.items[key].note}
                   </p>
                 </div>

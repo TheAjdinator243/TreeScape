@@ -227,7 +227,7 @@ html[lang='ar'] body * {
  */
 @utility pro-btn {
   @apply inline-flex items-center justify-center gap-3 border px-9 py-4
-         text-[0.7rem] font-medium uppercase tracking-[0.22em]
+         text-[0.78rem] font-medium uppercase tracking-[0.22em]
          transition-all duration-300
          disabled:cursor-not-allowed disabled:opacity-40;
 }
@@ -304,7 +304,7 @@ html[lang='ar'] body * {
   }
 
   .pro-eyebrow {
-    @apply text-[0.68rem] font-medium uppercase tracking-[0.34em] text-brass-400;
+    @apply text-[0.76rem] font-medium uppercase tracking-[0.34em] text-brass-400;
   }
 
   .pro-title {
@@ -312,12 +312,12 @@ html[lang='ar'] body * {
   }
 
   .pro-lead {
-    @apply mt-6 max-w-xl text-[1.05rem] font-light leading-[1.85] text-ivory-200;
+    @apply mt-6 max-w-xl text-[1.18rem] font-light leading-[1.85] text-ivory-200;
   }
 
   /* Polja bez okvira — samo vlas-linija ispod, kao na papiru. */
   .pro-field {
-    @apply w-full border-0 border-b border-ivory-100/25 bg-transparent px-0 py-3
+    @apply w-full border-0 border-b border-ivory-100/25 bg-transparent px-0 py-3 text-[1.05rem]
            font-light text-ivory-50 transition-colors
            placeholder:text-ivory-500
            focus:border-brass-400 focus:outline-none focus:ring-0
@@ -325,7 +325,7 @@ html[lang='ar'] body * {
   }
 
   .pro-label {
-    @apply mb-1 block text-[0.66rem] font-medium uppercase tracking-[0.2em] text-ivory-400;
+    @apply mb-1 block text-[0.74rem] font-medium uppercase tracking-[0.2em] text-ivory-400;
   }
 
   .pro-section {

@@ -78,7 +78,7 @@ export function ProGallery() {
 
               {/* Redni broj umjesto natpisa preko slike — diskretnije, a
                   natpis se ionako vidi u uvećanom prikazu. */}
-              <span className="absolute bottom-4 start-5 text-[0.65rem] uppercase tracking-[0.24em] text-ivory-100/0 transition-colors duration-500 group-hover:text-ivory-100">
+              <span className="absolute bottom-4 start-5 text-[0.73rem] uppercase tracking-[0.24em] text-ivory-100/0 transition-colors duration-500 group-hover:text-ivory-100">
                 {t.gallery.itemCaption(item.n)}
               </span>
             </button>

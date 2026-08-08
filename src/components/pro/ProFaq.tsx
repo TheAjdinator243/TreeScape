@@ -36,14 +36,14 @@ export async function ProFaq({ settings }: { settings: Settings }) {
           {items.map((item, i) => (
             <Reveal key={item.q} delay={Math.min(i, 5) * 50}>
               <details className="group border-b border-ivory-100/12">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-8 py-7 text-start text-lg font-light text-ivory-50 transition-colors hover:text-brass-300 [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-8 py-7 text-start text-xl font-light text-ivory-50 transition-colors hover:text-brass-300 [&::-webkit-details-marker]:hidden">
                   {item.q}
                   <span className="relative h-4 w-4 shrink-0" aria-hidden="true">
                     <span className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-brass-400" />
                     <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-brass-400 transition-transform duration-300 group-open:scale-y-0" />
                   </span>
                 </summary>
-                <p className="max-w-2xl pb-8 pe-10 text-[0.95rem] font-light leading-[1.95] text-ivory-200/75">
+                <p className="max-w-2xl pb-8 pe-10 text-[1.05rem] font-light leading-[1.95] text-ivory-200/75">
                   {item.a}
                 </p>
               </details>

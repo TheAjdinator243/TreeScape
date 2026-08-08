@@ -29,7 +29,7 @@ export async function ProLocation() {
                 key={row.key}
                 className="flex items-baseline justify-between border-b border-ivory-100/12 py-5"
               >
-                <dt className="text-[0.72rem] uppercase tracking-[0.18em] text-ivory-200">
+                <dt className="text-[0.8rem] uppercase tracking-[0.18em] text-ivory-200">
                   {t.location.places[row.key]}
                 </dt>
                 <dd className="font-[family-name:var(--font-pro-display)] text-xl text-brass-300">
@@ -39,7 +39,7 @@ export async function ProLocation() {
             ))}
           </dl>
 
-          <p className="mt-8 max-w-lg text-sm font-light leading-[1.9] text-ivory-400">
+          <p className="mt-8 max-w-lg text-base font-light leading-[1.9] text-ivory-400">
             {t.location.directions}
           </p>
 

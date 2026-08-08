@@ -49,7 +49,7 @@ export function ProNav() {
     <>
       <a
         href="#rezervacija"
-        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:bg-brass-400 focus:px-5 focus:py-3 focus:text-sm focus:text-onyx-950"
+        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:bg-brass-400 focus:px-5 focus:py-3 focus:text-base focus:text-onyx-950"
       >
         {t.nav.skipToBooking}
       </a>
@@ -77,7 +77,7 @@ export function ProNav() {
               <li key={link.href}>
                 <a
                   href={link.href}
-                  className="text-[0.7rem] font-medium uppercase tracking-[0.2em] text-ivory-200 transition-colors hover:text-brass-300"
+                  className="text-[0.78rem] font-medium uppercase tracking-[0.2em] text-ivory-200 transition-colors hover:text-brass-300"
                 >
                   {t.nav[link.key]}
                 </a>

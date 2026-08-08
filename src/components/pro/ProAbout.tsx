@@ -41,7 +41,7 @@ export async function ProAbout() {
           <h2 className="pro-title mt-6 text-ivory-50">{t.about.heading}</h2>
           <p className="pro-lead">{t.about.lead}</p>
 
-          <div className="mt-10 max-w-xl space-y-6 text-[0.95rem] font-light leading-[1.95] text-ivory-200/80">
+          <div className="mt-10 max-w-xl space-y-6 text-[1.05rem] font-light leading-[1.95] text-ivory-200/80">
             {t.about.body.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
@@ -57,7 +57,7 @@ export async function ProAbout() {
                 key={stat.label}
                 className="flex flex-col-reverse border-e border-ivory-100/12 py-8 pe-4 last:border-e-0"
               >
-                <dt className="mt-3 text-[0.66rem] uppercase tracking-[0.18em] text-ivory-400">
+                <dt className="mt-3 text-[0.74rem] uppercase tracking-[0.18em] text-ivory-400">
                   {stat.label}
                 </dt>
                 <dd className="font-[family-name:var(--font-pro-display)] text-5xl font-light text-brass-300">

@@ -81,7 +81,7 @@ export function ProBooking({ context }: { context: BookingContext }) {
           <div id="pregled" className="bg-onyx-900 p-6 sm:p-10">
             <h3 className="text-2xl text-ivory-50">{t.booking.summaryTitle}</h3>
 
-            <dl className="mt-8 space-y-4 text-sm font-light">
+            <dl className="mt-8 space-y-4 text-base font-light">
               <Line
                 label={t.booking.checkIn}
                 value={start ? formatLong(start, locale) : null}
@@ -98,25 +98,25 @@ export function ProBooking({ context }: { context: BookingContext }) {
                   vlasnik mijenja u administraciji. Ovdje stoje da gost odmah
                   vidi zašto dan odlaska jednog i dan dolaska drugog gosta
                   mogu biti isti dan. */}
-            <p className="mt-5 text-xs font-light text-ivory-500">
+            <p className="mt-5 text-sm font-light text-ivory-500">
               {t.booking.timesNote(settings.checkin_time, settings.checkout_time)}
             </p>
 
             {singleDay && (
-              <p className="mt-5 border-s-2 border-brass-400 ps-4 text-xs font-light leading-relaxed text-ivory-200">
+              <p className="mt-5 border-s-2 border-brass-400 ps-4 text-sm font-light leading-relaxed text-ivory-200">
                 {t.booking.singleDayNote}
               </p>
             )}
 
             {!range?.from && (
-              <p className="mt-5 text-xs font-light text-ivory-500">{t.booking.singleDayHint}</p>
+              <p className="mt-5 text-sm font-light text-ivory-500">{t.booking.singleDayHint}</p>
             )}
 
             {range?.from && (
               <button
                 type="button"
                 onClick={form.clearRange}
-                className="mt-5 text-[0.66rem] uppercase tracking-[0.2em] text-brass-400 transition-colors hover:text-brass-300"
+                className="mt-5 text-[0.74rem] uppercase tracking-[0.2em] text-brass-400 transition-colors hover:text-brass-300"
               >
                 {t.booking.clearDates}
               </button>
@@ -124,7 +124,7 @@ export function ProBooking({ context }: { context: BookingContext }) {
 
             {quote && (
               <div className="mt-8 border-t border-ivory-100/12 pt-8">
-                <div className="flex items-baseline justify-between gap-4 text-sm font-light text-ivory-200">
+                <div className="flex items-baseline justify-between gap-4 text-base font-light text-ivory-200">
                   <span>
                     {t.booking.daysLabel(quote.dayCount)} ×{' '}
                     {formatMoney(quote.averageDailyCents, quote.currencySymbol, locale)}
@@ -135,7 +135,7 @@ export function ProBooking({ context }: { context: BookingContext }) {
                 </div>
 
                 <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-ivory-100/12 pt-6">
-                  <span className="text-[0.68rem] uppercase tracking-[0.22em] text-ivory-400">
+                  <span className="text-[0.76rem] uppercase tracking-[0.22em] text-ivory-400">
                     {t.booking.total}
                   </span>
                   <span className="font-[family-name:var(--font-pro-display)] text-4xl font-light text-brass-300">
@@ -146,7 +146,7 @@ export function ProBooking({ context }: { context: BookingContext }) {
                 {/* Ako svi dani nisu iste cijene, gost zaslužuje objašnjenje —
                     i to ono pravo: vikend i sezona nisu isti razlog. */}
                 {new Set(quote.days.map((d) => d.cents)).size > 1 && (
-                  <p className="mt-3 text-xs font-light text-ivory-500">
+                  <p className="mt-3 text-sm font-light text-ivory-500">
                     {quote.days.some((d) => d.periodName === WEEKEND_PERIOD)
                       ? t.booking.weekendNote
                       : t.booking.seasonalNote}
@@ -257,13 +257,13 @@ export function ProBooking({ context }: { context: BookingContext }) {
                       />
                       <span className="min-w-0">
                         <span
-                          className={`block text-[0.72rem] font-medium uppercase tracking-[0.18em] ${
+                          className={`block text-[0.8rem] font-medium uppercase tracking-[0.18em] ${
                             id === 'test' ? 'text-brass-400' : 'text-ivory-50'
                           }`}
                         >
                           {copy.label}
                         </span>
-                        <span className="mt-2 block text-xs font-light leading-relaxed text-ivory-400">
+                        <span className="mt-2 block text-sm font-light leading-relaxed text-ivory-400">
                           {copy.hint}
                         </span>
                       </span>
@@ -276,7 +276,7 @@ export function ProBooking({ context }: { context: BookingContext }) {
             {(error || stayError) && (
               <p
                 role="alert"
-                className="mt-8 border-s-2 border-danger-600 bg-danger-600/10 px-4 py-3 text-sm font-light text-ivory-50"
+                className="mt-8 border-s-2 border-danger-600 bg-danger-600/10 px-4 py-3 text-base font-light text-ivory-50"
               >
                 {error ?? stayError}
               </p>
@@ -299,7 +299,7 @@ export function ProBooking({ context }: { context: BookingContext }) {
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-ivory-100/15 bg-onyx-950/95 px-6 py-4 backdrop-blur-xl lg:hidden">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="truncate text-[0.62rem] uppercase tracking-[0.2em] text-ivory-400">
+              <p className="truncate text-[0.7rem] uppercase tracking-[0.2em] text-ivory-400">
                 {start && end ? count(locale, daysBetween(start, end), t.common.days) : ''}
               </p>
               <p className="font-[family-name:var(--font-pro-display)] text-2xl text-brass-300">
@@ -323,7 +323,7 @@ export function ProBooking({ context }: { context: BookingContext }) {
 function Line({ label, value, empty }: { label: string; value: string | null; empty: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-ivory-100/10 pb-4">
-      <dt className="text-[0.68rem] uppercase tracking-[0.2em] text-ivory-400">{label}</dt>
+      <dt className="text-[0.76rem] uppercase tracking-[0.2em] text-ivory-400">{label}</dt>
       <dd className="text-end text-ivory-50">
         {value ?? <span className="text-ivory-500">{empty}</span>}
       </dd>

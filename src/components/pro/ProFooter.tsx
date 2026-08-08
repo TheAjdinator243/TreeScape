@@ -19,10 +19,10 @@ export async function ProFooter() {
       <div className="mx-auto max-w-6xl px-6 py-20 sm:px-10">
         <div className="grid gap-12 md:grid-cols-3">
           <div className="md:col-span-1">
-            <p className="text-[0.68rem] uppercase tracking-[0.28em] text-brass-400">
+            <p className="text-[0.76rem] uppercase tracking-[0.28em] text-brass-400">
               {t.footer.contact}
             </p>
-            <ul className="mt-6 space-y-3 text-sm font-light text-ivory-200">
+            <ul className="mt-6 space-y-3 text-base font-light text-ivory-200">
               <li>
                 <a
                   href={CONTACT.phoneHref}
@@ -46,10 +46,10 @@ export async function ProFooter() {
           </div>
 
           <div className="md:col-span-1">
-            <p className="text-[0.68rem] uppercase tracking-[0.28em] text-brass-400">
+            <p className="text-[0.76rem] uppercase tracking-[0.28em] text-brass-400">
               {t.footer.quickLinks}
             </p>
-            <ul className="mt-6 space-y-3 text-sm font-light text-ivory-200">
+            <ul className="mt-6 space-y-3 text-base font-light text-ivory-200">
               {[
                 { href: '#o-kuci', label: t.nav.about },
                 { href: '#galerija', label: t.nav.gallery },
@@ -66,7 +66,7 @@ export async function ProFooter() {
           </div>
 
           <div className="md:col-span-1">
-            <p className="max-w-xs text-sm font-light leading-[1.9] text-ivory-400">
+            <p className="max-w-xs text-base font-light leading-[1.9] text-ivory-400">
               {t.site.description}
             </p>
           </div>
@@ -83,10 +83,10 @@ export async function ProFooter() {
         </p>
 
         <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-ivory-100/12 pt-8">
-          <p className="text-[0.68rem] uppercase tracking-[0.2em] text-ivory-500">
+          <p className="text-[0.76rem] uppercase tracking-[0.2em] text-ivory-500">
             © {year} {t.site.name}. {t.footer.rights}
           </p>
-          <p className="text-[0.68rem] uppercase tracking-[0.2em] text-ivory-500">
+          <p className="text-[0.76rem] uppercase tracking-[0.2em] text-ivory-500">
             {t.site.tagline}
           </p>
         </div>

@@ -55,7 +55,7 @@ export async function ProHero({ fromCents, symbol }: { fromCents: number; symbol
         </h1>
 
         <p
-          className="animate-fade-rise mx-auto mt-8 max-w-xl text-base font-light leading-[1.9] text-ivory-200 sm:text-lg"
+          className="animate-fade-rise mx-auto mt-8 max-w-xl text-lg font-light leading-[1.9] text-ivory-200 sm:text-xl"
           style={{ animationDelay: '200ms' }}
         >
           {t.hero.subtitle}
@@ -69,8 +69,8 @@ export async function ProHero({ fromCents, symbol }: { fromCents: number; symbol
             {t.hero.cta}
           </a>
 
-          <p className="flex items-baseline gap-2 text-sm font-light text-ivory-200">
-            <span className="text-[0.68rem] uppercase tracking-[0.24em] text-ivory-400">
+          <p className="flex items-baseline gap-2 text-base font-light text-ivory-200">
+            <span className="text-[0.76rem] uppercase tracking-[0.24em] text-ivory-400">
               {t.common.from}
             </span>
             <span className="font-[family-name:var(--font-pro-display)] text-2xl text-ivory-50">
@@ -83,7 +83,7 @@ export async function ProHero({ fromCents, symbol }: { fromCents: number; symbol
 
       <a
         href="#o-kuci"
-        className="absolute bottom-10 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.62rem] uppercase tracking-[0.3em] text-ivory-400 transition-colors hover:text-brass-300 lg:flex"
+        className="absolute bottom-10 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.7rem] uppercase tracking-[0.3em] text-ivory-400 transition-colors hover:text-brass-300 lg:flex"
       >
         {t.hero.scroll}
         <span className="h-10 w-px bg-gradient-to-b from-brass-400/70 to-transparent" aria-hidden="true" />
