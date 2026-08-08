@@ -4,14 +4,9 @@ import { Resend } from 'resend';
 
 import { formatRange } from './dates';
 import { emailTransport, env } from './env';
-import {
-  DEFAULT_LOCALE,
-  directionOf,
-  getStrings,
-  normalizeLocale,
-  type Locale,
-} from './i18n';
+import { DEFAULT_LOCALE, directionOf, getStrings, normalizeLocale, type Locale } from './i18n';
 import { formatMoney } from './pricing';
+import { GOOGLE_MAPS_URL } from './location';
 import { bookingReference } from './reference';
 import type { Booking } from './types';
 
@@ -156,7 +151,10 @@ async function sendViaGmail(to: string, subject: string, html: string): Promise<
  * Nova onda pukne na isti način.
  */
 function ocistiLozinku(raw: string): string {
-  return raw.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+  return raw
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .replace(/\s+/g, '');
 }
 
 /** Koliko znakova ima ispravna lozinka za aplikacije. */
@@ -190,7 +188,8 @@ async function sendViaResend(to: string, subject: string, html: string): Promise
   const resend = new Resend(env.email.apiKey);
   const { error } = await resend.emails.send({ from: env.email.from, to, subject, html });
 
-  if (error) return { ok: false, detail: `Resend je odbio: ${error.message}${resendHint(error.message)}` };
+  if (error)
+    return { ok: false, detail: `Resend je odbio: ${error.message}${resendHint(error.message)}` };
 
   return { ok: true, detail: `Poslano na ${to} (Resend).${resendFalsePositive()}` };
 }
@@ -337,6 +336,26 @@ function intro(booking: Booking, locale: Locale, message: string): string {
           </p>`;
 }
 
+/**
+ * Dugme s linkom na Google Mape.
+ *
+ * Ide SAMO u mailove za potvrđen termin, i to namjerno. Sajt i česta pitanja
+ * izričito kažu da adresa i uputstva stižu "nakon potvrde rezervacije", pa bi
+ * slanje uz zahtjev koji tek čeka odluku bilo protivno onome što gostu piše.
+ *
+ * Do sada je obećanje stajalo u mailu, ali link nije — gost je dobio rečenicu
+ * da mu uputstva stižu, i ništa uz nju.
+ */
+function mapsButton(locale: Locale): string {
+  const t = getStrings(locale);
+
+  return `<p style="margin:24px 0 0">
+            <a href="${GOOGLE_MAPS_URL}" style="display:inline-block;background:#2a5a47;color:#faf7f1;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
+              ${t.location.openInMaps}
+            </a>
+          </p>`;
+}
+
 function footNote(text: string): string {
   return `<p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">${text}</p>`;
 }
@@ -415,7 +434,8 @@ export async function sendGuestConfirmation(booking: Booking): Promise<void> {
       t.email.confirmedTitle,
       `${intro(booking, locale, t.email.confirmedBody)}
        ${detailRows(booking, locale)}
-       ${footNote(t.email.addressLater)}`
+       ${footNote(t.email.addressLater)}
+       ${mapsButton(locale)}`
     )
   );
 }
@@ -455,7 +475,8 @@ export async function sendGuestCashApproved(booking: Booking): Promise<void> {
       t.email.cashApprovedTitle,
       `${intro(booking, locale, t.email.cashApprovedBody)}
        ${detailRows(booking, locale)}
-       ${footNote(t.email.payOnArrival)}`
+       ${footNote(t.email.payOnArrival)}
+       ${mapsButton(locale)}`
     )
   );
 }

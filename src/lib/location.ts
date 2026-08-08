@@ -29,12 +29,21 @@ export const MAP_SRC =
   `&layer=mapnik&marker=${MAP_MARKER.lat},${MAP_MARKER.lon}`;
 
 /**
- * Zvanični oblik Google linka (`?api=1`) — jedini koji Google obećava da neće
- * mijenjati. Na mobitelu ga preuzme aplikacija Mapa, na računaru se otvori u
- * pregledniku. Ne treba ključ.
+ * Link na Google Mape — onaj koji je vlasnik podijelio iz same aplikacije.
+ *
+ * Zašto podijeljeni link, a ne onaj sastavljen od koordinata: podijeljeni vodi
+ * na SAČUVANO mjesto, s imenom i pribadačom kakvu je vlasnik postavio, pa
+ * navigacija odmah zna cilj. Sastavljeni bi bio samo pretraga po dvije brojke —
+ * radi, ali gostu na telefonu izgleda kao tačka usred ničega.
+ *
+ * PAŽNJA: ovaj link i `MAP_MARKER` moraju pokazivati na isto mjesto, a ništa
+ * ih ne veže osim ove napomene. Ako se koordinate ikad promijene, podijeli
+ * novi link iz aplikacije Mape i zamijeni ga ovdje — inače će karta na sajtu
+ * pokazivati jedno, a link u mailu drugo.
+ *
+ * (Bez `?g_st=ic` na kraju — to je samo oznaka odakle je link podijeljen.)
  */
-export const GOOGLE_MAPS_URL =
-  `https://www.google.com/maps/search/?api=1&query=${MAP_MARKER.lat}%2C${MAP_MARKER.lon}`;
+export const GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/HkSftt1wXcMRJBHQA';
 
 /** Minute vožnje su činjenica o kući, pa stoje ovdje; nazivi su u rječnicima. */
 export const TRAVEL = [

@@ -320,3 +320,57 @@ describe('Googleova odbijenica', () => {
     expect(detalj).not.toContain('alzxzksqyxucodbp');
   });
 });
+
+describe('link na mape u mailu gostu', () => {
+  const REZ = {
+    id: 'b', public_token: 'abcdef1234567890', guest_name: 'Ana', guest_email: 'ana@primjer.ba',
+    guest_phone: null, guests: 2, note: null, start_date: '2026-10-10', end_date: '2026-10-12',
+    status: 'confirmed', payment_method: 'cash', total_cents: 60000, currency: 'BAM',
+    price_breakdown: null, payment_reference: null, payment_id: null, hold_expires_at: null,
+    admin_note: null, locale: 'bs', created_at: '', updated_at: '',
+  };
+
+  async function posalji(koji: 'cashApproved' | 'cashRequest' | 'cashRejected') {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    vi.stubEnv('GMAIL_USER', 'v@gmail.com');
+    vi.stubEnv('GMAIL_APP_PASSWORD', 'aaaabbbbccccdddd');
+    vi.stubEnv('OWNER_EMAIL', 'v@gmail.com');
+
+    const sent: { html?: string }[] = [];
+    vi.doMock('nodemailer', () => ({
+      default: {
+        createTransport: () => ({
+          sendMail: async (m: { html?: string }) => {
+            sent.push(m);
+            return {};
+          },
+        }),
+      },
+    }));
+
+    const mod = await import('./email');
+    const fn = {
+      cashApproved: mod.sendGuestCashApproved,
+      cashRequest: mod.sendGuestCashRequest,
+      cashRejected: mod.sendGuestCashRejected,
+    }[koji];
+
+    await fn(REZ as never);
+    return sent[0]?.html ?? '';
+  }
+
+  it('potvrđen termin nosi link na mape', async () => {
+    expect(await posalji('cashApproved')).toContain('maps.app.goo.gl');
+  });
+
+  it('zahtjev koji tek čeka odluku NE nosi link', async () => {
+    // Sajt i česta pitanja kažu da adresa stiže "nakon potvrde rezervacije" —
+    // slanje uz nepotvrđen zahtjev bi bilo protivno onome što gostu piše.
+    expect(await posalji('cashRequest')).not.toContain('maps.app.goo.gl');
+  });
+
+  it('odbijen zahtjev NE nosi link', async () => {
+    expect(await posalji('cashRejected')).not.toContain('maps.app.goo.gl');
+  });
+});
