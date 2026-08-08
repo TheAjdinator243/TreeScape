@@ -312,6 +312,10 @@ export const en: Dictionary = {
     reject: 'Reject',
     approveConfirm: 'Confirm this booking?',
     rejectConfirm: 'Reject this request? The dates will be released.',
+    rejectReasonPrompt:
+      'Reason for declining — the guest receives it by email. Leave empty to give no reason.',
+    cancelReasonPrompt:
+      'Reason for cancelling — the guest receives it by email. Leave empty to give no reason.',
     receivedAt: (when) => `Received ${when}`,
     byCash: 'cash',
     byTransfer: 'bank transfer',
@@ -463,6 +467,12 @@ export const en: Dictionary = {
     cashApprovedSubject: 'Booking confirmed',
     cashApprovedTitle: 'The host has confirmed your booking',
     cashApprovedBody: 'the dates are yours. See you soon!',
+
+    cancelledSubject: 'Booking cancelled',
+    cancelledTitle: 'Your booking has been cancelled',
+    cancelledBody:
+      'unfortunately we have to cancel your confirmed booking. The dates have been released, and we are sorry for the inconvenience.',
+    reasonLabel: 'Reason',
 
     cashRejectedSubject: 'Booking not confirmed',
     cashRejectedTitle: 'Unfortunately these dates are not available',

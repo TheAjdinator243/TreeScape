@@ -356,6 +356,28 @@ function mapsButton(locale: Locale): string {
           </p>`;
 }
 
+/**
+ * Razlog koji je domaćin upisao pri odbijanju ili otkazivanju.
+ *
+ * Razlog je NEOBAVEZAN — domaćin ga smije preskočiti, i tada ovog bloka
+ * jednostavno nema. Prazan okvir s natpisom "Razlog:" i ničim ispod bio bi
+ * gori od izostavljanja.
+ *
+ * Tekst piše čovjek, pa se prije prikaza pobjegnu znakovi koje bi HTML
+ * pročitao kao oznake — inače bi "<" usred rečenice pojeo ostatak maila.
+ */
+function reasonBlock(locale: Locale, reason: string | null | undefined): string {
+  const text = reason?.trim();
+  if (!text) return '';
+
+  const t = getStrings(locale);
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  return `<p style="font-size:14px;line-height:1.6;color:#453d35;background:#f4ede0;padding:14px 16px;border-radius:10px;margin:20px 0 0">
+            <strong>${t.email.reasonLabel}:</strong><br>${escaped}
+          </p>`;
+}
+
 function footNote(text: string): string {
   return `<p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">${text}</p>`;
 }
@@ -481,8 +503,41 @@ export async function sendGuestCashApproved(booking: Booking): Promise<void> {
   );
 }
 
+/**
+ * Gostu — domaćin je otkazao VEĆ POTVRĐENU rezervaciju.
+ *
+ * Ovo nije isto što i odbijen zahtjev, i zato ima svoj tekst. Odbijen zahtjev
+ * nikad nije ni bio potvrđen; ovdje je gost dobio potvrdu, možda već kupio
+ * kartu i rasporedio godišnji — pa mu se otkazivanje mora reći drugačije i
+ * obavezno reći.
+ *
+ * Do sada se otkazivanje slalo NIGDJE: termin bi se u bazi oslobodio, a gost
+ * bi i dalje mislio da dolazi.
+ */
+export async function sendGuestCancelled(booking: Booking, reason?: string | null): Promise<void> {
+  if (!booking.guest_email) return;
+
+  const locale = bookingLocale(booking);
+  const t = getStrings(locale);
+
+  await send(
+    booking.guest_email,
+    subject(locale, t.email.cancelledSubject),
+    layout(
+      locale,
+      t.email.cancelledTitle,
+      `${intro(booking, locale, t.email.cancelledBody)}
+       ${detailRows(booking, locale)}
+       ${reasonBlock(locale, reason)}`
+    )
+  );
+}
+
 /** Gostu — domaćin je odbio zahtjev. */
-export async function sendGuestCashRejected(booking: Booking): Promise<void> {
+export async function sendGuestCashRejected(
+  booking: Booking,
+  reason?: string | null
+): Promise<void> {
   if (!booking.guest_email) return;
 
   const locale = bookingLocale(booking);
@@ -495,7 +550,8 @@ export async function sendGuestCashRejected(booking: Booking): Promise<void> {
       locale,
       t.email.cashRejectedTitle,
       `${intro(booking, locale, t.email.cashRejectedBody)}
-       ${detailRows(booking, locale)}`
+       ${detailRows(booking, locale)}
+       ${reasonBlock(locale, reason)}`
     )
   );
 }

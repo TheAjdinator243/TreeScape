@@ -15,6 +15,18 @@ import { useLiveRequests } from './useLiveRequests';
 
 type Tab = 'requests' | 'bookings' | 'calendar' | 'pricing';
 
+/**
+ * Pitanje za razlog, koji gost dobija u mailu.
+ *
+ * `null` znači "odustani od cijele radnje" (zatvoren prozorčić), a prazan niz
+ * "nastavi, ali bez navođenja razloga". Razlika je bitna: bez nje bi zatvaranje
+ * prozorčića odbilo rezervaciju.
+ */
+function askReason(question: string): string | null {
+  const answer = window.prompt(question);
+  return answer === null ? null : answer.trim().slice(0, 300);
+}
+
 /** Statusi koje vlasnik još može otkazati — na jednom mjestu, za obje liste. */
 const CANCELLABLE: string[] = ['confirmed', 'pending_cash', 'pending_payment'];
 
@@ -121,15 +133,32 @@ export function Dashboard({
     const message = decision === 'reject' ? t.admin.rejectConfirm : t.admin.approveConfirm;
     if (!window.confirm(message)) return;
 
+    let reason: string | undefined;
+
+    if (decision === 'reject') {
+      const answer = askReason(t.admin.rejectReasonPrompt);
+      // Odustajanje od pitanja znači odustajanje od cijele radnje — inače bi
+      // se termin odbio zato što je neko htio zatvoriti prozorčić.
+      if (answer === null) return;
+      reason = answer;
+    }
+
     await call('/api/admin/bookings', {
       method: 'POST',
-      body: JSON.stringify({ booking_id: bookingId, decision }),
+      body: JSON.stringify({ booking_id: bookingId, decision, reason }),
     });
   }
 
   async function cancel(bookingId: string, confirmText: string) {
     if (!window.confirm(confirmText)) return;
-    await call(`/api/admin/bookings?id=${bookingId}`, { method: 'DELETE' });
+
+    const reason = askReason(t.admin.cancelReasonPrompt);
+    if (reason === null) return;
+
+    const query = new URLSearchParams({ id: bookingId });
+    if (reason) query.set('reason', reason);
+
+    await call(`/api/admin/bookings?${query}`, { method: 'DELETE' });
   }
 
   /**

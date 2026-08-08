@@ -7,7 +7,7 @@ import {
   requireDatabase,
   serverError,
 } from '@/lib/api-helpers';
-import { sendGuestCashApproved, sendGuestCashRejected } from '@/lib/email';
+import { sendGuestCancelled, sendGuestCashApproved, sendGuestCashRejected } from '@/lib/email';
 import { getStrings, localeFromRequest } from '@/lib/i18n';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import type { Booking } from '@/lib/types';
@@ -32,12 +32,18 @@ export async function POST(request: Request) {
   const parsed = bookingDecisionSchema.safeParse(await readJson(request));
   if (!parsed.success) return invalidInput(locale, describeIssues(parsed.error));
 
-  const { booking_id, decision } = parsed.data;
+  const { booking_id, decision, reason } = parsed.data;
   const nextStatus = decision === 'approve' ? 'confirmed' : 'cancelled';
 
   const { data, error } = await supabaseAdmin()
     .from('bookings')
-    .update({ status: nextStatus, hold_expires_at: null })
+    // Razlog ide i u bazu, ne samo u mail: za mjesec dana niko se neće sjećati
+    // zašto je termin odbijen, a u administraciji je to jedini trag.
+    .update({
+      status: nextStatus,
+      hold_expires_at: null,
+      ...(reason ? { admin_note: reason } : {}),
+    })
     .eq('id', booking_id)
     // Odlučuje se samo o onome što zaista čeka — ovo sprječava da dvostruki
     // klik ili stara otvorena kartica ponovo "odobri" nešto već riješeno.
@@ -71,7 +77,7 @@ export async function POST(request: Request) {
    * `after` platformi kaže da funkciju drži živom dok se posao ne završi.
    */
   after(() =>
-    decision === 'approve' ? sendGuestCashApproved(booking) : sendGuestCashRejected(booking)
+    decision === 'approve' ? sendGuestCashApproved(booking) : sendGuestCashRejected(booking, reason)
   );
 
   return NextResponse.json({ ok: true, status: nextStatus });
@@ -84,18 +90,35 @@ export async function DELETE(request: Request) {
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
-  const id = new URL(request.url).searchParams.get('id');
+  const url = new URL(request.url);
+  const id = url.searchParams.get('id');
   if (!id) return invalidInput(locale);
 
-  const { error } = await supabaseAdmin()
+  const reason = (url.searchParams.get('reason') ?? '').trim().slice(0, 300) || undefined;
+
+  const { data, error } = await supabaseAdmin()
     .from('bookings')
-    .update({ status: 'cancelled' })
-    .eq('id', id);
+    .update({ status: 'cancelled', ...(reason ? { admin_note: reason } : {}) })
+    .eq('id', id)
+    .select()
+    .maybeSingle();
 
   if (error) {
     console.error('[treescape] otkazivanje nije uspjelo:', error.message);
     return serverError(locale, error.message);
   }
+
+  /**
+   * Gost se OBAVEZNO obavještava o otkazivanju.
+   *
+   * Ranije se ovdje nije slalo ništa: termin bi se u bazi oslobodio, a gost bi
+   * i dalje mislio da dolazi — i to nakon što je već dobio potvrdu. Najgori
+   * mogući ishod, jer se otkriva tek na vratima.
+   *
+   * Isti put služi i za oslobađanje ručno blokiranog termina; tamo nema gosta
+   * ni adrese, pa `sendGuestCancelled` sam odustane.
+   */
+  if (data) after(() => sendGuestCancelled(data as Booking, reason));
 
   return NextResponse.json({ ok: true });
 }

@@ -374,3 +374,72 @@ describe('link na mape u mailu gostu', () => {
     expect(await posalji('cashRejected')).not.toContain('maps.app.goo.gl');
   });
 });
+
+describe('otkazivanje i razlog', () => {
+  const REZ = {
+    id: 'b', public_token: 'abcdef1234567890', guest_name: 'Ana', guest_email: 'ana@primjer.ba',
+    guest_phone: null, guests: 2, note: null, start_date: '2026-10-10', end_date: '2026-10-12',
+    status: 'confirmed', payment_method: 'cash', total_cents: 60000, currency: 'BAM',
+    price_breakdown: null, payment_reference: null, payment_id: null, hold_expires_at: null,
+    admin_note: null, locale: 'bs', created_at: '', updated_at: '',
+  };
+
+  async function posalji(
+    koji: 'cancelled' | 'rejected',
+    reason?: string | null,
+    booking: Record<string, unknown> = REZ
+  ) {
+    vi.resetModules();
+    vi.unstubAllEnvs();
+    vi.stubEnv('GMAIL_USER', 'v@gmail.com');
+    vi.stubEnv('GMAIL_APP_PASSWORD', 'aaaabbbbccccdddd');
+    vi.stubEnv('OWNER_EMAIL', 'v@gmail.com');
+
+    const sent: { html?: string; subject?: string }[] = [];
+    vi.doMock('nodemailer', () => ({
+      default: {
+        createTransport: () => ({
+          sendMail: async (m: { html?: string; subject?: string }) => {
+            sent.push(m);
+            return {};
+          },
+        }),
+      },
+    }));
+
+    const mod = await import('./email');
+    const fn = koji === 'cancelled' ? mod.sendGuestCancelled : mod.sendGuestCashRejected;
+    await fn(booking as never, reason);
+    return sent[0];
+  }
+
+  it('otkazana potvrđena rezervacija uopće šalje mail', async () => {
+    // Ranije se ovdje nije slalo ništa — gost bi i dalje mislio da dolazi.
+    const mail = await posalji('cancelled', 'Kvar na grijanju.');
+    expect(mail?.subject).toContain('otkazana');
+  });
+
+  it('razlog stiže gostu', async () => {
+    expect((await posalji('cancelled', 'Kvar na grijanju.'))?.html).toContain('Kvar na grijanju.');
+    expect((await posalji('rejected', 'Termin je već dogovoren.'))?.html).toContain(
+      'Termin je već dogovoren.'
+    );
+  });
+
+  it('bez razloga nema praznog okvira', async () => {
+    const html = (await posalji('cancelled'))?.html ?? '';
+    // Natpis "Razlog:" bez ičega ispod bio bi gori od izostavljanja.
+    expect(html).not.toContain('Razlog');
+  });
+
+  it('razlog koji domaćin napiše ne može razbiti mail', async () => {
+    const html = (await posalji('cancelled', 'Radovi <b>na</b> vodi & struji'))?.html ?? '';
+    expect(html).toContain('&lt;b&gt;');
+    expect(html).toContain('&amp;');
+  });
+
+  it('otkazivanje blokiranog termina ne šalje ništa — tamo nema gosta', async () => {
+    const blokiran = { ...REZ, guest_email: null, guest_name: null };
+    expect(await posalji('cancelled', 'Održavanje', blokiran)).toBeUndefined();
+  });
+});

@@ -317,6 +317,10 @@ export const ar: Dictionary = {
     reject: 'رفض',
     approveConfirm: 'تأكيد هذا الحجز؟',
     rejectConfirm: 'رفض هذا الطلب؟ سيُحرَّر الموعد.',
+    rejectReasonPrompt:
+      'سبب الرفض — يصل الضيف عبر البريد الإلكتروني. اتركه فارغًا إن لم ترغب في ذكر سبب.',
+    cancelReasonPrompt:
+      'سبب الإلغاء — يصل الضيف عبر البريد الإلكتروني. اتركه فارغًا إن لم ترغب في ذكر سبب.',
     receivedAt: (when) => `ورد بتاريخ ${when}`,
     byCash: 'نقدًا',
     byTransfer: 'تحويل بنكي',
@@ -467,6 +471,12 @@ export const ar: Dictionary = {
     cashApprovedSubject: 'تم تأكيد الحجز',
     cashApprovedTitle: 'أكّد المضيف حجزك',
     cashApprovedBody: 'الموعد لك. نراك قريبًا!',
+
+    cancelledSubject: 'إلغاء الحجز',
+    cancelledTitle: 'تم إلغاء حجزك',
+    cancelledBody:
+      'نأسف لاضطرارنا إلى إلغاء حجزك المؤكَّد. تم تحرير المواعيد، ونعتذر عن الإزعاج.',
+    reasonLabel: 'السبب',
 
     cashRejectedSubject: 'لم يتم تأكيد الحجز',
     cashRejectedTitle: 'للأسف، الموعد غير متاح',

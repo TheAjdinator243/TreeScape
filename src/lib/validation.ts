@@ -36,6 +36,11 @@ export const blockDatesSchema = z.object({
 export const bookingDecisionSchema = z.object({
   booking_id: z.string().uuid(),
   decision: z.enum(['approve', 'reject']),
+  /**
+   * Razlog odbijanja — gost ga dobija u mailu. Neobavezan: domaćin ga smije
+   * preskočiti, i tada u mailu jednostavno nema tog dijela.
+   */
+  reason: z.string().trim().max(300).optional(),
 });
 
 export const settingsSchema = z.object({

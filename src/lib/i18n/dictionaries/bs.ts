@@ -315,6 +315,10 @@ export const bs: Dictionary = {
     reject: 'Odbij',
     approveConfirm: 'Potvrditi ovu rezervaciju?',
     rejectConfirm: 'Odbiti ovaj zahtjev? Termin će se osloboditi.',
+    rejectReasonPrompt:
+      'Razlog odbijanja — gost ga dobija u mailu. Ostavite prazno ako ne želite navesti razlog.',
+    cancelReasonPrompt:
+      'Razlog otkazivanja — gost ga dobija u mailu. Ostavite prazno ako ne želite navesti razlog.',
     receivedAt: (when) => `Zaprimljeno ${when}`,
     byCash: 'gotovina',
     byTransfer: 'na račun',
@@ -466,6 +470,12 @@ export const bs: Dictionary = {
     cashApprovedSubject: 'Rezervacija potvrđena',
     cashApprovedTitle: 'Domaćin je potvrdio vašu rezervaciju',
     cashApprovedBody: 'termin je vaš. Vidimo se!',
+
+    cancelledSubject: 'Rezervacija je otkazana',
+    cancelledTitle: 'Vaša rezervacija je otkazana',
+    cancelledBody:
+      'nažalost, moramo otkazati vašu već potvrđenu rezervaciju. Termin je oslobođen, a mi se izvinjavamo zbog neprilike.',
+    reasonLabel: 'Razlog',
 
     cashRejectedSubject: 'Rezervacija nije potvrđena',
     cashRejectedTitle: 'Nažalost, termin nije dostupan',

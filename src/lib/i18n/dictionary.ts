@@ -288,6 +288,9 @@ export interface Dictionary {
     reject: string;
     approveConfirm: string;
     rejectConfirm: string;
+    /** Pitanje za razlog — gost ga dobija u mailu. */
+    rejectReasonPrompt: string;
+    cancelReasonPrompt: string;
     receivedAt: (when: string) => string;
     byCash: string;
     byTransfer: string;
@@ -418,6 +421,13 @@ export interface Dictionary {
     cashApprovedSubject: string;
     cashApprovedTitle: string;
     cashApprovedBody: string;
+
+    /** Otkazana POTVRĐENA rezervacija — nije isto što i odbijen zahtjev. */
+    cancelledSubject: string;
+    cancelledTitle: string;
+    cancelledBody: string;
+    /** Naslov iznad razloga koji je domaćin upisao. */
+    reasonLabel: string;
 
     cashRejectedSubject: string;
     cashRejectedTitle: string;
