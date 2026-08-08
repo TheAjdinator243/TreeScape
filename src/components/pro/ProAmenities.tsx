@@ -18,7 +18,9 @@ export async function ProAmenities() {
   const { t } = await getServerStrings();
 
   return (
-    <section id="sadrzaji" className="bg-ivory-50 text-onyx-900">
+    // `relative` je nužan: blage sjene na vrhu i dnu (vidi `.pro-pattern` u
+    // globals.css) postavljaju se apsolutno u odnosu na ovu plohu.
+    <section id="sadrzaji" className="pro-pattern relative text-onyx-900">
       <div className="pro-section">
         <Reveal className="max-w-2xl">
           <p className="pro-eyebrow text-brass-500">{t.site.name}</p>
@@ -35,9 +37,9 @@ export async function ProAmenities() {
           ostajalo kao siv pravougaonik, jer se kroz njega vidjela pozadina mreže.
           Ovako praznog mjesta jednostavno nema.
         */}
-        <ul className="mt-16 grid border-s border-t border-ivory-200 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-16 grid border-s border-t border-onyx-900/20 sm:grid-cols-2 lg:grid-cols-3">
           {AMENITIES.map((key, i) => (
-            <li key={key} className="border-b border-e border-ivory-200">
+            <li key={key} className="border-b border-e border-onyx-900/20">
               <Reveal delay={Math.min(i, 8) * 45} className="h-full">
                 <div className="flex h-full flex-col p-8 lg:p-10">
                   <span className="text-brass-500 [&_svg]:h-6 [&_svg]:w-6" aria-hidden="true">
@@ -48,7 +50,7 @@ export async function ProAmenities() {
                     {t.amenities.items[key].label}
                   </h3>
 
-                  <p className="mt-3 text-base font-light leading-[1.85] text-onyx-800/60">
+                  <p className="mt-3 text-base font-light leading-[1.85] text-onyx-800/70">
                     {t.amenities.items[key].note}
                   </p>
                 </div>
