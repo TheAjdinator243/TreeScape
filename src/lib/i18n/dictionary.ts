@@ -183,6 +183,11 @@ export interface Dictionary {
     seasonalNote: string;
     weekendNote: string;
     singleDayNote: string;
+    /**
+     * Vrijeme prijave i odjave iz postavki — isti tekst na sajtu, na potvrdi i
+     * u mailu, da se ne mogu razići kad vlasnik promijeni sate.
+     */
+    timesNote: (checkIn: string, checkOut: string) => string;
 
     payMethodTitle: string;
     payTransfer: string;

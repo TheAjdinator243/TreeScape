@@ -196,6 +196,8 @@ export const ar: Dictionary = {
     seasonalNote: 'السعر اليومي يتغيّر حسب الموسم.',
     weekendNote: 'يُحتسب يوما السبت والأحد بسعر عطلة نهاية الأسبوع.',
     singleDayNote: 'حجز ليوم واحد، من دون مبيت.',
+    timesNote: (checkIn, checkOut) =>
+      `تسجيل الدخول من ${checkIn} يوم الوصول، وتسجيل المغادرة حتى ${checkOut} يوم المغادرة.`,
 
     payMethodTitle: 'طريقة الدفع',
 

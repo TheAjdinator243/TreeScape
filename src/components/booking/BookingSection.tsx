@@ -98,6 +98,14 @@ export function BookingSection({ context }: { context: BookingContext }) {
                 </div>
               </dl>
 
+              {/* Vremena prijave i odjave dolaze iz postavki — ista ona koja
+                  vlasnik mijenja u administraciji. Ovdje stoje da gost odmah
+                  vidi zašto dan odlaska jednog i dan dolaska drugog gosta
+                  mogu biti isti dan. */}
+              <p className="mt-3 text-xs text-ink-400">
+                {t.booking.timesNote(settings.checkin_time, settings.checkout_time)}
+              </p>
+
               {singleDay && (
                 <p className="mt-3 rounded-lg bg-moss-100 px-3 py-2 text-xs text-forest-800">
                   {t.booking.singleDayNote}

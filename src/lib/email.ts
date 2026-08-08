@@ -2,6 +2,7 @@ import 'server-only';
 
 import { Resend } from 'resend';
 
+import { getSettings } from './data';
 import { formatRange } from './dates';
 import { emailTransport, env } from './env';
 import { DEFAULT_LOCALE, directionOf, getStrings, normalizeLocale, type Locale } from './i18n';
@@ -378,6 +379,23 @@ function reasonBlock(locale: Locale, reason: string | null | undefined): string 
           </p>`;
 }
 
+/**
+ * Vrijeme prijave i odjave, iz postavki.
+ *
+ * Čita se iz baze u trenutku slanja, a ne pamti uz rezervaciju — kad vlasnik
+ * promijeni sate u administraciji, promijene se svuda: na sajtu, na potvrdi, u
+ * čestim pitanjima i u mailu koji tek ide.
+ *
+ * Ovo je i jedino mjesto koje gostu objašnjava zašto dan odlaska jednog i dan
+ * dolaska drugog gosta smiju biti isti dan.
+ */
+async function stayTimes(locale: Locale): Promise<string> {
+  const settings = await getSettings();
+  const t = getStrings(locale);
+
+  return footNote(t.booking.timesNote(settings.checkin_time, settings.checkout_time));
+}
+
 function footNote(text: string): string {
   return `<p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">${text}</p>`;
 }
@@ -456,6 +474,7 @@ export async function sendGuestConfirmation(booking: Booking): Promise<void> {
       t.email.confirmedTitle,
       `${intro(booking, locale, t.email.confirmedBody)}
        ${detailRows(booking, locale)}
+       ${await stayTimes(locale)}
        ${footNote(t.email.addressLater)}
        ${mapsButton(locale)}`
     )
@@ -477,6 +496,7 @@ export async function sendGuestCashRequest(booking: Booking): Promise<void> {
       t.email.cashRequestTitle,
       `${intro(booking, locale, t.email.cashRequestBody)}
        ${detailRows(booking, locale)}
+       ${await stayTimes(locale)}
        ${footNote(t.email.payOnArrival)}`
     )
   );
@@ -497,6 +517,7 @@ export async function sendGuestCashApproved(booking: Booking): Promise<void> {
       t.email.cashApprovedTitle,
       `${intro(booking, locale, t.email.cashApprovedBody)}
        ${detailRows(booking, locale)}
+       ${await stayTimes(locale)}
        ${footNote(t.email.payOnArrival)}
        ${mapsButton(locale)}`
     )

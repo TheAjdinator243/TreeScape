@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { LiveStatus } from '@/components/booking/LiveStatus';
 import { Footer } from '@/components/site/Footer';
 import { getBookingByToken } from '@/lib/booking-service';
+import { getSettings } from '@/lib/data';
 import { formatLong, formatRange } from '@/lib/dates';
 import { isDatabaseConfigured } from '@/lib/env';
 import { getServerStrings } from '@/lib/i18n/server';
@@ -23,11 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ConfirmationPage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
+export default async function ConfirmationPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const { locale, t } = await getServerStrings();
 
@@ -35,6 +32,11 @@ export default async function ConfirmationPage({
 
   const booking = await getBookingByToken(token);
   if (!booking || booking.status === 'blocked') notFound();
+
+  // Vremena prijave i odjave se čitaju iz postavki pri svakom otvaranju, a ne
+  // pamte uz rezervaciju: kad ih vlasnik promijeni u administraciji, promijene
+  // se svuda — i ovdje, i u mailu, i u čestim pitanjima.
+  const settings = await getSettings();
 
   const isCash = booking.payment_method === 'cash';
   const isTest = booking.payment_method === 'test';
@@ -117,6 +119,9 @@ export default async function ConfirmationPage({
 
             <Row label={t.confirmation.stay}>
               {formatRange(booking.start_date, booking.end_date, locale)}
+              <span className="mt-1 block text-xs font-normal text-ink-400">
+                {t.booking.timesNote(settings.checkin_time, settings.checkout_time)}
+              </span>
             </Row>
 
             <Row label={t.booking.checkIn}>{formatLong(booking.start_date, locale)}</Row>
@@ -133,7 +138,11 @@ export default async function ConfirmationPage({
 
           {!isDead && (
             <p className="mt-4 text-sm text-ink-500">
-              {isTest ? t.confirmation.testBooking : isCash ? t.confirmation.payOnArrival : t.confirmation.paid}
+              {isTest
+                ? t.confirmation.testBooking
+                : isCash
+                  ? t.confirmation.payOnArrival
+                  : t.confirmation.paid}
             </p>
           )}
 

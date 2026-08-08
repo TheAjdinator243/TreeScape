@@ -190,6 +190,8 @@ export const bs: Dictionary = {
     seasonalNote: 'Cijena po danu zavisi od sezone.',
     weekendNote: 'Subota i nedjelja se naplaćuju po vikend cijeni.',
     singleDayNote: 'Rezervacija za jedan dan, bez noćenja.',
+    timesNote: (checkIn, checkOut) =>
+      `Prijava na dan dolaska od ${checkIn}, odjava na dan odlaska do ${checkOut}.`,
 
     payMethodTitle: 'Način plaćanja',
 

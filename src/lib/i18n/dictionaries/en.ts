@@ -191,6 +191,8 @@ export const en: Dictionary = {
     seasonalNote: 'The daily rate depends on the season.',
     weekendNote: 'Saturdays and Sundays are charged at the weekend rate.',
     singleDayNote: 'A single-day booking, without an overnight stay.',
+    timesNote: (checkIn, checkOut) =>
+      `Check-in from ${checkIn} on the day of arrival, check-out by ${checkOut} on the day of departure.`,
 
     payMethodTitle: 'Payment method',
 

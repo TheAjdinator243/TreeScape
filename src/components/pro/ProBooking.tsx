@@ -94,6 +94,14 @@ export function ProBooking({ context }: { context: BookingContext }) {
               />
             </dl>
 
+            {/* Vremena prijave i odjave dolaze iz postavki — ista ona koja
+                  vlasnik mijenja u administraciji. Ovdje stoje da gost odmah
+                  vidi zašto dan odlaska jednog i dan dolaska drugog gosta
+                  mogu biti isti dan. */}
+            <p className="mt-5 text-xs font-light text-ivory-500">
+              {t.booking.timesNote(settings.checkin_time, settings.checkout_time)}
+            </p>
+
             {singleDay && (
               <p className="mt-5 border-s-2 border-brass-400 ps-4 text-xs font-light leading-relaxed text-ivory-200">
                 {t.booking.singleDayNote}
@@ -298,7 +306,11 @@ export function ProBooking({ context }: { context: BookingContext }) {
                 {formatMoney(quote.totalCents, quote.currencySymbol, locale)}
               </p>
             </div>
-            <button type="button" onClick={scrollToSummary} className="pro-btn-outline shrink-0 px-6 py-3">
+            <button
+              type="button"
+              onClick={scrollToSummary}
+              className="pro-btn-outline shrink-0 px-6 py-3"
+            >
               {t.nav.book}
             </button>
           </div>
