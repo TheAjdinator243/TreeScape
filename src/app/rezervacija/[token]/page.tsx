@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { LiveStatus } from '@/components/booking/LiveStatus';
 import { Footer } from '@/components/site/Footer';
 import { getBookingByToken } from '@/lib/booking-service';
 import { formatLong, formatRange } from '@/lib/dates';
@@ -51,6 +52,10 @@ export default async function ConfirmationPage({
 
   return (
     <>
+      {/* Dok se čeka odluka, stranica se sama osvježi čim domaćin odluči.
+          Nakon odluke nema šta više da se mijenja, pa se ni ne sluša. */}
+      {isPending && <LiveStatus bookingId={booking.id} />}
+
       <main className="flex min-h-dvh flex-col items-center justify-center bg-sand-100 px-5 py-16">
         <div className="card w-full max-w-lg p-8 sm:p-10">
           <Link
