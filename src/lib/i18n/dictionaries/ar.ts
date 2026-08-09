@@ -336,6 +336,11 @@ export const ar: Dictionary = {
 
     bookingsHeading: 'كل الحجوزات',
     bookingsEmpty: 'لا توجد أي حجوزات بعد.',
+    searchLabel: 'البحث في الحجوزات',
+    searchPlaceholder: 'الاسم أو رقم الحجز أو البريد أو الهاتف…',
+    searchClear: 'مسح البحث',
+    searchCount: (found: number, total: number) => `عرض ${found} من ${total} حجزًا.`,
+    searchNothing: 'لا يوجد حجز يطابق بحثك.',
     colStay: 'الموعد',
     colGuest: 'الضيف',
     colMethod: 'الطريقة',

@@ -331,6 +331,11 @@ export const en: Dictionary = {
 
     bookingsHeading: 'All bookings',
     bookingsEmpty: 'There are no bookings yet.',
+    searchLabel: 'Search bookings',
+    searchPlaceholder: 'Name, booking number, email, phone…',
+    searchClear: 'Clear search',
+    searchCount: (found: number, total: number) => `Showing ${found} of ${total} bookings.`,
+    searchNothing: 'No booking matches your search.',
     colStay: 'Dates',
     colGuest: 'Guest',
     colMethod: 'Method',

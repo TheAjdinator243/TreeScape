@@ -334,6 +334,12 @@ export const bs: Dictionary = {
 
     bookingsHeading: 'Sve rezervacije',
     bookingsEmpty: 'Još nema nijedne rezervacije.',
+    searchLabel: 'Pretraži rezervacije',
+    searchPlaceholder: 'Ime, broj rezervacije, email, telefon…',
+    searchClear: 'Poništi pretragu',
+    searchCount: (nadjeno: number, ukupno: number) =>
+      `Prikazano ${nadjeno} od ${ukupno} rezervacija.`,
+    searchNothing: 'Nijedna rezervacija ne odgovara pretrazi.',
     colStay: 'Termin',
     colGuest: 'Gost',
     colMethod: 'Način',

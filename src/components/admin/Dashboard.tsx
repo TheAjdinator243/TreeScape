@@ -1,9 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import { useI18n } from '@/components/i18n/LocaleProvider';
+import { searchBookings } from '@/lib/booking-search';
 import { formatDateTime, formatRange, todayStr } from '@/lib/dates';
 import { count } from '@/lib/i18n';
 import { formatMoney } from '@/lib/pricing';
@@ -29,6 +30,84 @@ function askReason(question: string): string | null {
 
 /** Statusi koje vlasnik još može otkazati — na jednom mjestu, za obje liste. */
 const CANCELLABLE: string[] = ['confirmed', 'pending_cash', 'pending_payment'];
+
+/**
+ * Pretraga rezervacija.
+ *
+ * Jedno polje umjesto biranja kategorije: domaćin obično zna samo JEDAN
+ * podatak — broj koji mu gost čita preko telefona, ili ime, ili broj s
+ * dolaznog poziva — pa nema smisla da prvo bira po čemu traži.
+ *
+ * `type="search"` daje preglednički "x" za brisanje na mobitelu, a
+ * `enterKeyHint="search"` mijenja natpis na tipki Enter na tastaturi telefona.
+ */
+function BookingSearch({
+  query,
+  onChange,
+  found,
+  total,
+  t,
+}: {
+  query: string;
+  onChange: (v: string) => void;
+  found: number;
+  total: number;
+  t: ReturnType<typeof useI18n>['t'];
+}) {
+  return (
+    <div className="mb-5">
+      <label htmlFor="pretraga" className="sr-only">
+        {t.admin.searchLabel}
+      </label>
+
+      <div className="relative">
+        <span
+          className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-ink-400"
+          aria-hidden="true"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
+            <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </span>
+
+        <input
+          id="pretraga"
+          type="search"
+          value={query}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={t.admin.searchPlaceholder}
+          enterKeyHint="search"
+          autoComplete="off"
+          className="field-input ps-10"
+        />
+
+        {query && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="absolute inset-y-0 end-0 flex items-center pe-3.5 text-ink-400 hover:text-ink-700"
+            aria-label={t.admin.searchClear}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* `aria-live` da čitač ekrana pročita broj rezultata bez pomjeranja fokusa. */}
+      <p className="mt-2 text-xs text-ink-400" aria-live="polite">
+        {query ? t.admin.searchCount(found, total) : null}
+      </p>
+    </div>
+  );
+}
 
 /**
  * Kontakt gosta — kao linkovi, ne kao goli tekst.
@@ -99,12 +178,23 @@ export function Dashboard({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   // Novi zahtjev se pojavi sam, bez osvježavanja stranice.
   useLiveRequests();
 
   const requests = bookings.filter((b) => b.status === 'pending_cash');
   const blocked = bookings.filter((b) => b.status === 'blocked' && b.end_date >= todayStr());
+
+  /**
+   * Pretraga radi u pregledniku, nad već učitanim rezervacijama.
+   *
+   * Za kuću s jednim terminom dnevno to je najviše nekoliko stotina redova —
+   * filtriranje je trenutno, a domaćin dobija rezultat dok kuca, bez odlaska
+   * na server. Ako spisak ikad naraste toliko da se to oseti, pretraga se
+   * seli u upit prema bazi; `matchesBookingSearch` je zato izdvojen.
+   */
+  const vidljive = useMemo(() => searchBookings(bookings, search), [bookings, search]);
 
   /** Zajednički poziv admin API-ja: uradi, pa osvježi podatke sa servera. */
   async function call(url: string, init: RequestInit): Promise<boolean> {
@@ -350,6 +440,16 @@ export function Dashboard({
                 <Empty>{t.admin.bookingsEmpty}</Empty>
               ) : (
                 <>
+                  <BookingSearch
+                    query={search}
+                    onChange={setSearch}
+                    found={vidljive.length}
+                    total={bookings.length}
+                    t={t}
+                  />
+
+                  {vidljive.length === 0 && <Empty>{t.admin.searchNothing}</Empty>}
+
                   {/*
                     Na telefonu se tabela od 720px mora vući postrance, pa
                     kontakt gosta ostane iza ivice ekrana — a upravo on tu
@@ -357,8 +457,8 @@ export function Dashboard({
                     kartice "Zahtjevi" i broj se više nigdje ne vidi.
                     Zato uski ekran dobija kartice, a tabela ide od tableta naviše.
                   */}
-                  <ul className="space-y-3 sm:hidden">
-                    {bookings.map((booking) => (
+                  <ul className={vidljive.length === 0 ? 'hidden' : 'space-y-3 sm:hidden'}>
+                    {vidljive.map((booking) => (
                       <li key={booking.id} className="card p-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -405,7 +505,11 @@ export function Dashboard({
                     ))}
                   </ul>
 
-                  <div className="card hidden overflow-x-auto sm:block">
+                  <div
+                    className={
+                      vidljive.length === 0 ? 'hidden' : 'card hidden overflow-x-auto sm:block'
+                    }
+                  >
                     <table className="w-full min-w-[720px] text-start text-sm">
                       <thead className="border-b border-sand-200 text-xs uppercase tracking-wider text-ink-400">
                         <tr>
@@ -418,7 +522,7 @@ export function Dashboard({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-sand-200">
-                        {bookings.map((booking) => (
+                        {vidljive.map((booking) => (
                           <tr key={booking.id}>
                             <td className="px-5 py-3.5 text-ink-900">
                               <span className="font-medium">

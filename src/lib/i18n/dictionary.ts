@@ -311,6 +311,13 @@ export interface Dictionary {
 
     bookingsHeading: string;
     bookingsEmpty: string;
+
+    /** Pretraga u spisku svih rezervacija. */
+    searchLabel: string;
+    searchPlaceholder: string;
+    searchClear: string;
+    searchCount: (found: number, total: number) => string;
+    searchNothing: string;
     colStay: string;
     colGuest: string;
     colMethod: string;
