@@ -34,7 +34,12 @@ export const blockDatesSchema = z.object({
 });
 
 export const bookingDecisionSchema = z.object({
-  booking_id: z.string().uuid(),
+  /**
+   * `bookings.id` je cijeli broj koji raste, a ne uuid — javni dio adrese je
+   * odvojena kolona `booking_public_link`. `coerce` je tu jer broj kroz JSON
+   * i kroz parametre adrese zna stići i kao tekst.
+   */
+  booking_id: z.coerce.number().int().positive(),
   decision: z.enum(['approve', 'reject']),
   /**
    * Razlog odbijanja — gost ga dobija u mailu. Neobavezan: domaćin ga smije

@@ -91,8 +91,14 @@ export async function DELETE(request: Request) {
   if (notReady) return notReady;
 
   const url = new URL(request.url);
-  const id = url.searchParams.get('id');
-  if (!id) return invalidInput(locale);
+
+  /**
+   * `id` je cijeli broj. Kroz adresu stiže kao tekst, pa se izričito provjeri:
+   * bez ovoga bi `?id=abc` otišao do baze i vratio se kao gola greška 500
+   * umjesto uredne poruke da je zahtjev neispravan.
+   */
+  const id = Number(url.searchParams.get('id'));
+  if (!Number.isInteger(id) || id <= 0) return invalidInput(locale);
 
   const reason = (url.searchParams.get('reason') ?? '').trim().slice(0, 300) || undefined;
 

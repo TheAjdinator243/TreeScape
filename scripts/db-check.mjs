@@ -73,6 +73,32 @@ if (!keep && existsSync(DATA_DIR)) rmSync(DATA_DIR, { recursive: true, force: tr
 
 const db = keep ? new PGlite(DATA_DIR) : new PGlite();
 
+// ── 0. schema.sql je u koraku s migracijom ──────────────────────────────────
+section('schema.sql prati migraciju');
+
+{
+  const { spawnSync } = await import('node:child_process');
+
+  // `gen-schema.mjs` vraća 0 ako je schema.sql već bila u koraku, a 1 ako ju
+  // je morao osvježiti — tako se zastarjela datoteka ovdje vidi kao problem.
+  const r = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'gen-schema.mjs')], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  });
+
+  if (r.error) {
+    bad('nije moguće provjeriti schema.sql', String(r.error.message).split('\n')[0]);
+  } else if (r.status === 0) {
+    ok('schema.sql odgovara migraciji');
+  } else {
+    bad(
+      'schema.sql je bio zastario — upravo je osvježen',
+      'Neko je uredio migrations/0001_init.sql, a schema.sql ostao star.\n' +
+        '      Sada je usklađen; pogledaj `git diff supabase/schema.sql` i commituj.'
+    );
+  }
+}
+
 // ── 1. Shema ────────────────────────────────────────────────────────────────
 section('0001_init.sql');
 
@@ -255,6 +281,58 @@ const { rows: mrtve } = await db.query(
 );
 if (mrtve[0].n === 0) ok('otkazane i istekle ne zauzimaju kalendar');
 else bad(`${mrtve[0].n} otkazanih/isteklih i dalje zauzima kalendar`);
+
+// ── 8. schema.sql daje istu bazu kao migracija ──────────────────────────────
+section('schema.sql daje isti rezultat kao migracija');
+
+{
+  const svjeza = new PGlite();
+
+  try {
+    await svjeza.exec(read('schema.sql'));
+    ok('schema.sql se izvršava na praznoj bazi');
+
+    /** Oblik baze: kolone, tipovi i ograničenja — sve po čemu se dvije mogu razići. */
+    const oblik = async (conn) => {
+      const kolone = await conn.query(
+        `select table_name || '.' || column_name || ':' || data_type as x
+           from information_schema.columns
+          where table_schema='public' order by 1`
+      );
+      const ogranicenja = await conn.query(
+        `select conname as x from pg_constraint
+          where connamespace = 'public'::regnamespace order by 1`
+      );
+      return [
+        ...kolone.rows.map((r) => 'kolona ' + r.x),
+        ...ogranicenja.rows.map((r) => 'ogranicenje ' + r.x),
+      ];
+    };
+
+    const a = await oblik(svjeza);
+    const b = await oblik(db);
+    const samoSchema = a.filter((x) => !b.includes(x));
+    const samoMigracija = b.filter((x) => !a.includes(x));
+
+    if (samoSchema.length === 0 && samoMigracija.length === 0) {
+      ok('obje daju identičnu bazu', `${a.length} kolona i ograničenja provjereno`);
+    } else {
+      bad(
+        'schema.sql i migracija se razilaze',
+        [
+          samoSchema.length ? 'samo u schema.sql: ' + samoSchema.join(', ') : '',
+          samoMigracija.length ? 'samo u migraciji: ' + samoMigracija.join(', ') : '',
+        ]
+          .filter(Boolean)
+          .join('\n      ')
+      );
+    }
+  } catch (e) {
+    bad('schema.sql je pukla', e.message);
+  } finally {
+    await svjeza.close();
+  }
+}
 
 // ── Zaključak ───────────────────────────────────────────────────────────────
 console.log('\n' + '─'.repeat(48));
