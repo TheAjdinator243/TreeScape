@@ -1,7 +1,7 @@
 /**
  * Broj rezervacije — ono što gost pročita preko telefona.
  *
- * Pun `public_token` je dug i nasumičan; njime se otvara stranica s potvrdom i
+ * Pun `booking_public_link` je dug i nasumičan; njime se otvara stranica s potvrdom i
  * on nikad ne ide naglas. Ovo je njegov početak, dovoljno kratak da se
  * izdiktira, a dovoljno dug da se dvije rezervacije ne poklope.
  *
@@ -10,8 +10,8 @@
  * značila da gost i domaćin gledaju dva različita broja i misle da je greška
  * kod onog drugog.
  */
-export function bookingReference(publicToken: string): string {
-  return publicToken.slice(0, REFERENCE_LENGTH).toUpperCase();
+export function bookingReference(bookingPublicLink: string): string {
+  return bookingPublicLink.slice(0, REFERENCE_LENGTH).toUpperCase();
 }
 
 const REFERENCE_LENGTH = 8;

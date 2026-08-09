@@ -165,7 +165,7 @@ if (!url || !anonKey || !serviceKey) {
     const tokenA = `doctor-a-${Date.now()}`;
     const tokenB = `doctor-b-${Date.now()}`;
     const row = (token) => ({
-      public_token: token,
+      booking_public_link: token,
       start_date: '2099-01-10',
       end_date: '2099-01-15',
       status: 'blocked',
@@ -206,13 +206,13 @@ if (!url || !anonKey || !serviceKey) {
         else bad('okidač ne puni availability_slots', 'ponovo pokreni migraciju');
       }
     } finally {
-      await db.from('bookings').delete().in('public_token', [tokenA, tokenB]);
+      await db.from('bookings').delete().in('booking_public_link', [tokenA, tokenB]);
       const { data: leftovers } = await db
         .from('bookings')
-        .select('public_token')
-        .in('public_token', [tokenA, tokenB]);
+        .select('booking_public_link')
+        .in('booking_public_link', [tokenA, tokenB]);
       if (leftovers?.length) {
-        warn('probni redovi nisu obrisani', `obriši ručno: ${leftovers.map((l) => l.public_token).join(', ')}`);
+        warn('probni redovi nisu obrisani', `obriši ručno: ${leftovers.map((l) => l.booking_public_link).join(', ')}`);
       } else {
         ok('probni podaci obrisani');
       }

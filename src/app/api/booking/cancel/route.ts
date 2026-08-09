@@ -19,7 +19,7 @@ const CANCELLABLE = ['pending_cash', 'pending_payment', 'pending_transfer', 'con
 /**
  * Gost sam otkazuje svoju rezervaciju, sa stranice s potvrdom.
  *
- * Ovlaštenje je `public_token` — isti onaj kojim gost i otvara tu stranicu.
+ * Ovlaštenje je `booking_public_link` — isti onaj kojim gost i otvara tu stranicu.
  * Ko ga ima, ionako vidi cijelu rezervaciju; ovdje smije i odustati od nje.
  * Ništa se ne može otkazati nasumice: token je dug i nasumičan, a `id` iz baze
  * se nigdje ne prihvata.

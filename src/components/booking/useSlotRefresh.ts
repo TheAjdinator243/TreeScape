@@ -35,7 +35,7 @@ import { supabaseBrowser } from '@/lib/supabase/browser';
  */
 export function concernsBooking(
   payload: { new?: unknown; old?: unknown },
-  bookingId: string
+  bookingId: number
 ): boolean {
   for (const record of [payload.new, payload.old]) {
     if (record && typeof record === 'object' && 'booking_id' in record) {
@@ -45,7 +45,7 @@ export function concernsBooking(
   return false;
 }
 
-export function useSlotRefresh(bookingId?: string): void {
+export function useSlotRefresh(bookingId?: number): void {
   const router = useRouter();
 
   useEffect(() => {

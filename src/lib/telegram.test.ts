@@ -11,8 +11,8 @@ import type { Booking } from './types';
  */
 
 const REZERVACIJA: Booking = {
-  id: 'b1',
-  public_token: 'abcdef1234567890',
+  id: 1,
+  booking_public_link: 'abcdef1234567890',
   guest_name: 'Amina Hodžić',
   guest_email: 'amina@primjer.ba',
   guest_phone: '+387 61 123 456',

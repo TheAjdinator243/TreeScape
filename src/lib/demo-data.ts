@@ -67,25 +67,25 @@ export function demoSlots(): AvailabilitySlot[] {
   const today = todayStr();
   return [
     {
-      booking_id: 'demo-1',
+      booking_id: 1,
       start_date: addDaysStr(today, 4),
       end_date: addDaysStr(today, 8),
       kind: 'booked',
     },
     {
-      booking_id: 'demo-2',
+      booking_id: 2,
       start_date: addDaysStr(today, 15),
       end_date: addDaysStr(today, 18),
       kind: 'booked',
     },
     {
-      booking_id: 'demo-3',
+      booking_id: 3,
       start_date: addDaysStr(today, 26),
       end_date: addDaysStr(today, 29),
       kind: 'pending',
     },
     {
-      booking_id: 'demo-4',
+      booking_id: 4,
       start_date: addDaysStr(today, 40),
       end_date: addDaysStr(today, 47),
       kind: 'booked',

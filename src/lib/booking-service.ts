@@ -1,7 +1,5 @@
 import 'server-only';
 
-import { randomBytes } from 'node:crypto';
-
 import { addDaysStr, daysBetween, todayStr } from './dates';
 import { getRatePeriods, getSettings, releaseExpiredHolds } from './data';
 import { env } from './env';
@@ -15,11 +13,6 @@ import type { BookingRequest } from './validation';
 export type CreateResult =
   | { ok: true; booking: Booking; quote: PriceBreakdown; settings: Settings }
   | { ok: false; status: number; code: string; message: string };
-
-/** Nepogodiv token za URL potvrde. */
-function newPublicToken(): string {
-  return randomBytes(16).toString('hex');
-}
 
 /**
  * Pravi rezervaciju i zaključava termin.
@@ -81,7 +74,6 @@ export async function createBooking(
   const { data, error } = await supabaseAdmin()
     .from('bookings')
     .insert({
-      public_token: newPublicToken(),
       guest_name: input.guest_name,
       guest_email: input.guest_email,
       guest_phone: input.guest_phone,
@@ -117,7 +109,7 @@ export async function getBookingByToken(token: string): Promise<Booking | null> 
   const { data, error } = await supabaseAdmin()
     .from('bookings')
     .select('*')
-    .eq('public_token', token)
+    .eq('booking_public_link', token)
     .maybeSingle();
 
   if (error) {
@@ -146,7 +138,6 @@ export async function blockDates(
   }
 
   const { error } = await supabaseAdmin().from('bookings').insert({
-    public_token: newPublicToken(),
     start_date: startDate,
     end_date: endDate,
     status: 'blocked',

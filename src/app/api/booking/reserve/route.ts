@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   after(() => notifyByMethod(result));
 
   return NextResponse.json({
-    token: result.booking.public_token,
+    token: result.booking.booking_public_link,
     status: result.booking.status,
   });
 }

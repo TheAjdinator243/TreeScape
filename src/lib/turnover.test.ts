@@ -19,7 +19,7 @@ const d = (s: string) => s as DateStr;
 
 const GOST_A: AvailabilitySlot[] = [
   // Dolazi 5., odlazi 8. — spava 5., 6. i 7.
-  { booking_id: 'a', start_date: d('2026-10-05'), end_date: d('2026-10-08'), kind: 'booked' },
+  { booking_id: 1, start_date: d('2026-10-05'), end_date: d('2026-10-08'), kind: 'booked' },
 ];
 
 describe('dan odlaska pripada sljedećem gostu', () => {

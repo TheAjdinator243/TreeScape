@@ -324,7 +324,7 @@ function detailRows(booking: Booking, locale: Locale): string {
       ${row(t.email.rowStay, stay)}
       ${row(t.email.rowGuests, String(booking.guests ?? '—'))}
       ${row(t.email.rowAmount, total)}
-      ${row(t.email.rowReference, bookingReference(booking.public_token), true)}
+      ${row(t.email.rowReference, bookingReference(booking.booking_public_link), true)}
     </table>`;
 }
 
@@ -404,12 +404,12 @@ async function stayTimes(locale: Locale): Promise<string> {
  * zna gdje provjeriti, umjesto da traži stari mail ili zove telefonom. Odatle
  * i sam otkazuje.
  *
- * Adresa nosi `public_token`, a NE `id` iz baze: token je dug i nasumičan, pa
+ * Adresa nosi `booking_public_link`, a NE `id` iz baze: token je dug i nasumičan, pa
  * se ne može pogoditi, a i ne odaje koliko rezervacija kuća uopće ima.
  */
 function bookingButton(locale: Locale, booking: Booking): string {
   const t = getStrings(locale);
-  const url = `${env.siteUrl}/rezervacija/${booking.public_token}`;
+  const url = `${env.siteUrl}/rezervacija/${booking.booking_public_link}`;
 
   return `<p style="margin:24px 0 0">
             <a href="${url}" style="display:inline-block;background:#2a5a47;color:#faf7f1;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
@@ -445,8 +445,8 @@ export async function testGuestEmail(): Promise<SendResult> {
     new Date(today.getTime() + offsetDays * 86_400_000).toISOString().slice(0, 10);
 
   const primjer: Booking = {
-    id: 'proba',
-    public_token: 'probaproba',
+    id: 1,
+    booking_public_link: 'probaproba',
     guest_name: t.booking.namePlaceholder,
     guest_email: env.email.ownerEmail,
     guest_phone: null,

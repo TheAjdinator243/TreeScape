@@ -27,7 +27,7 @@ export type SlotKind = 'booked' | 'pending' | 'blocked';
 
 /** Jedino što preglednik smije vidjeti o tuđim rezervacijama: datumi. */
 export interface AvailabilitySlot {
-  booking_id: string;
+  booking_id: number;
   start_date: DateStr;
   end_date: DateStr;
   kind: SlotKind;
@@ -65,8 +65,8 @@ export interface Settings {
 }
 
 export interface Booking {
-  id: string;
-  public_token: string;
+  id: number;
+  booking_public_link: string;
   guest_name: string | null;
   guest_email: string | null;
   guest_phone: string | null;

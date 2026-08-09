@@ -129,7 +129,7 @@ export function Dashboard({
     }
   }
 
-  async function decide(bookingId: string, decision: 'approve' | 'reject') {
+  async function decide(bookingId: number, decision: 'approve' | 'reject') {
     const message = decision === 'reject' ? t.admin.rejectConfirm : t.admin.approveConfirm;
     if (!window.confirm(message)) return;
 
@@ -149,13 +149,13 @@ export function Dashboard({
     });
   }
 
-  async function cancel(bookingId: string, confirmText: string) {
+  async function cancel(bookingId: number, confirmText: string) {
     if (!window.confirm(confirmText)) return;
 
     const reason = askReason(t.admin.cancelReasonPrompt);
     if (reason === null) return;
 
-    const query = new URLSearchParams({ id: bookingId });
+    const query = new URLSearchParams({ id: String(bookingId) });
     if (reason) query.set('reason', reason);
 
     await call(`/api/admin/bookings?${query}`, { method: 'DELETE' });
@@ -303,7 +303,7 @@ export function Dashboard({
                               <span>
                                 {t.admin.receivedAt(formatDateTime(booking.created_at, locale))}
                               </span>
-                              <Reference token={booking.public_token} />
+                              <Reference token={booking.booking_public_link} />
                             </p>
                             {booking.note && (
                               <p className="mt-3 rounded-lg bg-sand-100 px-3 py-2 text-sm text-ink-700">
@@ -365,7 +365,7 @@ export function Dashboard({
                             <p className="font-medium text-ink-900">
                               {formatRange(booking.start_date, booking.end_date, locale)}
                             </p>
-                            <Reference token={booking.public_token} />
+                            <Reference token={booking.booking_public_link} />
                           </div>
                           <StatusBadge status={booking.status} />
                         </div>
@@ -425,7 +425,7 @@ export function Dashboard({
                                 {formatRange(booking.start_date, booking.end_date, locale)}
                               </span>
                               <br />
-                              <Reference token={booking.public_token} />
+                              <Reference token={booking.booking_public_link} />
                             </td>
                             <td className="px-5 py-3.5 text-ink-700">
                               {booking.guest_name ?? (
@@ -489,7 +489,7 @@ function BlockTab({
 }: {
   blocked: Booking[];
   onBlock: (body: { start_date: string; end_date: string; reason?: string }) => Promise<boolean>;
-  onUnblock: (id: string) => Promise<void>;
+  onUnblock: (id: number) => Promise<void>;
 }) {
   const { locale, t } = useI18n();
   const [start, setStart] = useState('');

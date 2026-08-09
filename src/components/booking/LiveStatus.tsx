@@ -35,7 +35,7 @@ export function LiveStatus({
   token,
   status,
 }: {
-  bookingId: string;
+  bookingId: number;
   token: string;
   status: string;
 }) {

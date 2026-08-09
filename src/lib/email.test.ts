@@ -323,7 +323,7 @@ describe('Googleova odbijenica', () => {
 
 describe('link na mape u mailu gostu', () => {
   const REZ = {
-    id: 'b', public_token: 'abcdef1234567890', guest_name: 'Ana', guest_email: 'ana@primjer.ba',
+    id: 'b', booking_public_link: 'abcdef1234567890', guest_name: 'Ana', guest_email: 'ana@primjer.ba',
     guest_phone: null, guests: 2, note: null, start_date: '2026-10-10', end_date: '2026-10-12',
     status: 'confirmed', payment_method: 'cash', total_cents: 60000, currency: 'BAM',
     price_breakdown: null, payment_reference: null, payment_id: null, hold_expires_at: null,
@@ -377,7 +377,7 @@ describe('link na mape u mailu gostu', () => {
 
 describe('otkazivanje i razlog', () => {
   const REZ = {
-    id: 'b', public_token: 'abcdef1234567890', guest_name: 'Ana', guest_email: 'ana@primjer.ba',
+    id: 'b', booking_public_link: 'abcdef1234567890', guest_name: 'Ana', guest_email: 'ana@primjer.ba',
     guest_phone: null, guests: 2, note: null, start_date: '2026-10-10', end_date: '2026-10-12',
     status: 'confirmed', payment_method: 'cash', total_cents: 60000, currency: 'BAM',
     price_breakdown: null, payment_reference: null, payment_id: null, hold_expires_at: null,

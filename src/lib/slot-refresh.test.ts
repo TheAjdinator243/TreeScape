@@ -10,8 +10,8 @@ import { concernsBooking } from '@/components/booking/useSlotRefresh';
  * različita načina, pa je lako pokriti samo jedan i vjerovati da radi.
  */
 
-const NAS = 'aaaaaaaa-1111-2222-3333-444444444444';
-const TUDJI = 'bbbbbbbb-9999-8888-7777-666666666666';
+const NAS = 101;
+const TUDJI = 202;
 
 describe('concernsBooking', () => {
   it('odobrenje: red stiže u `new`', () => {

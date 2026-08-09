@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
  * Postoji da bi stranica s potvrdom mogla jeftino provjeravati je li domaćin
  * odlučio, bez povlačenja cijele stranice svakih petnaest sekundi.
  *
- * Zašto je ovo sigurno bez prijave: `public_token` JE ključ. Ko ga ima, ionako
+ * Zašto je ovo sigurno bez prijave: `booking_public_link` JE ključ. Ko ga ima, ionako
  * može otvoriti /rezervacija/<token> i vidjeti cijelu rezervaciju. Ovdje se ne
  * otkriva ništa što ta stranica već ne pokazuje — a vraća se samo status, bez
  * imena, adrese i telefona.

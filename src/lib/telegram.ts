@@ -61,7 +61,7 @@ function message(booking: Booking, kind: OwnerAlert, reason?: string): string {
         DEFAULT_LOCALE
       )
     ),
-    row(t.email.rowReference, bookingReference(booking.public_token)),
+    row(t.email.rowReference, bookingReference(booking.booking_public_link)),
     '',
     row(t.email.rowGuest, booking.guest_name),
     row(t.email.rowEmail, booking.guest_email),

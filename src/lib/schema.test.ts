@@ -30,9 +30,13 @@ const prepare = (sql: string) =>
 
 let db: PGlite;
 
-/** Rezervacija gosta — potvrđena ako se ne kaže drugačije. */
+/**
+ * Rezervacija gosta — potvrđena ako se ne kaže drugačije.
+ *
+ * `booking_public_link` se namjerno ne prosljeđuje: generiše ga baza, pa se
+ * usput provjerava i da podrazumijevana vrijednost radi.
+ */
 function guest(
-  token: string,
   start: string,
   end: string,
   status:
@@ -41,12 +45,12 @@ function guest(
     | 'pending_cash'
     | 'pending_transfer' = 'confirmed'
 ) {
-  return db.query<{ id: string }>(
+  return db.query<{ id: number; booking_public_link: string }>(
     `insert into bookings
-       (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, total_cents)
-     values ($1, 'Test Gost', 'test@primjer.ba', $2, $3, $4, 'card', 50000)
-     returning id`,
-    [token, start, end, status]
+       (guest_name, guest_email, start_date, end_date, status, payment_method, total_cents)
+     values ('Test Gost', 'test@primjer.ba', $1, $2, $3, 'card', 50000)
+     returning id, booking_public_link`,
+    [start, end, status]
   );
 }
 
@@ -95,11 +99,25 @@ describe('nadogradnja sa starije sheme', () => {
     await old.exec(prepare(readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')));
 
     // Rezervacija iz stare baze je preživjela i dobila podrazumijevani jezik.
-    const booking = await old.query<{ locale: string; payment_reference: string | null }>(
-      `select locale, payment_reference from bookings where public_token = 'stari-gost'`
+    // Red se traži po gostu: migracija je starom tokenu dodijelila nov,
+    // nasumičan `booking_public_link`.
+    const booking = await old.query<{
+      locale: string;
+      payment_reference: string | null;
+      id: number;
+      booking_public_link: string;
+    }>(
+      `select locale, payment_reference, id, booking_public_link
+         from bookings where guest_email = 'g@primjer.ba'`
     );
     expect(booking.rows).toHaveLength(1);
     expect(booking.rows[0]?.locale).toBe('bs');
+
+    // `id` je iz uuid prešao u cijeli broj, a javni dio adrese je sada uuid.
+    expect(typeof booking.rows[0]?.id).toBe('number');
+    expect(booking.rows[0]?.booking_public_link).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    );
 
     // Nove kolone su stigle, s ispravnim podrazumijevanim vrijednostima.
     const settings = await old.query<{ weekend_price_cents: number; bank_iban: string }>(
@@ -119,8 +137,8 @@ describe('nadogradnja sa starije sheme', () => {
     await expect(
       old.query(
         `insert into bookings
-           (public_token, guest_name, guest_email, start_date, end_date, status, payment_method)
-         values ('sudar','Drugi','d@primjer.ba','2030-01-02','2030-01-04','confirmed','cash')`
+           (guest_name, guest_email, start_date, end_date, status, payment_method)
+         values ('Drugi','d@primjer.ba','2030-01-02','2030-01-04','confirmed','cash')`
       )
     ).rejects.toThrow();
 
@@ -176,14 +194,14 @@ describe('migracija', () => {
     // obrisati ono što u bazi već stoji.
     await db.query(
       `insert into bookings
-         (public_token, guest_name, guest_email, start_date, end_date, status, payment_method)
-       values ('preziveo','Gost','g@primjer.ba','2030-05-01','2030-05-03','confirmed','cash')`
+         (guest_name, guest_email, start_date, end_date, status, payment_method)
+       values ('Gost','g@primjer.ba','2030-05-01','2030-05-03','confirmed','cash')`
     );
 
     await db.exec(prepare(readFileSync(path.join(MIGRATIONS_DIR, MIGRATION), 'utf8')));
 
     const { rows } = await db.query<{ count: string }>(
-      `select count(*) from bookings where public_token = 'preziveo'`
+      `select count(*) from bookings where start_date = date '2030-05-01'`
     );
     expect(Number(rows[0]?.count)).toBe(1);
 
@@ -191,7 +209,7 @@ describe('migracija', () => {
     const settings = await db.query<{ count: string }>('select count(*) from settings');
     expect(Number(settings.rows[0]?.count)).toBe(1);
 
-    await db.query(`delete from bookings where public_token = 'preziveo'`);
+    await db.query(`delete from bookings where start_date = date '2030-05-01'`);
   });
 
   it('kreira sve tabele', async () => {
@@ -226,7 +244,7 @@ describe('migracija', () => {
 
   it('rezervacija pamti jezik gosta', async () => {
     const { rows } = await db.query<{ locale: string }>(
-      `select locale from bookings where public_token = 'jezik-podrazumijevani'`
+      `select locale from bookings where start_date = date '2029-06-01'`
     );
     // Red se upisuje u testu ispod; ovdje se provjerava samo da kolona postoji
     // i da ima podrazumijevanu vrijednost.
@@ -234,12 +252,12 @@ describe('migracija', () => {
 
     await db.query(
       `insert into bookings
-         (public_token, guest_name, guest_email, start_date, end_date, status, payment_method)
-       values ('jezik-podrazumijevani','Gost','g@primjer.ba','2029-06-01','2029-06-03','confirmed','cash')`
+         (guest_name, guest_email, start_date, end_date, status, payment_method)
+       values ('Gost','g@primjer.ba','2029-06-01','2029-06-03','confirmed','cash')`
     );
 
     const inserted = await db.query<{ locale: string }>(
-      `select locale from bookings where public_token = 'jezik-podrazumijevani'`
+      `select locale from bookings where start_date = date '2029-06-01'`
     );
     expect(inserted.rows[0]?.locale).toBe('bs');
   });
@@ -248,8 +266,8 @@ describe('migracija', () => {
     await expect(
       db.query(
         `insert into bookings
-           (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, locale)
-         values ('jezik-nepoznat','Gost','g@primjer.ba','2029-07-01','2029-07-03','confirmed','cash','de')`
+           (guest_name, guest_email, start_date, end_date, status, payment_method, locale)
+         values ('Gost','g@primjer.ba','2029-07-01','2029-07-03','confirmed','cash','de')`
       )
     ).rejects.toThrow();
   });
@@ -259,9 +277,9 @@ describe('migracija', () => {
       await expect(
         db.query(
           `insert into bookings
-             (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, locale)
-           values ($1,'Gost','g@primjer.ba',$2,$3,'confirmed','cash',$4)`,
-          [`jezik-${locale}`, `2029-08-0${i * 2 + 1}`, `2029-08-0${i * 2 + 2}`, locale]
+             (guest_name, guest_email, start_date, end_date, status, payment_method, locale)
+           values ('Gost','g@primjer.ba',$1,$2,'confirmed','cash',$3)`,
+          [`2029-08-0${i * 2 + 1}`, `2029-08-0${i * 2 + 2}`, locale]
         )
       ).resolves.toBeDefined();
     }
@@ -295,7 +313,7 @@ describe('migracija', () => {
 
 describe('dvostruki booking je nemoguć', () => {
   beforeAll(async () => {
-    await guest('zauzeto', '2027-08-10', '2027-08-15');
+    await guest('2027-08-10', '2027-08-15');
   });
 
   it.each([
@@ -304,32 +322,32 @@ describe('dvostruki booking je nemoguć', () => {
     ['preklapa kraj', '2027-08-14', '2027-08-20'],
     ['obuhvata postojeći', '2027-08-01', '2027-08-30'],
     ['pada unutar postojećeg', '2027-08-11', '2027-08-13'],
-  ])('baza odbija: %s', async (name, start, end) => {
-    expect(await isRejected(guest(`sudar-${name}`, start, end))).toBe(true);
+  ])('baza odbija: %s', async (_name, start, end) => {
+    expect(await isRejected(guest(start, end))).toBe(true);
   });
 
   it('zahtjev za gotovinu također blokira termin', async () => {
-    expect(await isRejected(guest('gotovina', '2027-08-12', '2027-08-14', 'pending_cash'))).toBe(
+    expect(await isRejected(guest('2027-08-12', '2027-08-14', 'pending_cash'))).toBe(
       true
     );
   });
 
   it('nezavršena uplata također blokira termin', async () => {
-    expect(await isRejected(guest('uplata', '2027-08-12', '2027-08-14', 'pending_payment'))).toBe(
+    expect(await isRejected(guest('2027-08-12', '2027-08-14', 'pending_payment'))).toBe(
       true
     );
   });
 
   it('bankovni transfer koji se čeka također blokira termin', async () => {
     expect(
-      await isRejected(guest('transfer', '2027-08-12', '2027-08-14', 'pending_transfer'))
+      await isRejected(guest('2027-08-12', '2027-08-14', 'pending_transfer'))
     ).toBe(true);
   });
 });
 
 describe('bankovni transfer', () => {
   it('rezervacija koja čeka uplatu odmah zauzima kalendar', async () => {
-    const { rows } = await guest('bt-1', '2028-03-01', '2028-03-05', 'pending_transfer');
+    const { rows } = await guest('2028-03-01', '2028-03-05', 'pending_transfer');
     const slot = await db.query<{ kind: string }>(
       'select kind from availability_slots where booking_id = $1',
       [rows[0]!.id]
@@ -340,23 +358,23 @@ describe('bankovni transfer', () => {
   it('neplaćen transfer istekne i oslobodi termin', async () => {
     await db.query(
       `insert into bookings
-         (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, hold_expires_at)
-       values ('bt-istekao','Spor','s@e.ba','2028-04-01','2028-04-05','pending_transfer','bank_transfer', now() - interval '1 day')`
+         (guest_name, guest_email, start_date, end_date, status, payment_method, hold_expires_at)
+       values ('Spor','s@e.ba','2028-04-01','2028-04-05','pending_transfer','bank_transfer', now() - interval '1 day')`
     );
 
     await db.query('select release_expired_holds()');
 
     const { rows } = await db.query<{ status: string }>(
-      `select status from bookings where public_token = 'bt-istekao'`
+      `select status from bookings where start_date = date '2028-04-01'`
     );
     expect(rows[0]?.status).toBe('expired');
 
     // …i termin je opet slobodan za nekog drugog
-    await expect(guest('bt-novi', '2028-04-01', '2028-04-05')).resolves.toBeDefined();
+    await expect(guest('2028-04-01', '2028-04-05')).resolves.toBeDefined();
   });
 
   it('potvrda uplate mijenja termin u "booked"', async () => {
-    const { rows } = await guest('bt-2', '2028-05-01', '2028-05-05', 'pending_transfer');
+    const { rows } = await guest('2028-05-01', '2028-05-05', 'pending_transfer');
     await db.query(`update bookings set status='confirmed' where id=$1`, [rows[0]!.id]);
 
     const slot = await db.query<{ kind: string }>(
@@ -369,25 +387,25 @@ describe('bankovni transfer', () => {
 
 describe('dan odlaska pripada sljedećem gostu', () => {
   it('dolazak na dan tuđeg odlaska prolazi', async () => {
-    await expect(guest('nakon', '2027-08-15', '2027-08-18')).resolves.toBeDefined();
+    await expect(guest('2027-08-15', '2027-08-18')).resolves.toBeDefined();
   });
 
   it('odlazak na dan tuđeg dolaska prolazi', async () => {
-    await expect(guest('prije', '2027-08-06', '2027-08-10')).resolves.toBeDefined();
+    await expect(guest('2027-08-06', '2027-08-10')).resolves.toBeDefined();
   });
 });
 
 describe('otkazivanje oslobađa termin', () => {
   it('otkazan termin se može ponovo rezervisati', async () => {
-    const { rows } = await guest('prvi', '2027-10-01', '2027-10-05');
+    const { rows } = await guest('2027-10-01', '2027-10-05');
     await db.query(`update bookings set status='cancelled' where id=$1`, [rows[0]!.id]);
-    await expect(guest('drugi', '2027-10-01', '2027-10-05')).resolves.toBeDefined();
+    await expect(guest('2027-10-01', '2027-10-05')).resolves.toBeDefined();
   });
 });
 
 describe('availability_slots prati bookings', () => {
   it('zahtjev za gotovinu odmah zauzima termin', async () => {
-    const { rows } = await guest('tok-slot', '2027-11-01', '2027-11-04', 'pending_cash');
+    const { rows } = await guest('2027-11-01', '2027-11-04', 'pending_cash');
     const slot = await db.query<{ kind: string }>(
       'select kind from availability_slots where booking_id=$1',
       [rows[0]!.id]
@@ -396,7 +414,7 @@ describe('availability_slots prati bookings', () => {
   });
 
   it('odobrenje mijenja vrstu u booked, a odbijanje briše red', async () => {
-    const { rows } = await guest('tok-slot2', '2027-11-10', '2027-11-14', 'pending_cash');
+    const { rows } = await guest('2027-11-10', '2027-11-14', 'pending_cash');
     const id = rows[0]!.id;
 
     await db.query(`update bookings set status='confirmed' where id=$1`, [id]);
@@ -428,55 +446,55 @@ describe('availability_slots prati bookings', () => {
 describe('vlasnik može blokirati termin', () => {
   it('blokiran termin odbija goste', async () => {
     await db.query(
-      `insert into bookings (public_token, start_date, end_date, status, payment_method, admin_note)
-       values ('blok','2027-12-01','2027-12-10','blocked','none','krečenje')`
+      `insert into bookings (start_date, end_date, status, payment_method, admin_note)
+       values ('2027-12-01','2027-12-10','blocked','none','krečenje')`
     );
-    expect(await isRejected(guest('u-bloku', '2027-12-05', '2027-12-08'))).toBe(true);
+    expect(await isRejected(guest('2027-12-05', '2027-12-08'))).toBe(true);
   });
 });
 
 describe('release_expired_holds', () => {
   it('oslobađa samo istekle, a svježe ostavlja', async () => {
     await db.query(
-      `insert into bookings (public_token, guest_name, guest_email, start_date, end_date, status, payment_method, hold_expires_at)
-       values ('istekao','A','a@b.ba','2028-01-01','2028-01-05','pending_payment','card', now() - interval '1 hour'),
-              ('svjez',  'B','b@b.ba','2028-02-01','2028-02-05','pending_payment','card', now() + interval '10 minutes')`
+      `insert into bookings (guest_name, guest_email, start_date, end_date, status, payment_method, hold_expires_at)
+       values ('A','a@b.ba','2028-01-01','2028-01-05','pending_payment','card', now() - interval '1 hour'),
+              ('B','b@b.ba','2028-02-01','2028-02-05','pending_payment','card', now() + interval '10 minutes')`
     );
 
     const { rows } = await db.query<{ n: number }>('select release_expired_holds() as n');
     expect(rows[0]?.n).toBe(1);
 
     const stale = await db.query<{ status: string }>(
-      `select status from bookings where public_token='istekao'`
+      `select status from bookings where start_date = date '2028-01-01'`
     );
     expect(stale.rows[0]?.status).toBe('expired');
 
     const fresh = await db.query<{ status: string }>(
-      `select status from bookings where public_token='svjez'`
+      `select status from bookings where start_date = date '2028-02-01'`
     );
     expect(fresh.rows[0]?.status).toBe('pending_payment');
 
     // Napušten termin je opet slobodan…
-    await expect(guest('novi-gost', '2028-01-01', '2028-01-05')).resolves.toBeDefined();
+    await expect(guest('2028-01-01', '2028-01-05')).resolves.toBeDefined();
     // …a onaj koji još traje i dalje drži svoj.
-    expect(await isRejected(guest('prerano', '2028-02-01', '2028-02-05'))).toBe(true);
+    expect(await isRejected(guest('2028-02-01', '2028-02-05'))).toBe(true);
   });
 });
 
 describe('ograničenja podataka', () => {
   it('odbija odlazak isti kao dolazak', async () => {
-    await expect(guest('nula-noci', '2027-09-10', '2027-09-10')).rejects.toThrow();
+    await expect(guest('2027-09-10', '2027-09-10')).rejects.toThrow();
   });
 
   it('odbija odlazak prije dolaska', async () => {
-    await expect(guest('unazad', '2027-09-10', '2027-09-05')).rejects.toThrow();
+    await expect(guest('2027-09-10', '2027-09-05')).rejects.toThrow();
   });
 
   it('odbija rezervaciju gosta bez imena i maila', async () => {
     await expect(
       db.query(
-        `insert into bookings (public_token, start_date, end_date, status, payment_method)
-         values ('bez-gosta','2029-01-01','2029-01-05','confirmed','card')`
+        `insert into bookings (start_date, end_date, status, payment_method)
+         values ('2029-01-01','2029-01-05','confirmed','card')`
       )
     ).rejects.toThrow();
   });
@@ -484,8 +502,8 @@ describe('ograničenja podataka', () => {
   it('dozvoljava blokadu bez podataka o gostu', async () => {
     await expect(
       db.query(
-        `insert into bookings (public_token, start_date, end_date, status, payment_method)
-         values ('blok2','2029-03-01','2029-03-05','blocked','none')`
+        `insert into bookings (start_date, end_date, status, payment_method)
+         values ('2029-03-01','2029-03-05','blocked','none')`
       )
     ).resolves.toBeDefined();
   });

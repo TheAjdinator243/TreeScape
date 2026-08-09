@@ -157,21 +157,21 @@ describe('rezervacija bez noćenja', () => {
 
   it('jedan dan stvarno zauzima taj datum', () => {
     const map = takenDayMap([
-      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
+      { booking_id: 1, start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
     ]);
     expect([...map.keys()]).toEqual(['2027-08-10']);
   });
 
   it('dva gosta ne mogu uzeti isti jedan dan', () => {
     const slots: AvailabilitySlot[] = [
-      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
+      { booking_id: 2, start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
     ];
     expect(rangeHasConflict('2027-08-10', '2027-08-11', slots)).toBe(true);
   });
 
   it('sljedeći dan je i dalje slobodan', () => {
     const slots: AvailabilitySlot[] = [
-      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
+      { booking_id: 3, start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
     ];
     expect(rangeHasConflict('2027-08-11', '2027-08-12', slots)).toBe(false);
   });
@@ -271,7 +271,7 @@ describe('validateStay', () => {
 
 describe('preklapanje termina', () => {
   const slots: AvailabilitySlot[] = [
-    { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-15', kind: 'booked' },
+    { booking_id: 4, start_date: '2027-08-10', end_date: '2027-08-15', kind: 'booked' },
   ];
 
   it('dolazak na dan tuđeg odlaska NIJE sudar', () => {
@@ -308,7 +308,7 @@ describe('preklapanje termina', () => {
 describe('takenDayMap', () => {
   it('označava svaki dan termina, ali ne i dan odlaska', () => {
     const map = takenDayMap([
-      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-13', kind: 'booked' },
+      { booking_id: 5, start_date: '2027-08-10', end_date: '2027-08-13', kind: 'booked' },
     ]);
     expect([...map.keys()].sort()).toEqual(['2027-08-10', '2027-08-11', '2027-08-12']);
     expect(map.has('2027-08-13')).toBe(false);
@@ -316,8 +316,8 @@ describe('takenDayMap', () => {
 
   it('razlikuje potvrđeno od rezervisanog-u-toku', () => {
     const map = takenDayMap([
-      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
-      { booking_id: 'b', start_date: '2027-08-12', end_date: '2027-08-13', kind: 'pending' },
+      { booking_id: 6, start_date: '2027-08-10', end_date: '2027-08-11', kind: 'booked' },
+      { booking_id: 7, start_date: '2027-08-12', end_date: '2027-08-13', kind: 'pending' },
     ]);
     expect(map.get('2027-08-10')).toBe('hard');
     expect(map.get('2027-08-12')).toBe('pending');
@@ -325,8 +325,8 @@ describe('takenDayMap', () => {
 
   it('potvrđeno nadjačava rezervisano-u-toku na istom danu', () => {
     const map = takenDayMap([
-      { booking_id: 'b', start_date: '2027-08-10', end_date: '2027-08-12', kind: 'pending' },
-      { booking_id: 'a', start_date: '2027-08-10', end_date: '2027-08-12', kind: 'booked' },
+      { booking_id: 8, start_date: '2027-08-10', end_date: '2027-08-12', kind: 'pending' },
+      { booking_id: 9, start_date: '2027-08-10', end_date: '2027-08-12', kind: 'booked' },
     ]);
     expect(map.get('2027-08-10')).toBe('hard');
   });

@@ -34,11 +34,17 @@
 -- ───────────────────────────────────────────────────────────────────────────
 
 create table if not exists public.bookings (
-  id                  uuid primary key default gen_random_uuid(),
+  -- Interni ključ. Cijeli broj, a ne uuid: raste redom pa upisi lijepo padaju
+  -- u indeks, zauzima 8 bajta umjesto 16, i lakši je za rad u administraciji.
+  -- NIKADA ne ide u adresu — za to služi kolona ispod.
+  id                  bigint generated always as identity primary key,
 
-  -- Nasumični token koji ide u URL potvrde (/rezervacija/<token>).
-  -- Namjerno nije `id` — da se tuđe rezervacije ne mogu pogađati.
-  public_token        text        not null unique,
+  -- Ono što ide u adresu potvrde: /rezervacija/<booking_public_link>
+  --
+  -- Mora biti nepogodivo. Da je u adresi stajao redni broj, svako bi ukucao
+  -- /rezervacija/2 i čitao tuđe ime, email i telefon. uuid v4 nosi 122 bita
+  -- slučajnosti, pa pogađanje nije izvodljivo.
+  booking_public_link uuid        not null unique default gen_random_uuid(),
 
   -- Podaci gosta. NULL su samo kod ručnog blokiranja termina od vlasnika.
   guest_name          text,
@@ -167,6 +173,95 @@ alter table public.bookings
   add column if not exists locale            text not null default 'bs';
 
 
+-- ── Stariji oblik: uuid `id` i tekstualni `public_token` ───────────────────
+--
+--  Ranije je `id` bio uuid, a javni dio adrese se zvao `public_token` i bio
+--  nasumičan tekst. uuid kao primarni ključ razbacuje upise po indeksu i troši
+--  duplo prostora, pa `id` postaje cijeli broj koji raste redom, a javni dio
+--  se seli u `booking_public_link` tipa uuid.
+--
+--  Zamjena tipa primarnog ključa se ne može uraditi jednim `alter`: za njega
+--  visi strani ključ iz `availability_slots`. Zato ide preko pomoćnih kolona,
+--  uz preslikavanje starih uuid vrijednosti na nove brojeve — nijedan red se
+--  ne gubi. Na svježoj bazi ovaj blok ne radi ništa.
+do $$
+begin
+  -- 1. Javni link
+  if not exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'bookings'
+       and column_name = 'booking_public_link'
+  ) then
+    -- `execute` nije ukras: PL/pgSQL priprema obične naredbe prema shemi
+    -- kakva je bila na ulasku u blok, pa `update` nad kolonom dodanom par
+    -- redova iznad pukne s "column does not exist". Dinamički SQL se planira
+    -- tek u trenutku izvršavanja, kad kolona već postoji.
+    execute 'alter table public.bookings add column booking_public_link uuid';
+
+    -- Stari `public_token` se ne pretvara u uuid — nije istog oblika. Već
+    -- poslani linkovi ovom promjenom prestaju vrijediti, što je prihvatljivo:
+    -- gost do rezervacije uvijek dođe i preko broja rezervacije i maila.
+    execute 'update public.bookings set booking_public_link = gen_random_uuid()
+              where booking_public_link is null';
+
+    execute 'alter table public.bookings
+               alter column booking_public_link set not null,
+               alter column booking_public_link set default gen_random_uuid()';
+
+    execute 'alter table public.bookings
+               add constraint bookings_public_link_key unique (booking_public_link)';
+  end if;
+
+  if exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'bookings'
+       and column_name = 'public_token'
+  ) then
+    alter table public.bookings drop column public_token;
+  end if;
+
+  -- 2. `id` iz uuid u cijeli broj
+  if (
+    select data_type from information_schema.columns
+     where table_schema = 'public' and table_name = 'bookings' and column_name = 'id'
+  ) = 'uuid' then
+    -- Isti razlog za `execute` kao gore: sve ovo dira kolone koje nastaju
+    -- unutar ovog istog bloka.
+    execute 'alter table public.bookings
+               add column novi_id bigint generated always as identity';
+
+    execute 'alter table public.availability_slots add column novi_booking_id bigint';
+    execute 'update public.availability_slots s
+                set novi_booking_id = b.novi_id
+               from public.bookings b
+              where b.id = s.booking_id';
+
+    execute 'alter table public.availability_slots
+               drop constraint if exists availability_slots_booking_id_fkey';
+    execute 'alter table public.availability_slots
+               drop constraint if exists availability_slots_pkey';
+    execute 'alter table public.availability_slots drop column booking_id';
+    execute 'alter table public.availability_slots
+               rename column novi_booking_id to booking_id';
+    execute 'alter table public.availability_slots
+               alter column booking_id set not null';
+
+    execute 'alter table public.bookings drop constraint if exists bookings_pkey cascade';
+    execute 'alter table public.bookings drop column id';
+    execute 'alter table public.bookings rename column novi_id to id';
+
+    execute 'alter table public.bookings add primary key (id)';
+    execute 'alter table public.availability_slots add primary key (booking_id)';
+    execute 'alter table public.availability_slots
+               add constraint availability_slots_booking_id_fkey
+               foreign key (booking_id) references public.bookings(id) on delete cascade';
+
+    raise notice 'bookings.id prebačen iz uuid u cijeli broj.';
+  end if;
+end;
+$$;
+
+
 -- Ograničenja se imenuju izričito, da se kasnije mogu naći i zamijeniti.
 alter table public.bookings drop constraint if exists bookings_status_check;
 alter table public.bookings
@@ -232,7 +327,7 @@ create index if not exists bookings_holds_idx
 -- ───────────────────────────────────────────────────────────────────────────
 
 create table if not exists public.availability_slots (
-  booking_id  uuid primary key references public.bookings(id) on delete cascade,
+  booking_id  bigint primary key references public.bookings(id) on delete cascade,
   start_date  date not null,
   end_date    date not null,
   kind        text not null check (kind in ('booked', 'pending', 'blocked'))

@@ -114,7 +114,7 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ t
               {/* Broj rezervacije je latinični niz — čita se slijeva nadesno
                   i na arapskoj stranici. */}
               <span dir="ltr" className="font-mono text-base tracking-wider text-forest-800">
-                {bookingReference(booking.public_token)}
+                {bookingReference(booking.booking_public_link)}
               </span>
             </Row>
 
