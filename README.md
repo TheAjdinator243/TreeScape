@@ -20,7 +20,7 @@ dobija.
 - [Podešavanje Supabase baze](#podešavanje-supabase-baze)
 - [Načini plaćanja](#načini-plaćanja)
 - [Objava na Vercel](#objava-na-vercel)
-- [Drugi izgled: /treescapepro](#drugi-izgled-treescapepro)
+- [Drugi i treći izgled](#drugi-i-treći-izgled-treescapepro-i-treescapeproplus)
 - [Obavijesti o novim zahtjevima](#obavijesti-o-novim-zahtjevima)
 - [Zamjena fotografija i teksta](#zamjena-fotografija-i-teksta)
 - [Administracija](#administracija)
@@ -293,10 +293,11 @@ Od tada Vercel objavljuje svaku izmjenu automatski, čim je pošalješ na GitHub
 
 ---
 
-## Drugi izgled: `/treescapepro`
+## Drugi i treći izgled: `/treescapepro` i `/treescapeproplus`
 
-Isti sajt, druga koža. Otvori `/treescapepro` — dobiješ istu kuću, isti tekst,
-iste cijene i istu rezervaciju, ali u tamnijem i skupljem izgledu.
+Isti sajt, druga i treća koža. Otvori `/treescapepro` ili `/treescapeproplus` —
+dobiješ istu kuću, isti tekst, iste cijene i istu rezervaciju, samo u drugom
+izgledu.
 
 **Šta je zajedničko (i mora ostati zajedničko):**
 
@@ -310,22 +311,35 @@ iste cijene i istu rezervaciju, ali u tamnijem i skupljem izgledu.
 | Koordinate i karta | `src/lib/location.ts` |
 | Kontakt telefon i mail | `src/components/site/Footer.tsx` (`CONTACT`) |
 
-Oba izgleda gađaju **istu bazu i iste API rute**. Termin zauzet na jednoj
-verziji istog trena je zauzet i na drugoj — nema dvije kopije podataka, pa se
+Sva tri izgleda gađaju **istu bazu i iste API rute**. Termin zauzet na jednoj
+verziji istog trena je zauzet i na ostalima — nema tri kopije podataka, pa se
 ne mogu razići.
 
-**Šta se razlikuje:** samo izgled, u `src/components/pro/` i u `.pro` dijelu
-`src/app/globals.css`. Druga pisma (Cormorant Garamond i Jost), druga paleta
-(noć, slonovača, mesing), oštre ivice umjesto zaobljenih, više praznog prostora.
+**Šta se razlikuje — `/treescapepro`:** izgled u `src/components/pro/` i u
+`.pro` dijelu `src/app/globals.css`. Druga pisma (Cormorant Garamond i Jost),
+druga paleta (noć, slonovača, mesing), oštre ivice umjesto zaobljenih, više
+praznog prostora.
 
-Pisma se preuzimaju **samo** kad neko otvori `/treescapepro` — posjetilac
-glavnog sajta ih nikad ne dobije (`preload: false` u `app/treescapepro/layout.tsx`).
+**Šta se razlikuje — `/treescapeproplus`:** izgled u `src/components/plus/` i u
+`.plus` dijelu `src/app/globals.css`. Treća pisma (Instrument Serif i Manrope),
+treća paleta (papir, zimzelena, glina), velika zaobljenja i sjene u tri sloja.
+Ovo je jedina verzija koja ima i **animacije vezane za skrol** — sve su u
+`src/components/motion/` i sve su čist `opacity`/`transform`, bez ijedne
+animacijske biblioteke.
 
-Stranica je označena s `noindex`: pokazuje se kupcu, a ne gostima, i ne treba
-da se u Googleu takmiči s pravim sajtom za iste riječi.
+Ta verzija ima i dva odjeljka kojih druge dvije nemaju: „Od datuma do ključa"
+(kako rezervacija teče, u tri koraka) i završni poziv prije podnožja. Oba
+odgovaraju na pitanja koja gost inače postavi telefonom, i oba opisuju tačno
+ono što kod stvarno radi.
 
-> Ako ti se ovaj izgled više svidi, prebacivanje je zamjena komponenti u
-> `src/app/page.tsx` — logika ispod je već ista.
+Pisma se preuzimaju **samo** kad neko otvori tu stranicu — posjetilac glavnog
+sajta ih nikad ne dobije (`preload: false` u oba `layout.tsx`).
+
+Obje stranice su označene s `noindex`: pokazuju se kupcu, a ne gostima, i ne
+treba da se u Googleu takmiče s pravim sajtom za iste riječi.
+
+> Ako ti se neki od ovih izgleda više svidi, prebacivanje je zamjena komponenti
+> u `src/app/page.tsx` — logika ispod je već ista.
 
 ---
 
@@ -621,6 +635,8 @@ src/
 │   ├── layout.tsx                fontovi, meta podaci
 │   ├── globals.css               dizajn sistem (boje, tipografija, kalendar)
 │   ├── admin/                    administracija
+│   ├── treescapepro/             drugi izgled
+│   ├── treescapeproplus/         treći izgled
 │   ├── rezervacija/[token]/      stranica s potvrdom
 │   └── api/
 │       ├── availability/         javni spisak zauzetih datuma
@@ -629,6 +645,9 @@ src/
 │       └── cron/expire-holds     oslobađanje termina s isteklim rokom
 ├── components/
 │   ├── site/                     naslovna, galerija, sadržaji, lokacija, pitanja
+│   ├── pro/                      isti sadržaj, izgled /treescapepro
+│   ├── plus/                     isti sadržaj, izgled /treescapeproplus
+│   ├── motion/                   animacije uz skrol (koristi ih samo `plus`)
 │   ├── booking/                  kalendar, cijena, forma, podaci za uplatu
 │   ├── i18n/                     birač jezika i rječnik za klijentske komponente
 │   └── admin/                    ulaz i nadzorna ploča

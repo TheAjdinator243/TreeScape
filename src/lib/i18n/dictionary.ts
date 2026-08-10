@@ -50,6 +50,12 @@ export interface QuestionAnswer {
   a: string;
 }
 
+/** Jedan korak u objašnjenju kako rezervacija teče. */
+export interface Step {
+  title: string;
+  body: string;
+}
+
 /** Podaci iz postavki bez kojih se česta pitanja ne mogu napisati do kraja. */
 export interface FaqFacts {
   checkinTime: string;
@@ -98,8 +104,41 @@ export interface Dictionary {
     title: string;
     subtitle: string;
     cta: string;
+    /** Drugo, tiše dugme uz glavno — vodi na galeriju umjesto na kalendar. */
+    secondaryCta: string;
     scroll: string;
     imageAlt: string;
+    /**
+     * Prvi slobodan datum, izračunat iz istih termina koje crta kalendar
+     * (`firstFreeDate` u `lib/pricing.ts`). Datum stiže već ispisan na jeziku
+     * gosta, pa rječnik oko njega samo sastavi rečenicu.
+     */
+    freeFrom: (date: string) => string;
+    /** Kad je slobodno već danas — "od danas" bi zvučalo kao da nije. */
+    freeToday: string;
+  };
+
+  /**
+   * Kako rezervacija teče, u tri koraka.
+   *
+   * Nije ukras nego odgovor na pitanje koje gost inače postavi telefonom:
+   * "jesam li ja ovo sad rezervisao ili nisam?". Isto piše i u čestim
+   * pitanjima, ali tamo ga pročita tek onaj ko dotle dođe.
+   */
+  steps: {
+    eyebrow: string;
+    heading: string;
+    lead: string;
+    /** Tačno tri — raspored ih slaže u tri kolone i broji od 01 do 03. */
+    items: [Step, Step, Step];
+  };
+
+  /** Posljednji poziv na rezervaciju, prije podnožja. */
+  finalCta: {
+    heading: string;
+    lead: string;
+    /** Za one koji radije pitaju nego kliknu. */
+    contact: string;
   };
 
   about: {

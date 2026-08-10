@@ -79,6 +79,43 @@
   --color-brass-400: #c9a86c;
   --color-brass-500: #ad8b55;
 
+  /* ── "Plus" izgled (/treescapeproplus) ────────────────────────────────
+     Treća koža istog sajta. Osnovna je topao pijesak i šuma, "pro" je noć i
+     mesing — ova je dnevna, ali skupa: kost i duboka zimzelena, s jednim
+     jedinim toplim naglaskom (glina).
+
+     Razlika prema osnovnoj nije u tonu nego u držanju: krupnija tipografija,
+     više praznine, staklaste plohe i pokret koji prati skrol. Razlika prema
+     "pro" je što ova ne bježi u crno — svjetlo je ono što je čini prijatnom
+     za goste, a ne samo lijepom za kupca.
+
+     Kao i kod "pro": boje stoje u @theme, pa postaju prave Tailwind klase
+     (`bg-pine-900`, `text-clay-500`). Tailwind v4 ispisuje samo ono što se
+     stvarno koristi, pa neiskorišteni tonovi ne koštaju ništa. */
+  --color-pine-950: #081310;
+  --color-pine-900: #0f2019;
+  --color-pine-800: #163026;
+  --color-pine-700: #1e4335;
+  --color-pine-600: #2a5d49;
+  --color-pine-500: #3a7a60;
+
+  --color-sage-500: #5f9b7f;
+  --color-sage-400: #8bb9a1;
+  --color-sage-300: #b2d3c1;
+  --color-sage-100: #dcebe2;
+
+  /* Papir — pozadine. Toplije od bijele, hladnije od pijeska osnovne verzije. */
+  --color-paper-50: #fcfbf7;
+  --color-paper-100: #f5f2ea;
+  --color-paper-200: #e8e3d6;
+  --color-paper-300: #d5cdbb;
+
+  /* Glina — jedini topli naglasak. Namjerno je samo jedan: druga akcentna boja
+     je ono što premium izgled najbrže pretvori u šablon. */
+  --color-clay-600: #9c5433;
+  --color-clay-500: #b86a41;
+  --color-clay-400: #d08e64;
+
   /* Tipografija — varijable dolaze iz next/font (vidi layout.tsx) */
   --font-display: var(--font-fraunces), Georgia, 'Times New Roman', serif;
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
@@ -88,9 +125,30 @@
   --shadow-soft: 0 1px 2px rgb(34 29 24 / 0.04), 0 8px 24px -8px rgb(34 29 24 / 0.12);
   --shadow-lift: 0 2px 4px rgb(34 29 24 / 0.06), 0 20px 40px -12px rgb(34 29 24 / 0.22);
 
+  /*
+   * Sjene u tri sloja, a ne u jednom — za "plus" izgled.
+   *
+   * Jedna sjena je uvijek ili premekana (pa se ne vidi) ili pretvrda (pa
+   * izgleda kao okvir). Prava kutija na stolu ima tri: usku i tamnu odmah uz
+   * ivicu, srednju koja je odiže, i široku i blijedu koja je veže za podlogu.
+   * To je jedina razlika između kartice i pravougaonika.
+   */
+  --shadow-float:
+    0 1px 1px rgb(8 19 16 / 0.04), 0 4px 8px -2px rgb(8 19 16 / 0.06),
+    0 16px 32px -12px rgb(8 19 16 / 0.14);
+  --shadow-raise:
+    0 1px 1px rgb(8 19 16 / 0.05), 0 8px 16px -4px rgb(8 19 16 / 0.1),
+    0 32px 56px -20px rgb(8 19 16 / 0.24);
+
   --radius-xl2: 1.25rem;
+  /* Zaobljenje velikih ploha u "plus" izgledu. Kartica na 1rem i ploha na
+     2rem izgledaju kao dvije različite stvari; ovim se drže u istoj porodici. */
+  --radius-panel: 1.75rem;
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Oštrije usporavanje na kraju — za pokrete koji moraju djelovati odlučno
+     (otvaranje menija, uvećavanje slike), a ne mekano kao pojavljivanje. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Osnovni stilovi ─────────────────────────────────────────────────────── */
@@ -101,6 +159,19 @@
     /* Da sidra (#rezervacija) ne završe ispod fiksne navigacije. */
     scroll-padding-top: 5rem;
     -webkit-text-size-adjust: 100%;
+
+    /*
+     * Odakle sadržaj ulazi u obliku `slide` (vidi `motion/Reveal.tsx`).
+     *
+     * Mora biti promjenljiva, a ne broj u komponenti: u arapskom red teče
+     * zdesna nalijevo, pa bi isti pomak od -24px sadržaj gurao PREKO ivice
+     * umjesto ka njoj.
+     */
+    --reveal-slide: -24px;
+  }
+
+  [dir='rtl'] {
+    --reveal-slide: 24px;
   }
 
   body {
@@ -239,6 +310,278 @@
   bottom: 0;
   background: linear-gradient(to top, var(--color-onyx-950), transparent);
   opacity: 0.7;
+}
+
+/* ── "Plus" izgled: pismo ────────────────────────────────────────────────
+   Kao i `.pro` blok iznad, ovo stoji IZNAD arapskog bloka namjerno. Oba su
+   neslojevita i iste specifičnosti, pa odlučuje redoslijed — a arapski mora
+   pobijediti, jer ni Instrument Serif ni Manrope nemaju arapske glifove.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.plus {
+  /*
+   * Isti razlog kao kod `.pro`: promjenljiva se razrješava na elementu na
+   * kojem je NAPISANA. Da ovo stoji u :root, tražilo bi `--font-instrument`
+   * na <html> — a nje tamo nema, jer je next/font stavlja na omotač
+   * /treescapeproplus. Vrijednost bi tiho pala na zadano pismo preglednika.
+   */
+  --font-plus-display: var(--font-instrument), Georgia, 'Times New Roman', serif;
+  --font-plus-sans: var(--font-manrope), system-ui, -apple-system, sans-serif;
+
+  font-family: var(--font-plus-sans);
+  background-color: var(--color-paper-50);
+  color: var(--color-pine-900);
+}
+
+.plus h1,
+.plus h2,
+.plus h3 {
+  font-family: var(--font-plus-display);
+  font-weight: 400;
+  /*
+   * Instrument Serif je već uzak i visokokontrastan. Skupljanje razmaka na
+   * velikim veličinama je ono što naslov pretvara iz "veliki tekst" u naslov;
+   * na sitnim bi ista vrijednost slova slijepila, ali sitnih naslova ovdje i
+   * nema — za njih postoji `.plus-kicker` ispod, u grotesku.
+   */
+  letter-spacing: -0.02em;
+}
+
+/*
+ * Izlaz iz pravila iznad — isti razlog kao `.pro-sans`.
+ *
+ * Ponegdje je i naslov zapravo sitna oznaka razmaknutim velikim slovima; tamo
+ * serif nije ni čitljiv ni na mjestu. Tailwindova klasa za pismo to ne može
+ * preokrenuti: pravilo iznad je neslojevito, a utility klase su u sloju, pa
+ * uvijek gube. Ova klasa je specifičnija od njega, pa vraća grotesk.
+ */
+.plus .plus-sans {
+  font-family: var(--font-plus-sans);
+  letter-spacing: 0;
+}
+
+/* ── "Plus" izgled: plohe i komponente ───────────────────────────────────
+   Zaobljeno i mekano, ali ne prijateljski: velika zaobljenja, vlas-okviri i
+   sjene u tri sloja. Suprotnost `.pro` izgledu, koji sve to namjerno nema.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/*
+ * Isti razlog kao kod `btn` i `pro-btn`: `@apply` u Tailwindu v4 prima samo
+ * prave utility klase, pa i `plus-card` mora biti @utility — inače ga
+ * `.plus-card-lift` odbije s "Cannot apply unknown utility class".
+ */
+@utility plus-card {
+  @apply rounded-panel border border-paper-200 bg-white shadow-float;
+}
+
+@utility plus-btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5
+         text-sm font-semibold tracking-tight
+         transition-[transform,box-shadow,background-color,border-color,color] duration-300
+         ease-[var(--ease-out-soft)]
+         disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@layer components {
+  /*
+   * Dugmad.
+   *
+   * Sva dijele isti pokret: pri prelasku mišem se odignu za jedan piksel i
+   * dobiju dublju sjenu, a pri pritisku slegnu. Jedan piksel je namjerno malo —
+   * dugme koje pri prelasku skoči izgleda kao igračka. `active:` je pritom
+   * bitniji od `hover:`: on je jedino što na dodirnom ekranu uopće postoji.
+   */
+  .plus-btn-primary {
+    @apply plus-btn bg-pine-800 text-paper-50 shadow-float
+           hover:-translate-y-px hover:bg-pine-700 hover:shadow-raise
+           active:translate-y-0 active:scale-[0.98]
+           disabled:hover:translate-y-0 disabled:hover:bg-pine-800 disabled:hover:shadow-float;
+  }
+
+  .plus-btn-accent {
+    @apply plus-btn bg-clay-500 text-white shadow-float
+           hover:-translate-y-px hover:bg-clay-600 hover:shadow-raise
+           active:translate-y-0 active:scale-[0.98]
+           disabled:hover:translate-y-0 disabled:hover:bg-clay-500 disabled:hover:shadow-float;
+  }
+
+  .plus-btn-ghost {
+    @apply plus-btn border border-pine-800/20 bg-transparent text-pine-800
+           hover:border-pine-800/45 hover:bg-pine-800/5 active:scale-[0.98];
+  }
+
+  /** Isto dugme, ali na tamnoj plohi ili preko fotografije. */
+  .plus-btn-onlight {
+    @apply plus-btn border border-paper-50/30 bg-paper-50/10 text-paper-50 backdrop-blur-sm
+           hover:border-paper-50/70 hover:bg-paper-50/20 active:scale-[0.98];
+  }
+
+  /*
+   * Kartica koja se odiže pri prelasku mišem.
+   *
+   * Mijenja se `transform`, `box-shadow` i BOJA okvira — nikad njegova
+   * debljina. Promjena debljine mijenja i unutrašnju visinu, pa se sadržaj
+   * kartice pri svakom prelasku pomjeri za piksel.
+   */
+  .plus-card-lift {
+    @apply plus-card transition-[transform,box-shadow,border-color] duration-500
+           ease-[var(--ease-out-soft)]
+           hover:-translate-y-1 hover:border-paper-300 hover:shadow-raise;
+  }
+
+  /** Sitna oznaka: brojka, status, "od 180 KM". */
+  .plus-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-paper-200 bg-white/80
+           px-3.5 py-1.5 text-xs font-medium text-pine-800 backdrop-blur-sm;
+  }
+
+  .plus-chip-onlight {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10
+           px-3.5 py-1.5 text-xs font-medium text-paper-100 backdrop-blur-md;
+  }
+
+  .plus-section {
+    @apply mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28 lg:py-32;
+  }
+
+  /*
+   * Nadnaslov s vlas-linijom ispred sebe.
+   *
+   * Linija je `::before`, a ne poseban element, jer je ukras — čitač ekrana
+   * nema šta da je čita, a svaki odjeljak bi je inače morao ponovo napisati.
+   */
+  .plus-eyebrow {
+    @apply mb-5 flex items-center gap-3 text-xs font-semibold uppercase
+           tracking-[0.22em] text-pine-600;
+  }
+
+  .plus-eyebrow::before {
+    @apply h-px w-8 shrink-0 bg-pine-600/40 content-[''];
+  }
+
+  /* Isti nadnaslov na tamnoj plohi. */
+  .plus-eyebrow-onlight {
+    @apply mb-5 flex items-center gap-3 text-xs font-semibold uppercase
+           tracking-[0.22em] text-sage-400;
+  }
+
+  .plus-eyebrow-onlight::before {
+    @apply h-px w-8 shrink-0 bg-sage-400/40 content-[''];
+  }
+
+  .plus-title {
+    @apply text-[2.4rem] leading-[1.06] sm:text-5xl md:text-[3.4rem] lg:text-[3.9rem];
+  }
+
+  .plus-lead {
+    @apply mt-5 max-w-2xl text-lg leading-relaxed text-pine-900/65 md:text-xl;
+  }
+
+  .plus-label {
+    @apply mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-pine-900/60;
+  }
+
+  .plus-field {
+    @apply w-full rounded-xl border border-paper-300 bg-white px-4 py-3 text-pine-900
+           transition-[border-color,box-shadow] duration-200
+           placeholder:text-pine-900/35
+           focus:border-pine-600 focus:outline-none focus:ring-4 focus:ring-pine-600/12
+           disabled:bg-paper-100 disabled:text-pine-900/40;
+  }
+}
+
+/* ── "Plus" izgled: kalendar ─────────────────────────────────────────────
+   react-day-picker se boji varijablama, pa se cijeli kalendar prelije na
+   novu paletu bez ijedne prepisane komponente. */
+
+.plus .rdp-root {
+  --rdp-accent-color: var(--color-pine-700);
+  --rdp-accent-background-color: var(--color-sage-100);
+  --rdp-font-family: var(--font-plus-sans);
+  color: var(--color-pine-900);
+}
+
+/*
+ * Kalendar na najužim telefonima (320px i manje).
+ *
+ * `react-day-picker` zadano crta dan od 2.75rem — sedam takvih je 308px, a na
+ * ekranu od 320px unutar kartice ostane oko 248px. Rezultat je vodoravni
+ * skrol cijele stranice, ne samo kalendara.
+ *
+ * Rješenje je u varijablama koje sam react-day-picker nudi, pa se nijedna
+ * njegova komponenta ne prepisuje — a mijenja se SAMO u `.plus` izgledu i
+ * SAMO ispod 360px, gdje je i problem.
+ */
+@media (max-width: 359px) {
+  .plus .rdp-root {
+    --rdp-day-height: 2.15rem;
+    --rdp-day-width: 2.15rem;
+    --rdp-day_button-height: 2rem;
+    --rdp-day_button-width: 2rem;
+    font-size: 0.85rem;
+  }
+}
+
+.plus .rdp-month_caption {
+  font-family: var(--font-plus-display);
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--color-pine-900);
+}
+
+.plus .rdp-weekday {
+  color: color-mix(in srgb, var(--color-pine-900) 45%, transparent);
+}
+
+.plus .rdp-day_button:hover:not([disabled]) {
+  background-color: var(--color-sage-100);
+}
+
+.plus .rdp-day.day-taken .rdp-day_button {
+  color: color-mix(in srgb, var(--color-pine-900) 35%, transparent);
+  background-color: var(--color-paper-100);
+}
+
+.plus .rdp-day.day-taken-pending .rdp-day_button {
+  color: var(--color-clay-600);
+  background-color: color-mix(in srgb, var(--color-clay-500) 12%, transparent);
+}
+
+.plus .rdp-range_start .rdp-day_button,
+.plus .rdp-range_end .rdp-day_button {
+  background-color: var(--color-pine-700) !important;
+  color: var(--color-paper-50) !important;
+}
+
+.plus .rdp-range_middle .rdp-day_button {
+  background-color: var(--color-sage-100) !important;
+  color: var(--color-pine-900) !important;
+}
+
+.plus .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: var(--color-clay-500);
+}
+
+/* Legenda ispod kalendara — tri boje koje na novoj paleti moraju biti druge. */
+.plus .stay-legend {
+  color: color-mix(in srgb, var(--color-pine-900) 55%, transparent);
+}
+
+.plus .stay-legend [data-tone='free'] {
+  background-color: #fff;
+  border-color: var(--color-paper-300);
+}
+
+.plus .stay-legend [data-tone='taken'] {
+  background-color: var(--color-paper-200);
+}
+
+.plus .stay-legend [data-tone='selected'] {
+  background-color: var(--color-pine-700);
+}
+
+.plus :focus-visible {
+  outline-color: var(--color-pine-600);
 }
 
 /* ── Arapski ─────────────────────────────────────────────────────────────
@@ -588,6 +931,127 @@ html[lang='ar'] body * {
 
 .animate-fade-rise {
   animation: fade-rise 0.7s var(--ease-out-soft) both;
+}
+
+/* ── Animacije "plus" izgleda ────────────────────────────────────────────
+   Stoje ovdje, uz ostale, a ne u zasebnoj datoteci: sve su čist `opacity` i
+   `transform`, i sve ih jednako gasi `prefers-reduced-motion` blok na dnu.
+   ─────────────────────────────────────────────────────────────────────── */
+
+/*
+ * Riječ koja izlazi ispod zavjese (vidi `motion/TextReveal.tsx`).
+ *
+ * Pomak je u `em`, a ne u pikselima: naslov je na telefonu upola manji nego na
+ * ekranu, pa bi fiksnih 40px tamo bacilo riječ daleko ispod reza, a ovdje
+ * jedva ispod ivice. U `em` je pomak uvijek tačno "jedna visina slova".
+ */
+@keyframes word-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.05em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-word-rise {
+  animation: word-rise 0.9s var(--ease-out-expo) both;
+}
+
+/* Naslovna fotografija se nakon učitavanja jednom, polako, vrati iz uvećanja —
+   slika "diše" umjesto da samo stoji. Traje dugo, pa se osjeti a ne primijeti. */
+@keyframes slow-zoom {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 2.4s var(--ease-out-expo) both;
+}
+
+/* Mobilni meni: stavke ulaze jedna za drugom, s početka reda. */
+@keyframes menu-item {
+  from {
+    opacity: 0;
+    transform: translateX(var(--reveal-slide, -24px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-menu-item {
+  animation: menu-item 0.45s var(--ease-out-expo) both;
+}
+
+/* Uvećana slika i dijalozi. */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-dialog-in {
+  animation: dialog-in 0.4s var(--ease-out-expo) both;
+}
+
+/*
+ * Tačka koja pulsira uz prvi slobodan termin.
+ *
+ * Jedna od dvije animacije na sajtu koje se vrte u krug, i to s razlogom: ona
+ * je znak da je podatak pored nje živ, a ne slika. Sve ostalo se pokrene,
+ * završi i stane.
+ */
+@keyframes pulse-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s var(--ease-out-soft) infinite;
+}
+
+/*
+ * Nagovještaj za skrol na naslovnom ekranu: svijetla crtica klizne niz tanku
+ * liniju i nestane. Zamjena za strelicu koja poskakuje — isti nagovještaj,
+ * upola manje pokreta na ekranu.
+ */
+@keyframes scroll-hint {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  40%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(250%);
+    opacity: 0;
+  }
+}
+
+.animate-scroll-hint {
+  animation: scroll-hint 2.2s var(--ease-out-soft) infinite;
 }
 
 /* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */

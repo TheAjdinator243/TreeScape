@@ -17,7 +17,15 @@
  * odjavom u 09:00 i prijavom u 11:00 istog dana.
  */
 
-import { daysBetween, eachDay, isWeekend, isWithin, todayStr, type DateStr } from './dates';
+import {
+  addDaysStr,
+  daysBetween,
+  eachDay,
+  isWeekend,
+  isWithin,
+  todayStr,
+  type DateStr,
+} from './dates';
 import { DEFAULT_LOCALE, getStrings, intlTag, type Locale } from './i18n';
 import type { AvailabilitySlot, PriceBreakdown, RatePeriod, Settings } from './types';
 
@@ -157,6 +165,32 @@ export function takenDayMap(slots: AvailabilitySlot[]): Map<DateStr, 'hard' | 'p
   }
 
   return map;
+}
+
+/**
+ * Prvi dan od danas koji nije zauzet — za "slobodno od 14. augusta" u heroju.
+ *
+ * Ovo je jedini podatak na naslovnom ekranu koji se mijenja sam od sebe, pa
+ * mora biti tačan: gost koji pročita datum, klikne i zatekne ga prekriženim u
+ * kalendaru izgubi povjerenje u cijeli kalendar.
+ *
+ * Traži se najviše dvije godine unaprijed — koliko i `getAvailability` čita iz
+ * baze. Dalje od toga nema šta ni da se nađe, pa je granica ujedno i zaštita
+ * od beskonačne petlje ako bi neko blokirao sve datume.
+ */
+export function firstFreeDate(
+  slots: AvailabilitySlot[],
+  from: DateStr = todayStr()
+): DateStr | null {
+  const taken = takenDayMap(slots);
+
+  let day = from;
+  for (let i = 0; i <= 730; i++) {
+    if (!taken.has(day)) return day;
+    day = addDaysStr(day, 1);
+  }
+
+  return null;
 }
 
 /**

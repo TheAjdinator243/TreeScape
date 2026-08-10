@@ -52,8 +52,37 @@ export const bs: Dictionary = {
     title: 'TreeScape',
     subtitle: 'Probudite se uz zvuk šume, a ne uz zvuk grada.',
     cta: 'Provjeri dostupnost',
+    secondaryCta: 'Pogledaj kuću',
     scroll: 'Saznaj više',
     imageAlt: 'Vila TreeScape',
+    freeFrom: (date) => `Prvi slobodan termin: ${date}`,
+    freeToday: 'Slobodno već danas',
+  },
+
+  steps: {
+    eyebrow: 'Kako to ide',
+    heading: 'Od datuma do ključa, u tri koraka',
+    lead: 'Bez poziva, bez čekanja na odgovor da biste uopće vidjeli šta je slobodno.',
+    items: [
+      {
+        title: 'Odaberite datume',
+        body: 'Kalendar uživo pokazuje šta je slobodno, a cijena se računa dok birate — osnovna, vikend i sezonska, bez skrivenih stavki.',
+      },
+      {
+        title: 'Pošaljite zahtjev',
+        body: 'Termin se odmah zaključava za vas i ostalim gostima se prikazuje kao zauzet. Niko vam ga u međuvremenu ne može uzeti.',
+      },
+      {
+        title: 'Domaćin potvrdi',
+        body: 'Odluka stiže na vaš mail, a stranica s potvrdom se osvježi sama. Tačnu adresu i uputstva za dolazak šaljemo prije dolaska.',
+      },
+    ],
+  },
+
+  finalCta: {
+    heading: 'Šuma je ista i u utorak',
+    lead: 'Provjerite slobodne termine i rezervišite za koji minut. Ako vam nešto nije jasno, javite se — odgovaramo isti dan.',
+    contact: 'Pitajte nas',
   },
 
   about: {

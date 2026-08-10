@@ -22,4 +22,12 @@ export function getStrings(locale: Locale = DEFAULT_LOCALE): Dictionary {
 
 export * from './config';
 export * from './plural';
-export type { AmenityKey, Dictionary, FaqFacts, PlaceKey, PluralForms, QuestionAnswer } from './dictionary';
+export type {
+  AmenityKey,
+  Dictionary,
+  FaqFacts,
+  PlaceKey,
+  PluralForms,
+  QuestionAnswer,
+  Step,
+} from './dictionary';

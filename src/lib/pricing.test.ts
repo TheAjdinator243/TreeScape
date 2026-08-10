@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { addDaysStr, daysBetween, eachDay, isWeekend, rangesOverlap, todayStr } from './dates';
 import {
   WEEKEND_PERIOD,
+  firstFreeDate,
   formatMoney,
   lowestNightlyCents,
   quoteStay,
@@ -329,6 +330,41 @@ describe('takenDayMap', () => {
       { booking_id: 9, start_date: '2027-08-10', end_date: '2027-08-12', kind: 'booked' },
     ]);
     expect(map.get('2027-08-10')).toBe('hard');
+  });
+});
+
+describe('firstFreeDate', () => {
+  it('vraća sam polazni dan kad nije zauzet', () => {
+    expect(firstFreeDate([], '2027-08-10')).toBe('2027-08-10');
+  });
+
+  it('preskače cijeli zauzet termin', () => {
+    const slots: AvailabilitySlot[] = [
+      { booking_id: 1, start_date: '2027-08-10', end_date: '2027-08-13', kind: 'booked' },
+    ];
+    expect(firstFreeDate(slots, '2027-08-10')).toBe('2027-08-13');
+  });
+
+  it('preskače i termine koji se nadovezuju jedan na drugi', () => {
+    const slots: AvailabilitySlot[] = [
+      { booking_id: 1, start_date: '2027-08-10', end_date: '2027-08-12', kind: 'booked' },
+      { booking_id: 2, start_date: '2027-08-12', end_date: '2027-08-15', kind: 'pending' },
+    ];
+    expect(firstFreeDate(slots, '2027-08-10')).toBe('2027-08-15');
+  });
+
+  it('ne gleda unazad — termin prije polaznog dana ga ne pomjera', () => {
+    const slots: AvailabilitySlot[] = [
+      { booking_id: 1, start_date: '2027-08-01', end_date: '2027-08-05', kind: 'booked' },
+    ];
+    expect(firstFreeDate(slots, '2027-08-10')).toBe('2027-08-10');
+  });
+
+  it('vraća null kad su sve dvije godine unaprijed zauzete', () => {
+    const slots: AvailabilitySlot[] = [
+      { booking_id: 1, start_date: '2027-08-10', end_date: '2030-08-10', kind: 'booked' },
+    ];
+    expect(firstFreeDate(slots, '2027-08-10')).toBeNull();
   });
 });
 

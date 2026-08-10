@@ -47,8 +47,37 @@ export const en: Dictionary = {
     title: 'TreeScape',
     subtitle: 'Wake up to the sound of the forest, not the sound of the city.',
     cta: 'Check availability',
+    secondaryCta: 'See the house',
     scroll: 'Find out more',
     imageAlt: 'TreeScape villa',
+    freeFrom: (date) => `First free date: ${date}`,
+    freeToday: 'Free from today',
+  },
+
+  steps: {
+    eyebrow: 'How it works',
+    heading: 'From dates to keys, in three steps',
+    lead: 'No phone calls, and no waiting for a reply just to see what is free.',
+    items: [
+      {
+        title: 'Pick your dates',
+        body: 'The calendar shows what is free as it happens, and the price is worked out while you choose — base, weekend and seasonal, with nothing hidden.',
+      },
+      {
+        title: 'Send the request',
+        body: 'The dates are held for you straight away and other guests already see them as taken. Nobody can take them from you in the meantime.',
+      },
+      {
+        title: 'The host confirms',
+        body: 'The decision arrives by email and your booking page refreshes itself. We send the exact address and directions before you arrive.',
+      },
+    ],
+  },
+
+  finalCta: {
+    heading: 'The forest is just as good on a Tuesday',
+    lead: 'Check the free dates and book in a couple of minutes. If anything is unclear, get in touch — we answer the same day.',
+    contact: 'Ask us anything',
   },
 
   about: {
