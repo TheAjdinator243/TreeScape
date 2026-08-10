@@ -9,6 +9,7 @@ export {
   createSessionToken,
   isValidSession,
   sessionCookieOptions,
+  type AuthMethod,
 } from './admin-session';
 
 /**

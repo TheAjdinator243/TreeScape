@@ -300,6 +300,8 @@ export const en: Dictionary = {
     gateTitle: 'TreeScape admin',
     gateLead: 'Enter the access code.',
     gateCode: 'Access code',
+    gateTotp: 'Code from your phone',
+    gateTotpHint: 'Six digits from your authenticator app.',
     gateSubmit: 'Unlock',
     gateWrong: 'Wrong code.',
     gateLocked: 'Too many attempts. Wait a minute and try again.',

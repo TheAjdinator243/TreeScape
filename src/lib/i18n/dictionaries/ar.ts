@@ -305,6 +305,8 @@ export const ar: Dictionary = {
     gateTitle: 'إدارة TreeScape',
     gateLead: 'أدخل رمز الدخول.',
     gateCode: 'رمز الدخول',
+    gateTotp: 'الرمز من هاتفك',
+    gateTotpHint: 'ستة أرقام من تطبيق المصادقة.',
     gateSubmit: 'فتح',
     gateWrong: 'رمز خاطئ.',
     gateLocked: 'محاولات كثيرة. انتظر دقيقة ثم حاول مجددًا.',

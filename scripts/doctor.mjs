@@ -364,6 +364,24 @@ if (!env.ADMIN_SESSION_SECRET) {
   ok('tajna sesije dovoljno duga');
 }
 
+/**
+ * Drugi faktor nije obavezan da bi sajt radio, ali jeste ono što dijeli
+ * "neko zna kod" od "neko ima i telefon". Zato upozorenje, ne samo bilješka.
+ */
+if (!env.ADMIN_TOTP_SECRET) {
+  warn(
+    'dvofaktorska zaštita nije uključena — pristupni kod je jedina brava',
+    'npm run totp  (traje minutu, treba ti aplikacija za provjeru na telefonu)'
+  );
+} else if (!/^[A-Z2-7]{16,}$/i.test(env.ADMIN_TOTP_SECRET.replace(/[=\s-]/g, ''))) {
+  bad(
+    'ADMIN_TOTP_SECRET nije ispravan base32 — prijava će padati',
+    'npm run totp  (napravi novu tajnu i ponovo dodaj nalog u aplikaciju)'
+  );
+} else {
+  ok('dvofaktorska zaštita uključena');
+}
+
 if (!env.CRON_SECRET) {
   bad('nema CRON_SECRET — cron ruta se ne izvršava (vraća 401)', 'npm run setup');
 } else {

@@ -303,6 +303,8 @@ export const bs: Dictionary = {
     gateTitle: 'TreeScape administracija',
     gateLead: 'Unesite pristupni kod.',
     gateCode: 'Pristupni kod',
+    gateTotp: 'Kod s telefona',
+    gateTotpHint: 'Šest cifara iz aplikacije za provjeru.',
     gateSubmit: 'Otključaj',
     gateWrong: 'Pogrešan kod.',
     gateLocked: 'Previše pokušaja. Sačekajte minutu pa probajte ponovo.',

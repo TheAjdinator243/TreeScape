@@ -279,6 +279,8 @@ export interface Dictionary {
     gateTitle: string;
     gateLead: string;
     gateCode: string;
+    gateTotp: string;
+    gateTotpHint: string;
     gateSubmit: string;
     gateWrong: string;
     gateLocked: string;
