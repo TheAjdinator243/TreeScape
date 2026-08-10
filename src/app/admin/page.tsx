@@ -6,7 +6,7 @@ import { Dashboard } from '@/components/admin/Dashboard';
 import { ADMIN_COOKIE, isValidSession } from '@/lib/admin-auth';
 import { listBookings } from '@/lib/booking-service';
 import { getRatePeriods, getSettings } from '@/lib/data';
-import { env, isDatabaseConfigured } from '@/lib/env';
+import { env, isDatabaseConfigured, isTwoFactorConfigured } from '@/lib/env';
 import { getServerStrings } from '@/lib/i18n/server';
 
 export const dynamic = 'force-dynamic';
@@ -26,7 +26,12 @@ export default async function AdminPage() {
   const authorized = await isValidSession(cookieStore.get(ADMIN_COOKIE)?.value);
 
   if (!authorized) {
-    return <AdminGate configured={Boolean(env.admin.accessCode && env.admin.sessionSecret)} />;
+    return (
+      <AdminGate
+        configured={Boolean(env.admin.accessCode && env.admin.sessionSecret)}
+        twoFactor={isTwoFactorConfigured}
+      />
+    );
   }
 
   if (!isDatabaseConfigured) {

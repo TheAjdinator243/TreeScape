@@ -1,3 +1,5 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
+
 import { NextResponse } from 'next/server';
 
 import { env, isDatabaseConfigured } from '@/lib/env';
@@ -6,6 +8,20 @@ import { supabaseAdmin } from '@/lib/supabase/admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+/**
+ * Poređenje tajne u konstantnom vremenu — iz istog razloga kao kod pristupnog
+ * koda: obični `!==` stane na prvom različitom znaku, pa se iz trajanja
+ * odgovora tajna može pogađati znak po znak. Sažetak izjednačava dužine.
+ */
+function matchesCronSecret(header: string | null, secret: string): boolean {
+  if (!header) return false;
+
+  const a = createHash('sha256').update(header, 'utf8').digest();
+  const b = createHash('sha256').update(`Bearer ${secret}`, 'utf8').digest();
+
+  return timingSafeEqual(a, b);
+}
 
 /**
  * Oslobađa termine kojima je istekao rok — nezavršene uplate i bankovne
@@ -23,13 +39,22 @@ export async function GET(request: Request) {
   // Ovu rutu zove Vercel Cron, ne gost — poruke idu na jeziku kuće.
   const t = getStrings();
 
-  // Vercel Cron šalje `Authorization: Bearer <CRON_SECRET>`. Bez provjere bi
-  // ovu adresu mogao pozivati bilo ko.
-  if (env.cronSecret) {
-    const header = request.headers.get('authorization');
-    if (header !== `Bearer ${env.cronSecret}`) {
-      return NextResponse.json({ error: t.errors.NOT_ALLOWED }, { status: 401 });
-    }
+  /**
+   * Vercel Cron šalje `Authorization: Bearer <CRON_SECRET>`.
+   *
+   * Ranije je provjera stajala unutar `if (env.cronSecret)`, pa je ruta bila
+   * OTVORENA SVIMA dok varijabla nije postavljena — a to je stanje u kojem
+   * sajt prvi put ode u zrak. Sada je obrnuto: bez tajne se ruta ne izvršava.
+   * Zaključavanje pri zaboravljenoj varijabli ništa ne lomi, jer istekle
+   * termine oslobađa i svako čitanje dostupnosti (vidi bilješku iznad).
+   */
+  if (!env.cronSecret) {
+    console.error('[treescape] CRON_SECRET nije postavljen — cron ruta je zatvorena.');
+    return NextResponse.json({ error: t.errors.NOT_ALLOWED }, { status: 401 });
+  }
+
+  if (!matchesCronSecret(request.headers.get('authorization'), env.cronSecret)) {
+    return NextResponse.json({ error: t.errors.NOT_ALLOWED }, { status: 401 });
   }
 
   if (!isDatabaseConfigured) {
@@ -40,7 +65,7 @@ export async function GET(request: Request) {
 
   if (error) {
     console.error('[treescape] cron oslobađanje nije uspjelo:', error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: t.errors.SERVER_ERROR }, { status: 500 });
   }
 
   return NextResponse.json({ released: data ?? 0 });

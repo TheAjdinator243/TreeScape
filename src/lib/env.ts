@@ -72,6 +72,17 @@ export const env = {
   admin: {
     accessCode: optional('ADMIN_ACCESS_CODE'),
     sessionSecret: optional('ADMIN_SESSION_SECRET'),
+    /**
+     * Drugi faktor — tajna aplikacije na telefonu (base32).
+     *
+     * Dok stoji prazno, prijava traži samo pristupni kod. Čim se postavi,
+     * traži i šestocifreni broj, a sve ranije otvorene sesije prestaju
+     * vrijediti (vidi `admin-session.ts`) — inače bi kartica otvorena prije
+     * uključivanja dvofaktorske zaštite nastavila raditi bez nje.
+     *
+     * Pravi se sa: npm run totp
+     */
+    totpSecret: optional('ADMIN_TOTP_SECRET'),
   },
   cronSecret: optional('CRON_SECRET'),
   siteUrl: resolveSiteUrl(),
@@ -151,5 +162,8 @@ export function platformSiteUrl(): string | null {
 }
 
 export const isTelegramConfigured = Boolean(env.telegram.botToken && env.telegram.chatId);
+
+/** Traži li prijava i kod s telefona. */
+export const isTwoFactorConfigured = Boolean(env.admin.totpSecret);
 
 export { required as requireEnv };

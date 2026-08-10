@@ -23,8 +23,21 @@ function secretKey(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSessionToken(): Promise<string> {
-  return new SignJWT({ role: 'admin' })
+/**
+ * Čime se korisnik dokazao — pristupnim kodom, ili kodom i telefonom.
+ *
+ * Zapisuje se U SAM ŽETON, i to iz jednog konkretnog razloga: kad se
+ * dvofaktorska zaštita tek uključi, sesije otvorene prije toga ne smiju
+ * nastaviti da rade. Inače bi kartica koju je neko ostavio otvorenu — ili
+ * ukraden kolačić — narednih dvanaest sati vrijedila bez drugog faktora, a
+ * upravo se od toga branimo.
+ *
+ * Naziv `amr` (authentication methods references) je standardan za ovu svrhu.
+ */
+export type AuthMethod = 'pwd' | 'otp';
+
+export async function createSessionToken(methods: AuthMethod[] = ['pwd']): Promise<string> {
+  return new SignJWT({ role: 'admin', amr: methods })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setIssuer('treescape')
@@ -41,7 +54,21 @@ export async function isValidSession(token: string | undefined): Promise<boolean
       issuer: 'treescape',
       audience: 'treescape-admin',
     });
-    return payload.role === 'admin';
+
+    if (payload.role !== 'admin') return false;
+
+    /**
+     * Ako je drugi faktor podešen, žeton mora nositi trag da je i upotrijebljen.
+     *
+     * `env` se čita ovdje, a ne prima izvana, da se na provjeru ne može
+     * zaboraviti ni na jednom pozivnom mjestu.
+     */
+    if (env.admin.totpSecret) {
+      const amr = payload.amr;
+      if (!Array.isArray(amr) || !amr.includes('otp')) return false;
+    }
+
+    return true;
   } catch {
     // Istekao, izmijenjen ili potpisan pogrešnom tajnom — sve je isto "ne".
     return false;

@@ -464,15 +464,79 @@ openssl rand -base64 24   # ADMIN_ACCESS_CODE
 openssl rand -base64 32   # ADMIN_SESSION_SECRET
 ```
 
-- `ADMIN_ACCESS_CODE` — kod koji vlasnik unosi
+- `ADMIN_ACCESS_CODE` — kod koji vlasnik unosi. **Najmanje 12 znakova**; kraći se
+  ne prihvata nego prijava vraća poruku da ga treba produžiti. Ovaj jedan kod je
+  jedina brava između interneta i imena, mailova i telefona svih gostiju.
 - `ADMIN_SESSION_SECRET` — najmanje 32 znaka, potpisuje kolačić sesije
 
 Sesija traje 12 sati. Kolačić je `httpOnly` (JavaScript na stranici ne može do
-njega), kod se poredi u konstantnom vremenu, a nakon 5 pogrešnih pokušaja slijedi
-kratka pauza.
+njega), kod se poredi u konstantnom vremenu, a nakon 5 pogrešnih pokušaja u
+minuti slijedi kratka pauza.
 
 > `npm run doctor` odbija kodove koji su primjeri iz uputstva i upozorava na
 > kodove oblika „Ime1234" — takve pogađa svako ko te poznaje.
+
+### Dvofaktorska zaštita
+
+Uz pristupni kod, prijava može tražiti i šestocifreni broj iz aplikacije na
+telefonu (TOTP — Google Authenticator, Authy, 1Password, iOS Lozinke, bilo koja).
+Time ukraden ili pogođen pristupni kod više nije dovoljan.
+
+```bash
+npm run totp
+```
+
+Skripta napravi tajnu, pokaže je u obliku koji aplikacija razumije i **odmah
+provjeri da se poklapa** — pa je tek onda upisuješ u `ADMIN_TOTP_SECRET`. Bez te
+provjere bi se greška vidjela tek pri prvoj prijavi na živom sajtu, kada je već
+kasno.
+
+Dok je `ADMIN_TOTP_SECRET` prazan, prijava radi kao i prije — samo pristupni kod.
+Čim se postavi:
+
+- prijava traži oba podatka, na **istom ekranu**. Namjerno: da drugi ekran iskače
+  tek kad je pristupni kod tačan, napadaču koji pogađa bi to potvrdilo da je
+  pogodio prvi faktor;
+- **sve otvorene sesije prestaju vrijediti**, jer žeton nosi zapis kojim se
+  faktorima korisnik dokazao. Bez toga bi kartica otvorena prije uključivanja
+  zaštite narednih 12 sati radila bez nje;
+- isti kod se ne može upotrijebiti dvaput, pa onaj ko ga vidi preko ramena ne
+  stigne za tobom.
+
+> **Izgubljen telefon.** Obriši `ADMIN_TOTP_SECRET` iz Vercela i pokreni Redeploy
+> — prijava se vraća na sam pristupni kod, pa pokreni `npm run totp` s novim
+> telefonom. To je namjerno jedini rezervni izlaz: pristup hosting nalogu čuvaj
+> barem koliko i sam pristupni kod.
+
+Račun je pisan u [`src/lib/totp.ts`](src/lib/totp.ts) umjesto uzet kao gotov
+paket — kratak je, a provjeren **službenim test vektorima iz RFC-a 6238**
+([`src/lib/totp.test.ts`](src/lib/totp.test.ts)). Zaseban test pazi i da skripta
+za podešavanje računa isto što i sajt; da se raziđu, skripta bi rekla „poklapa
+se", a prijava bi isti kod odbijala.
+
+### Čime je administracija zatvorena
+
+Ne jednom bravom nego s više njih, jer podaci iza nje su tuđi:
+
+| Sloj | Gdje | Šta hvata |
+|---|---|---|
+| Drugi faktor (kod s telefona) | [`src/lib/totp.ts`](src/lib/totp.ts) | ukraden ili pogođen pristupni kod |
+| Čuvar ispred svega pod `/admin` i `/api/admin` | [`src/proxy.ts`](src/proxy.ts) | zahtjev bez sesije |
+| Ista provjera **u svakoj ruti posebno** | [`src/lib/admin-guard.ts`](src/lib/admin-guard.ts) | rutu koja ispadne iz `matcher`-a ili se premjesti |
+| Provjera porijekla zahtjeva | [`src/lib/csrf.ts`](src/lib/csrf.ts) | tuđu stranicu koja se vozi na vlasnikovoj otvorenoj sesiji |
+| Ograničenje pokušaja po adresi | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts) | skriptu koja gađa pristupni kod |
+| Pravila o sadržaju (CSP s jednokratnim potpisom) | [`src/proxy.ts`](src/proxy.ts) | ubačenu skriptu i otvaranje sajta u tuđem okviru |
+| Zabrana čitanja tabele `bookings` iz preglednika | [`supabase/schema.sql`](supabase/schema.sql) | pokušaj da se podaci gostiju izvuku javnim ključem |
+
+Dupliranje prve dvije stavke je namjerno. Čuvar na jednom mjestu pada zajedno s
+jednom omaškom u `matcher`-u, a ono što bi tada ispalo su imena, mailovi i
+telefoni gostiju — bez ijedne greške u logu. Test
+[`src/lib/admin-routes.test.ts`](src/lib/admin-routes.test.ts) čita sam izvorni
+kod i pukne ako se doda admin ruta koja je zaboravila `requireAdmin`.
+
+`CRON_SECRET` je **obavezan**: bez njega `/api/cron/expire-holds` vraća 401
+umjesto da se izvrši. Zaključana cron ruta ništa ne lomi — istekle termine
+oslobađa i svako čitanje dostupnosti.
 
 ---
 

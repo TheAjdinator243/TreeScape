@@ -294,6 +294,10 @@ export const ar: Dictionary = {
     ALREADY_RESOLVED: 'تمت معالجة هذا الطلب مسبقًا. حدّث الصفحة.',
     DATABASE_MISSING:
       'قاعدة البيانات غير مهيّأة. أضف مفاتيح Supabase إلى ‎.env.local‎ (أو إلى Vercel → Environment Variables) وشغّل الترحيلات من supabase/migrations.',
+    TOO_MANY_REQUESTS: 'محاولات كثيرة خلال وقت قصير. انتظر دقيقة ثم حاول مجددًا.',
+    ADMIN_CODE_WEAK: (min) =>
+      `‎ADMIN_ACCESS_CODE‎ قصير جدًا — يجب أن يتكوّن من ${min} رمزًا على الأقل. ` +
+      'تسجيل الدخول معطّل إلى أن يُطوَّل. أنشئ رمزًا بالأمر: openssl rand -base64 24',
     ADMIN_MISSING: 'لوحة الإدارة غير مهيّأة — ‎ADMIN_ACCESS_CODE‎ و‎ADMIN_SESSION_SECRET‎ مفقودان.',
   },
 
@@ -301,6 +305,8 @@ export const ar: Dictionary = {
     gateTitle: 'إدارة TreeScape',
     gateLead: 'أدخل رمز الدخول.',
     gateCode: 'رمز الدخول',
+    gateTotp: 'الرمز من هاتفك',
+    gateTotpHint: 'ستة أرقام من تطبيق المصادقة.',
     gateSubmit: 'فتح',
     gateWrong: 'رمز خاطئ.',
     gateLocked: 'محاولات كثيرة. انتظر دقيقة ثم حاول مجددًا.',

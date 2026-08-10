@@ -289,6 +289,10 @@ export const en: Dictionary = {
     ALREADY_RESOLVED: 'This request has already been handled. Please refresh the page.',
     DATABASE_MISSING:
       'The database is not configured. Add the Supabase keys to .env.local (or to Vercel → Environment Variables) and run the migrations from supabase/migrations.',
+    TOO_MANY_REQUESTS: 'Too many attempts in a short time. Please wait a minute and try again.',
+    ADMIN_CODE_WEAK: (min) =>
+      `ADMIN_ACCESS_CODE is too short — it must be at least ${min} characters. ` +
+      'Sign-in stays disabled until it is longer. Generate one with: openssl rand -base64 24',
     ADMIN_MISSING: 'The admin area is not configured — ADMIN_ACCESS_CODE and ADMIN_SESSION_SECRET are missing.',
   },
 
@@ -296,6 +300,8 @@ export const en: Dictionary = {
     gateTitle: 'TreeScape admin',
     gateLead: 'Enter the access code.',
     gateCode: 'Access code',
+    gateTotp: 'Code from your phone',
+    gateTotpHint: 'Six digits from your authenticator app.',
     gateSubmit: 'Unlock',
     gateWrong: 'Wrong code.',
     gateLocked: 'Too many attempts. Wait a minute and try again.',

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { requireAdmin } from '@/lib/admin-guard';
 import { describeIssues, invalidInput, readJson, requireDatabase } from '@/lib/api-helpers';
 import { blockDates } from '@/lib/booking-service';
 import { localeFromRequest } from '@/lib/i18n';
@@ -11,6 +12,9 @@ export const dynamic = 'force-dynamic';
 /** Ručno zatvaranje termina (održavanje, lični boravak, dogovor van sajta). */
 export async function POST(request: Request) {
   const locale = localeFromRequest(request);
+
+  const denied = await requireAdmin(request, locale);
+  if (denied) return denied;
 
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;

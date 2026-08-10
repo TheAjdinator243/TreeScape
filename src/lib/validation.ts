@@ -25,6 +25,15 @@ export type BookingRequest = z.infer<typeof bookingRequestSchema>;
 
 export const adminLoginSchema = z.object({
   code: z.string().min(1).max(200),
+  /**
+   * Šestocifreni kod s telefona. Neobavezan u shemi, a obavezan u ruti kad je
+   * `ADMIN_TOTP_SECRET` postavljen — tako prijava bez drugog faktora i dalje
+   * radi na sajtu koji ga još nije uključio.
+   *
+   * Gornja granica je široka jer se kod prvo očisti od razmaka i crtica;
+   * tačan oblik provjerava `verifyTotp`.
+   */
+  totp: z.string().trim().max(20).optional(),
 });
 
 export const blockDatesSchema = z.object({

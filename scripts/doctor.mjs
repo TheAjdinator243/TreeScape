@@ -324,6 +324,13 @@ if (!env.ADMIN_ACCESS_CODE) {
     'ADMIN_ACCESS_CODE je primjer iz uputstva — javno poznat',
     'obriši tu liniju iz .env.local pa pokreni: npm run setup'
   );
+} else if (env.ADMIN_ACCESS_CODE.length < 12) {
+  // Ovo nije savjet nego stanje: prijava s ovako kratkim kodom se odbija
+  // (vidi MIN_ACCESS_CODE_LENGTH u src/lib/admin-auth.ts).
+  bad(
+    `pristupni kod ima ${env.ADMIN_ACCESS_CODE.length} znakova — prijava je onemogućena`,
+    'najmanje 12, a najbolje: openssl rand -base64 24'
+  );
 } else if (env.ADMIN_ACCESS_CODE.length < 16) {
   warn(
     `pristupni kod ima ${env.ADMIN_ACCESS_CODE.length} znakova`,
@@ -357,8 +364,26 @@ if (!env.ADMIN_SESSION_SECRET) {
   ok('tajna sesije dovoljno duga');
 }
 
+/**
+ * Drugi faktor nije obavezan da bi sajt radio, ali jeste ono što dijeli
+ * "neko zna kod" od "neko ima i telefon". Zato upozorenje, ne samo bilješka.
+ */
+if (!env.ADMIN_TOTP_SECRET) {
+  warn(
+    'dvofaktorska zaštita nije uključena — pristupni kod je jedina brava',
+    'npm run totp  (traje minutu, treba ti aplikacija za provjeru na telefonu)'
+  );
+} else if (!/^[A-Z2-7]{16,}$/i.test(env.ADMIN_TOTP_SECRET.replace(/[=\s-]/g, ''))) {
+  bad(
+    'ADMIN_TOTP_SECRET nije ispravan base32 — prijava će padati',
+    'npm run totp  (napravi novu tajnu i ponovo dodaj nalog u aplikaciju)'
+  );
+} else {
+  ok('dvofaktorska zaštita uključena');
+}
+
 if (!env.CRON_SECRET) {
-  warn('nema CRON_SECRET — svako bi mogao pozvati cron adresu', 'npm run setup');
+  bad('nema CRON_SECRET — cron ruta se ne izvršava (vraća 401)', 'npm run setup');
 } else {
   ok('cron tajna postavljena');
 }
