@@ -1,27 +1,36 @@
 import Image from 'next/image';
 
-import { Parallax } from '@/components/motion/Parallax';
+import { Scene } from '@/components/motion/Scene';
 import { TextReveal } from '@/components/motion/TextReveal';
 import { formatLong, todayStr } from '@/lib/dates';
 import { HERO_IMAGE } from '@/lib/gallery';
 import { getServerStrings } from '@/lib/i18n/server';
 import { formatMoney } from '@/lib/pricing';
 
+import { CanopyTop, TreelineBottom } from './Treeline';
+
 /**
- * Naslovni ekran.
+ * Naslovna scena.
  *
- * Fotografija se pri skrolanju kreće sporije od teksta preko nje (`Parallax`),
- * a pri učitavanju se jednom, polako, vrati iz uvećanja. Oba pokreta su čist
- * `transform` — ništa se ne prerasporedi, pa naslov ne treperi dok slika radi.
+ * Odjeljak je visok dva i po ekrana, a njegov sadržaj stoji na vrhu dok se
+ * kroz njega skrola (`Scene`). Rezultat je da stranica naizgled stane, a
+ * kamera krene naprijed: krošnja se diže, četinari se spuštaju, fotografija
+ * raste, ime kuće se razmakne preko sredine, i sve se na kraju ispere u boju
+ * papira — na kojoj počinje sljedeći odjeljak.
  *
- * Naslov se ispisuje riječ po riječ, ali BEZ ijednog reda JavaScripta: odgoda
- * po riječi je obična CSS animacija (vidi `motion/TextReveal.tsx`). Naslovni
- * ekran je jedino mjesto gdje kašnjenje od pola sekunde stvarno smeta, pa je
- * baš ovdje i najmanje koda.
+ * ── Odakle dubina ─────────────────────────────────────────────────────────
+ * Iz razlike brzina, ne iz uvećanja. Prednji slojevi rastu oko tri puta više
+ * od fotografije, a nebo iza jedva primjetno. To oko čita kao KRETANJE
+ * NAPRIJED; da svi rastu jednako, vidjelo bi se samo uvećavanje slike.
  *
- * Traka s podacima ispod dugmadi nije ukras: `firstFree` je prvi stvarno
- * slobodan datum iz istih termina koje crta kalendar niže, pa "provjeri
- * dostupnost" ima odgovor i prije nego se klikne.
+ * Prednji slojevi su crteži, a ne fotografija, i to iz nužde: da bi kamera
+ * mogla proći kroz nešto, taj sloj mora biti izrezan od pozadine, s
+ * prozirnošću. Fotografija kuće je jedna ravna slika (vidi `Treeline.tsx`).
+ *
+ * ── Šta se NE gubi ────────────────────────────────────────────────────────
+ * Cijeli tekst — naslov, cijena, podaci o kući i prvi slobodan termin — stoji
+ * u HTML-u koji stiže sa servera, u prvom kadru scene. Google i čitač ekrana
+ * ga vide bez obzira na to što ga animacija kasnije skloni.
  */
 export async function PlusHero({
   fromCents,
@@ -44,11 +53,20 @@ export async function PlusHero({
   ];
 
   return (
-    <section id="vrh" className="relative flex min-h-[94svh] items-end overflow-hidden">
-      {/* Slika je viša od svog okvira (`-inset-y-16`): bez tog viška bi se pri
-          paralaksi vidio rub ispod nje. */}
-      <Parallax speed={0.14} className="absolute -inset-y-16 inset-x-0">
-        <div className="animate-slow-zoom relative h-full w-full">
+    <Scene id="vrh" className="plus-scene bg-pine-950">
+      <div className="plus-scene-pin">
+        {/* ── Sloj 1: nebo ─────────────────────────────────────────────── */}
+        <div
+          className="scene-sky absolute inset-0"
+          aria-hidden="true"
+          style={{
+            backgroundImage:
+              'radial-gradient(120% 90% at 50% 15%, #24493a 0%, #12251d 55%, #081310 100%)',
+          }}
+        />
+
+        {/* ── Sloj 2: fotografija kuće ─────────────────────────────────── */}
+        <div className="scene-photo absolute inset-0">
           <Image
             src={HERO_IMAGE}
             alt={t.hero.imageAlt}
@@ -59,127 +77,133 @@ export async function PlusHero({
             placeholder="blur"
             className="object-cover"
           />
+          {/* Opna preko fotografije: bez nje su i bijeli tekst i tamna silueta
+              nečitljivi na svijetlom dijelu slike. */}
+          <div className="absolute inset-0 bg-pine-950/45" aria-hidden="true" />
         </div>
-      </Parallax>
 
-      {/* Tri sloja umjesto jednog gradijenta: ravna opna smiruje fotografiju,
-          gradijent odozdo drži tekst čitljivim, a onaj odozgo daje navigaciji
-          podlogu koja se ne vidi kao traka. */}
-      <div className="absolute inset-0 bg-pine-950/30" aria-hidden="true" />
-      <div
-        className="absolute inset-0 bg-gradient-to-t from-pine-950/92 via-pine-950/35 to-transparent"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-pine-950/55 to-transparent"
-        aria-hidden="true"
-      />
+        {/* ── Sloj 3: ime kuće u prostoru ──────────────────────────────── */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <p
+            className="scene-ghost select-none whitespace-nowrap text-[13vw] leading-none text-paper-50/25"
+            style={{ fontFamily: 'var(--font-plus-display)' }}
+            aria-hidden="true"
+          >
+            {t.site.name}
+          </p>
+        </div>
 
-      <div className="relative mx-auto w-full max-w-6xl px-5 pb-16 pt-32 sm:px-8 sm:pb-20 md:pb-28">
-        <p className="animate-fade-rise plus-sans flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-sage-300">
-          <span className="h-px w-8 bg-sage-300/50" aria-hidden="true" />
-          {t.hero.eyebrow}
-        </p>
+        {/* ── Sloj 4: krošnja i četinari, prednji plan ─────────────────── */}
+        <CanopyTop className="scene-canopy-top pointer-events-none absolute inset-x-0 top-0 h-[26svh] w-full text-pine-950" />
+        <TreelineBottom className="scene-trees-bottom pointer-events-none absolute inset-x-0 bottom-0 h-[34svh] w-full text-pine-950" />
 
-        <TextReveal
-          as="h1"
-          text={t.hero.title}
-          delay={120}
-          className="mt-5 block text-[3.6rem] leading-[1] text-white sm:text-7xl md:text-8xl lg:text-[7.5rem]"
+        {/* ── Sloj 5: tekst ────────────────────────────────────────────── */}
+        <div className="scene-copy absolute inset-0 flex items-end">
+          <div className="mx-auto w-full max-w-6xl px-5 pb-16 pt-32 sm:px-8 sm:pb-20 md:pb-24">
+            <p className="animate-fade-rise plus-sans flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-sage-300">
+              <span className="h-px w-8 bg-sage-300/50" aria-hidden="true" />
+              {t.hero.eyebrow}
+            </p>
+
+            <TextReveal
+              as="h1"
+              text={t.hero.title}
+              delay={120}
+              className="mt-5 block text-[3.6rem] leading-[1] text-white sm:text-7xl md:text-8xl lg:text-[7.5rem]"
+            />
+
+            <p
+              className="animate-fade-rise mt-6 max-w-xl text-lg leading-relaxed text-paper-100 sm:text-xl"
+              style={{ animationDelay: '260ms' }}
+            >
+              {t.hero.subtitle}
+            </p>
+
+            <div
+              className="animate-fade-rise mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center"
+              style={{ animationDelay: '340ms' }}
+            >
+              {/* Na telefonu su dugmad jedno ispod drugog i preko cijele
+                  širine — dvije pilule različite širine uz lijevu ivicu
+                  izgledaju kao greška, a i palac ih teže pogodi. */}
+              <a href="#rezervacija" className="plus-btn-accent px-8 py-4 text-base">
+                {t.hero.cta}
+              </a>
+              <a href="#galerija" className="plus-btn-onlight px-7 py-4 text-base">
+                {t.hero.secondaryCta}
+              </a>
+            </div>
+
+            <dl
+              className="animate-fade-rise mt-9 flex flex-wrap items-baseline gap-x-7 gap-y-3 text-paper-100 sm:gap-x-9"
+              style={{ animationDelay: '420ms' }}
+            >
+              {facts.map((fact) => (
+                <div key={fact.label} className="flex items-baseline gap-2">
+                  <dt className="sr-only">{fact.label}</dt>
+                  <dd className="flex items-baseline gap-2">
+                    <span
+                      className="text-2xl text-white"
+                      style={{ fontFamily: 'var(--font-plus-display)' }}
+                    >
+                      {fact.value}
+                    </span>
+                    <span className="text-sm text-paper-200/85">{fact.label}</span>
+                  </dd>
+                </div>
+              ))}
+
+              <div className="flex items-baseline gap-2">
+                <dt className="text-sm text-paper-200/85">{t.common.from}</dt>
+                <dd className="flex items-baseline gap-1.5">
+                  <span
+                    className="text-2xl text-white"
+                    style={{ fontFamily: 'var(--font-plus-display)' }}
+                  >
+                    {formatMoney(fromCents, symbol, locale)}
+                  </span>
+                  <span className="text-sm text-paper-200/85">/ {t.common.day}</span>
+                </dd>
+              </div>
+            </dl>
+
+            {/* Prvi slobodan datum — isti podatak koji crta kalendar niže, samo
+                izračunat unaprijed. Nema ga jedino ako je sve zauzeto dvije
+                godine unaprijed, pa se tada red i ne ispisuje. */}
+            {firstFree && (
+              <p
+                className="animate-fade-rise plus-chip-onlight mt-6"
+                style={{ animationDelay: '500ms' }}
+              >
+                <span className="relative flex h-2 w-2" aria-hidden="true">
+                  <span className="animate-pulse-ring absolute inset-0 rounded-full bg-sage-400" />
+                  <span className="relative h-2 w-2 rounded-full bg-sage-400" />
+                </span>
+                {freeToday ? t.hero.freeToday : t.hero.freeFrom(formatLong(firstFree, locale))}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ── Sloj 6: ispiranje u boju papira ──────────────────────────── */}
+        <div
+          className="scene-wash pointer-events-none absolute inset-0 bg-paper-50"
+          aria-hidden="true"
         />
 
-        <p
-          className="animate-fade-rise mt-6 max-w-xl text-lg leading-relaxed text-paper-100 sm:text-xl"
-          style={{ animationDelay: '260ms' }}
-        >
-          {t.hero.subtitle}
-        </p>
-
-        <div
-          className="animate-fade-rise mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center"
-          style={{ animationDelay: '340ms' }}
-        >
-          {/*
-            Na telefonu su dugmad jedno ispod drugog i preko cijele širine.
-            Dvije pilule različite širine, poredane jedna ispod druge uz lijevu
-            ivicu, izgledaju kao greška — a i palac ih teže pogodi.
-          */}
-          <a href="#rezervacija" className="plus-btn-accent px-8 py-4 text-base">
-            {t.hero.cta}
-          </a>
-          <a href="#galerija" className="plus-btn-onlight px-7 py-4 text-base">
-            {t.hero.secondaryCta}
-          </a>
-        </div>
-
-        {/*
-          Podaci u jednom redu.
-
-          Na telefonu se red prelama, pa razdvajanje NE smije biti okvir na
-          svakoj stavci — prelomljene ivice bi izgledale kao razbijena tabela.
-          Zato razmak, a ne linije.
-        */}
-        <dl
-          className="animate-fade-rise mt-10 flex flex-wrap items-baseline gap-x-7 gap-y-3 text-paper-100 sm:gap-x-9"
-          style={{ animationDelay: '420ms' }}
-        >
-          {facts.map((fact) => (
-            <div key={fact.label} className="flex items-baseline gap-2">
-              <dt className="sr-only">{fact.label}</dt>
-              <dd className="flex items-baseline gap-2">
-                <span
-                  className="text-2xl text-white"
-                  style={{ fontFamily: 'var(--font-plus-display)' }}
-                >
-                  {fact.value}
-                </span>
-                <span className="text-sm text-paper-200/85">{fact.label}</span>
-              </dd>
-            </div>
-          ))}
-
-          <div className="flex items-baseline gap-2">
-            <dt className="text-sm text-paper-200/85">{t.common.from}</dt>
-            <dd className="flex items-baseline gap-1.5">
-              <span
-                className="text-2xl text-white"
-                style={{ fontFamily: 'var(--font-plus-display)' }}
-              >
-                {formatMoney(fromCents, symbol, locale)}
-              </span>
-              <span className="text-sm text-paper-200/85">/ {t.common.day}</span>
-            </dd>
-          </div>
-        </dl>
-
-        {/* Prvi slobodan datum — isti podatak koji crta kalendar niže, samo
-            izračunat unaprijed. Nema ga jedino ako je sve zauzeto dvije godine
-            unaprijed, pa se tada red i ne ispisuje. */}
-        {firstFree && (
-          <p
-            className="animate-fade-rise plus-chip-onlight mt-6"
-            style={{ animationDelay: '500ms' }}
-          >
-            <span className="relative flex h-2 w-2" aria-hidden="true">
-              <span className="animate-pulse-ring absolute inset-0 rounded-full bg-sage-400" />
-              <span className="relative h-2 w-2 rounded-full bg-sage-400" />
+        {/* Nagovještaj da scena traži skrol. Nestaje zajedno s tekstom. */}
+        <div className="scene-copy pointer-events-none absolute inset-x-0 bottom-6 hidden justify-center lg:flex">
+          <span className="plus-sans flex flex-col items-center gap-3 text-[0.7rem] uppercase tracking-[0.25em] text-white/60">
+            {t.hero.scroll}
+            <span
+              className="relative block h-10 w-px overflow-hidden bg-white/25"
+              aria-hidden="true"
+            >
+              <span className="animate-scroll-hint absolute inset-x-0 top-0 block h-4 bg-white/90" />
             </span>
-            {freeToday ? t.hero.freeToday : t.hero.freeFrom(formatLong(firstFree, locale))}
-          </p>
-        )}
+          </span>
+        </div>
       </div>
-
-      <a
-        href="#o-kuci"
-        className="plus-sans absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.7rem] uppercase tracking-[0.25em] text-white/65 transition-colors hover:text-white lg:flex"
-      >
-        {t.hero.scroll}
-        {/* Crtica koja klizne niz liniju umjesto strelice koja poskakuje —
-            isti nagovještaj, upola manje pokreta na ekranu. */}
-        <span className="relative block h-10 w-px overflow-hidden bg-white/25" aria-hidden="true">
-          <span className="animate-scroll-hint absolute inset-x-0 top-0 block h-4 bg-white/90" />
-        </span>
-      </a>
-    </section>
+    </Scene>
   );
 }

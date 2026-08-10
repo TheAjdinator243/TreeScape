@@ -336,6 +336,8 @@ ono što kod stvarno radi.
 
 | | Gdje živi |
 |---|---|
+| Naslovna scena kroz koju se ulazi | `motion/Scene.tsx` + `.plus-scene`/`.scene-*` u globals.css |
+| Silueta šume (prednji plan scene) | `plus/Treeline.tsx` |
 | Glatki skrol s inercijom | `motion/SmoothScroll.tsx` (Lenis) |
 | Slojevi na različitim brzinama | `motion/Parallax.tsx` |
 | Naslovi red po red | `motion/LineReveal.tsx` + `.line-reveal` u globals.css |
@@ -347,6 +349,14 @@ Sve što se kreće uz skrol dijeli JEDAN `requestAnimationFrame`
 (`motion/scroll-ticker.ts`). Nije sitnica: skrol vodi Lenis iz svog rAF-a, pa
 bi sloj koji sluša `scroll` događaj crtao kadar kasnije i vidljivo „plivao" za
 sadržajem.
+
+**Naslovna scena** radi tako što je odjeljak visok dva i po ekrana, a njegov
+sadržaj je `position: sticky` — stranica naizgled stane, a kamera krene
+naprijed. JavaScript pritom postavlja SAMO `--p` (koliko je scene prošlo, od 0
+do 1); koji sloj koliko naraste i kad se šta pojavi računa CSS iz te jedne
+brojke. Prednji plan (krošnja i četinari) je vektorski crtež, jer sloj kroz
+koji kamera prolazi mora biti izrezan od pozadine — fotografija kuće je jedna
+ravna slika i takva se ne može rastaviti.
 
 Lenis je jedina biblioteka na cijelom sajtu (oko 4 KB) i uključuje se samo na
 ovoj stranici. Ko u sistemu ima „smanji animacije", ne dobija ništa od ovoga —
