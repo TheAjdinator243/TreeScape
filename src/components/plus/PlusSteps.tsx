@@ -1,3 +1,4 @@
+import { LineReveal } from '@/components/motion/LineReveal';
 import { Reveal } from '@/components/motion/Reveal';
 import { getServerStrings } from '@/lib/i18n/server';
 
@@ -21,9 +22,9 @@ export async function PlusSteps() {
       <div className="plus-section">
         <Reveal>
           <p className="plus-eyebrow">{t.steps.eyebrow}</p>
-          <h2 className="plus-title">{t.steps.heading}</h2>
-          <p className="plus-lead">{t.steps.lead}</p>
         </Reveal>
+        <LineReveal as="h2" className="plus-title" text={t.steps.heading} />
+        <LineReveal as="p" className="plus-lead" text={t.steps.lead} delay={120} stagger={70} />
 
         <ol className="mt-14 grid gap-6 md:grid-cols-3 md:gap-5 lg:gap-6">
           {t.steps.items.map((step, i) => (

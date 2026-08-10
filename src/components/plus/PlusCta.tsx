@@ -1,3 +1,5 @@
+import { LineReveal } from '@/components/motion/LineReveal';
+import { Parallax } from '@/components/motion/Parallax';
 import { Reveal } from '@/components/motion/Reveal';
 import { CONTACT } from '@/components/site/Footer';
 import { getServerStrings } from '@/lib/i18n/server';
@@ -19,23 +21,31 @@ export async function PlusCta() {
     <section className="relative overflow-hidden bg-pine-950 text-paper-100">
       {/* Ista svjetlosna mrlja kao na plohi sa sadržajima — dvije tamne plohe
           na istoj stranici moraju izgledati kao ista ploha, a ne kao dvije. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            'radial-gradient(55% 60% at 50% 0%, rgb(58 122 96 / 0.3), transparent 70%),' +
-            'radial-gradient(40% 50% at 85% 100%, rgb(184 106 65 / 0.14), transparent 70%)',
-        }}
-      />
+      <Parallax speed={-0.12} className="pointer-events-none absolute -inset-y-24 inset-x-0">
+        <div
+          aria-hidden="true"
+          className="h-full w-full"
+          style={{
+            backgroundImage:
+              'radial-gradient(55% 60% at 50% 0%, rgb(58 122 96 / 0.3), transparent 70%),' +
+              'radial-gradient(40% 50% at 85% 100%, rgb(184 106 65 / 0.14), transparent 70%)',
+          }}
+        />
+      </Parallax>
 
       <div className="plus-section relative text-center">
-        <Reveal>
-          <h2 className="plus-title mx-auto max-w-3xl text-paper-50">{t.finalCta.heading}</h2>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-paper-200/75">
-            {t.finalCta.lead}
-          </p>
-        </Reveal>
+        <LineReveal
+          as="h2"
+          className="plus-title mx-auto max-w-3xl text-paper-50"
+          text={t.finalCta.heading}
+        />
+        <LineReveal
+          as="p"
+          className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-paper-200/75"
+          text={t.finalCta.lead}
+          delay={120}
+          stagger={70}
+        />
 
         <Reveal delay={120}>
           <div className="mx-auto mt-10 flex max-w-md flex-col items-stretch gap-3 sm:max-w-none sm:flex-row sm:items-center sm:justify-center">

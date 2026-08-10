@@ -1054,6 +1054,159 @@ html[lang='ar'] body * {
   animation: scroll-hint 2.2s var(--ease-out-soft) infinite;
 }
 
+/* ── Naslovna scena kroz koju se ulazi (vidi `motion/Scene.tsx`) ─────────
+   JavaScript postavlja samo `--p` — koliko je scene prošlo, od 0 do 1. Sve
+   ostalo je ovdje: koji sloj koliko naraste, kad se koji tekst pojavi, kad se
+   ekran ispere u svijetlo.
+
+   Sve je `transform` i `opacity`, jedine dvije osobine koje preglednik može
+   odraditi na grafičkoj kartici. Nijedan sloj ne dira visinu ni razmak, pa se
+   raspored stranice pri skrolanju ne računa iznova ni jednom.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.plus-scene {
+  position: relative;
+  /* Bez JavaScripta i uz "smanji animacije" ostaje običan naslovni ekran. */
+  height: 100svh;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Staza: dva i po ekrana skrola za jedan ekran scene. Duže od ovoga i
+     posjetilac počne misliti da se stranica zaglavila. */
+  .plus-scene[data-scene='on'] {
+    height: 250svh;
+  }
+}
+
+.plus-scene-pin {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* Nebo iza svega — jedva se kreće, kao pravi horizont. */
+.scene-sky {
+  transform: scale(calc(1 + var(--p, 0) * 0.12));
+}
+
+/* Fotografija kuće: kamera ulazi u nju. */
+.scene-photo {
+  transform: scale(calc(1 + var(--p, 0) * 0.95));
+}
+
+/*
+ * Prednji slojevi. Oni se kreću NAJVIŠE i to je cijeli efekt: kad prednje
+ * raste brže od zadnjeg, oko to čita kao kretanje naprijed, a ne kao
+ * uvećavanje slike.
+ *
+ * `transform-origin` je na ivici uz koju sloj stoji, pa krošnja raste prema
+ * gore i van ekrana, a četinari prema dolje.
+ */
+.scene-trees-bottom {
+  transform-origin: 50% 100%;
+  /*
+   * Pomak nadolje je NAMJERNO veći od rasta.
+   *
+   * Prvi pokušaj je stabla samo uvećavao i ona su rasla u kadar — izgledalo je
+   * kao da šuma raste, a ne kao da se kroz nju prolazi. Kad prednji plan
+   * istovremeno raste i IZLAZI iz kadra, oko to čita kao da ga je kamera
+   * prošla. To je cijela razlika između "zumiranja" i "kretanja".
+   */
+  transform: translate3d(0, calc(var(--p, 0) * 48vh), 0) scale(calc(1 + var(--p, 0) * 2.4));
+}
+
+.scene-canopy-top {
+  transform-origin: 50% 0%;
+  transform: translate3d(0, calc(var(--p, 0) * -36vh), 0) scale(calc(1 + var(--p, 0) * 2.2));
+}
+
+/*
+ * Naslov i dugmad.
+ *
+ * Nestaju rano (`* 3.4` znači da su na nuli već na trećini scene) — dok se
+ * kamera kreće, tekst preko nje se ne može čitati, pa nema razloga da smeta.
+ * `visibility` se gasi na kraju da nevidljiva dugmad ne hvataju klikove.
+ */
+.scene-copy {
+  opacity: calc(1 - var(--p, 0) * 3.4);
+  transform: translate3d(0, calc(var(--p, 0) * -10vh), 0);
+}
+
+/*
+ * Kad je tekst već nestao, ne smije hvatati klikove.
+ *
+ * `opacity: 0` element i dalje prima klikove i tabulator — dugme "Provjeri
+ * dostupnost" bi ostalo nevidljivo, a i dalje bi se moglo pritisnuti usred
+ * scene. Zastavicu `data-past` postavlja `Scene.tsx` kad `--p` pređe 0.3, i
+ * to je jedini put kad se u toj scenu ičim dira DOM osim same brojke.
+ */
+.plus-scene[data-past='true'] .scene-copy {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/*
+ * Ime kuće razmaknutim slovima, usred scene.
+ *
+ * Pojavi se tek kad naslov ode (`--p` oko 0.32) i raste zajedno s kamerom, pa
+ * djeluje kao da stoji U prostoru, a ne na staklu preko njega.
+ */
+.scene-ghost {
+  opacity: calc((var(--p, 0) - 0.32) * 3.6);
+  letter-spacing: calc(0.18em + var(--p, 0) * 0.42em);
+  transform: scale(calc(0.92 + var(--p, 0) * 0.3));
+}
+
+/*
+ * Ispiranje u boju papira na kraju.
+ *
+ * Nije ukras nego spoj: sljedeći odjeljak ("O kući") je na istoj toj boji, pa
+ * scena ne prestaje nego prelazi u njega.
+ */
+.scene-wash {
+  opacity: calc((var(--p, 0) - 0.74) * 4.2);
+}
+
+/* ── Otkrivanje naslova red po red ───────────────────────────────────────
+   Pripada `motion/LineReveal.tsx`. Redni broj reda upisuje JavaScript, jer
+   samo preglednik zna gdje se tekst prelomio; sve ostalo — maska, pomak,
+   kašnjenje — je čist CSS.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.line-reveal-mask {
+  display: inline-flex;
+  overflow: hidden;
+  /* Bez ovoga maska odsiječe repove slova koja se spuštaju ispod osnovne
+     linije (j, g, p, ć) — a u bosanskom i arapskom ih ima u svakom naslovu. */
+  padding-bottom: 0.14em;
+  vertical-align: bottom;
+}
+
+.line-reveal-word {
+  display: inline-block;
+  opacity: 0;
+  /* Pomak je u `em`, a ne u pikselima: naslov je na telefonu upola manji, pa
+     bi fiksnih 40px tamo bacilo riječ daleko ispod reza. U `em` je pomak
+     uvijek tačno "jedna visina slova". */
+  transform: translateY(1.05em);
+  transition:
+    opacity 0.85s var(--ease-out-expo),
+    transform 0.85s var(--ease-out-expo);
+  /*
+   * Kašnjenje po REDU, ne po riječi.
+   *
+   * `--line` upisuje JavaScript nakon mjerenja; dok ga nema, `var(..., 0)`
+   * znači da cijeli naslov krene odjednom — ružnije, ali nikad zaglavljeno.
+   */
+  transition-delay: calc(var(--line-delay, 0ms) + var(--line, 0) * var(--line-step, 90ms));
+}
+
+.line-reveal[data-shown='true'] .line-reveal-word {
+  opacity: 1;
+  transform: none;
+}
+
 /* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */
 @media (prefers-reduced-motion: reduce) {
   html {

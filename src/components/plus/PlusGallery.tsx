@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/components/i18n/LocaleProvider';
+import { LineReveal } from '@/components/motion/LineReveal';
 import { Reveal } from '@/components/motion/Reveal';
 import { Lightbox, galleryStep } from '@/components/site/Lightbox';
 import { GALLERY } from '@/lib/gallery';
@@ -35,9 +36,9 @@ export function PlusGallery() {
       <div className="plus-section">
         <Reveal>
           <p className="plus-eyebrow">{t.site.name}</p>
-          <h2 className="plus-title">{t.gallery.heading}</h2>
-          <p className="plus-lead">{t.gallery.lead}</p>
         </Reveal>
+        <LineReveal as="h2" className="plus-title" text={t.gallery.heading} />
+        <LineReveal as="p" className="plus-lead" text={t.gallery.lead} delay={120} stagger={70} />
 
         <ul className="mt-12 grid auto-rows-[150px] grid-flow-dense grid-cols-2 gap-2.5 sm:auto-rows-[200px] sm:gap-3 md:grid-cols-4 md:gap-4 lg:auto-rows-[230px]">
           {GALLERY.map((item, i) => (
@@ -57,7 +58,7 @@ export function PlusGallery() {
               <button
                 type="button"
                 onClick={() => setOpenIndex(i)}
-                className="h-full w-full cursor-zoom-in"
+                className="relative h-full w-full cursor-zoom-in"
                 aria-label={`${t.gallery.open}: ${t.gallery.itemCaption(item.n)}`}
               >
                 <Image

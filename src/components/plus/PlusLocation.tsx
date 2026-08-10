@@ -1,3 +1,4 @@
+import { LineReveal } from '@/components/motion/LineReveal';
 import { Reveal } from '@/components/motion/Reveal';
 import { getServerStrings } from '@/lib/i18n/server';
 import { GOOGLE_MAPS_URL, MAP_SRC, TRAVEL } from '@/lib/location';
@@ -21,8 +22,14 @@ export async function PlusLocation() {
       <div className="plus-section grid gap-12 lg:grid-cols-2 lg:gap-16">
         <Reveal>
           <p className="plus-eyebrow">{t.nav.location}</p>
-          <h2 className="plus-title">{t.location.heading}</h2>
-          <p className="plus-lead">{t.location.lead}</p>
+          <LineReveal as="h2" className="plus-title" text={t.location.heading} />
+          <LineReveal
+            as="p"
+            className="plus-lead"
+            text={t.location.lead}
+            delay={120}
+            stagger={70}
+          />
 
           <dl className="mt-10 border-t border-paper-200">
             {TRAVEL.map((row) => (

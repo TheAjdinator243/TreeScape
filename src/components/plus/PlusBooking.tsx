@@ -3,6 +3,7 @@
 import { StayCalendar } from '@/components/booking/StayCalendar';
 import { scrollToSummary, useStayForm } from '@/components/booking/useStayForm';
 import { useI18n } from '@/components/i18n/LocaleProvider';
+import { LineReveal } from '@/components/motion/LineReveal';
 import { Reveal } from '@/components/motion/Reveal';
 import { daysBetween, formatLong } from '@/lib/dates';
 import { count } from '@/lib/i18n';
@@ -55,9 +56,9 @@ export function PlusBooking({ context }: { context: BookingContext }) {
       <div className="plus-section">
         <Reveal>
           <p className="plus-eyebrow">{t.nav.book}</p>
-          <h2 className="plus-title">{t.booking.heading}</h2>
-          <p className="plus-lead">{t.booking.lead}</p>
         </Reveal>
+        <LineReveal as="h2" className="plus-title" text={t.booking.heading} />
+        <LineReveal as="p" className="plus-lead" text={t.booking.lead} delay={120} stagger={70} />
 
         <div className="mt-12 grid gap-5 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6">
           {/* ── Kalendar ── */}
