@@ -2,10 +2,13 @@ import { after, NextResponse } from 'next/server';
 
 import { describeIssues, invalidInput, readJson, requireDatabase, serverError } from '@/lib/api-helpers';
 import { getBookingByToken } from '@/lib/booking-service';
+import { rateLimitKey } from '@/lib/client-ip';
+import { requireSameOrigin } from '@/lib/csrf';
 import { todayStr } from '@/lib/dates';
 import { sendGuestCancelled } from '@/lib/email';
 import { getStrings, localeFromRequest } from '@/lib/i18n';
 import { notifyOwnerGuestCancelled } from '@/lib/notify';
+import { consumeRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 import type { Booking } from '@/lib/types';
 import { guestCancelSchema } from '@/lib/validation';
@@ -15,6 +18,14 @@ export const dynamic = 'force-dynamic';
 
 /** Stanja iz kojih gost još smije odustati. */
 const CANCELLABLE = ['pending_cash', 'pending_payment', 'pending_transfer', 'confirmed'];
+
+/**
+ * Token je uuid v4, pa se ne može pogoditi ni u milijardu pokušaja — ali
+ * ograničenje svejedno stoji, da ova ruta ne posluži kao besplatan način da se
+ * vlasniku pošalje proizvoljan broj obavijesti o otkazivanju.
+ */
+const MAX_CANCELS = 10;
+const CANCEL_WINDOW_MS = 10 * 60_000;
 
 /**
  * Gost sam otkazuje svoju rezervaciju, sa stranice s potvrdom.
@@ -28,8 +39,22 @@ export async function POST(request: Request) {
   const locale = localeFromRequest(request);
   const t = getStrings(locale);
 
+  const wrongOrigin = requireSameOrigin(request, locale);
+  if (wrongOrigin) return wrongOrigin;
+
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;
+
+  const key = rateLimitKey(request, 'booking-cancel');
+  if (key) {
+    const limit = consumeRateLimit(key, MAX_CANCELS, CANCEL_WINDOW_MS);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: t.errors.TOO_MANY_REQUESTS },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+      );
+    }
+  }
 
   const parsed = guestCancelSchema.safeParse(await readJson(request));
   if (!parsed.success) return invalidInput(locale, describeIssues(parsed.error));
@@ -57,8 +82,10 @@ export async function POST(request: Request) {
     .in('status', CANCELLABLE);
 
   if (error) {
+    // Poruka iz baze ostaje u logu. Gostu ne znači ništa, a otkriva kako je
+    // sistem građen — takav detalj se šalje samo u administraciju.
     console.error('[treescape] gost nije mogao otkazati:', error.message);
-    return serverError(locale, error.message);
+    return serverError(locale);
   }
 
   /**

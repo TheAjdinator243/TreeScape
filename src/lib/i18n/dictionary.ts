@@ -271,6 +271,8 @@ export interface Dictionary {
     ALREADY_RESOLVED: string;
     DATABASE_MISSING: string;
     ADMIN_MISSING: string;
+    ADMIN_CODE_WEAK: (min: number) => string;
+    TOO_MANY_REQUESTS: string;
   };
 
   admin: {

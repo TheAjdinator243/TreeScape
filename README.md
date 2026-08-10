@@ -464,15 +464,40 @@ openssl rand -base64 24   # ADMIN_ACCESS_CODE
 openssl rand -base64 32   # ADMIN_SESSION_SECRET
 ```
 
-- `ADMIN_ACCESS_CODE` — kod koji vlasnik unosi
+- `ADMIN_ACCESS_CODE` — kod koji vlasnik unosi. **Najmanje 12 znakova**; kraći se
+  ne prihvata nego prijava vraća poruku da ga treba produžiti. Ovaj jedan kod je
+  jedina brava između interneta i imena, mailova i telefona svih gostiju.
 - `ADMIN_SESSION_SECRET` — najmanje 32 znaka, potpisuje kolačić sesije
 
 Sesija traje 12 sati. Kolačić je `httpOnly` (JavaScript na stranici ne može do
-njega), kod se poredi u konstantnom vremenu, a nakon 5 pogrešnih pokušaja slijedi
-kratka pauza.
+njega), kod se poredi u konstantnom vremenu, a nakon 5 pogrešnih pokušaja u
+minuti slijedi kratka pauza.
 
 > `npm run doctor` odbija kodove koji su primjeri iz uputstva i upozorava na
 > kodove oblika „Ime1234" — takve pogađa svako ko te poznaje.
+
+### Čime je administracija zatvorena
+
+Ne jednom bravom nego s više njih, jer podaci iza nje su tuđi:
+
+| Sloj | Gdje | Šta hvata |
+|---|---|---|
+| Čuvar ispred svega pod `/admin` i `/api/admin` | [`src/proxy.ts`](src/proxy.ts) | zahtjev bez sesije |
+| Ista provjera **u svakoj ruti posebno** | [`src/lib/admin-guard.ts`](src/lib/admin-guard.ts) | rutu koja ispadne iz `matcher`-a ili se premjesti |
+| Provjera porijekla zahtjeva | [`src/lib/csrf.ts`](src/lib/csrf.ts) | tuđu stranicu koja se vozi na vlasnikovoj otvorenoj sesiji |
+| Ograničenje pokušaja po adresi | [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts) | skriptu koja gađa pristupni kod |
+| Pravila o sadržaju (CSP s jednokratnim potpisom) | [`src/proxy.ts`](src/proxy.ts) | ubačenu skriptu i otvaranje sajta u tuđem okviru |
+| Zabrana čitanja tabele `bookings` iz preglednika | [`supabase/schema.sql`](supabase/schema.sql) | pokušaj da se podaci gostiju izvuku javnim ključem |
+
+Dupliranje prve dvije stavke je namjerno. Čuvar na jednom mjestu pada zajedno s
+jednom omaškom u `matcher`-u, a ono što bi tada ispalo su imena, mailovi i
+telefoni gostiju — bez ijedne greške u logu. Test
+[`src/lib/admin-routes.test.ts`](src/lib/admin-routes.test.ts) čita sam izvorni
+kod i pukne ako se doda admin ruta koja je zaboravila `requireAdmin`.
+
+`CRON_SECRET` je **obavezan**: bez njega `/api/cron/expire-holds` vraća 401
+umjesto da se izvrši. Zaključana cron ruta ništa ne lomi — istekle termine
+oslobađa i svako čitanje dostupnosti.
 
 ---
 

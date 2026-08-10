@@ -2,13 +2,31 @@ import { after, NextResponse } from 'next/server';
 
 import { invalidInput, readJson, requireDatabase } from '@/lib/api-helpers';
 import { createBooking } from '@/lib/booking-service';
+import { rateLimitKey } from '@/lib/client-ip';
+import { requireSameOrigin } from '@/lib/csrf';
 import { sendGuestCashRequest, sendGuestConfirmation } from '@/lib/email';
-import { localeFromRequest } from '@/lib/i18n';
+import { getStrings, localeFromRequest } from '@/lib/i18n';
 import { notifyOwner } from '@/lib/notify';
+import { consumeRateLimit } from '@/lib/rate-limit';
 import { bookingRequestSchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+/**
+ * Koliko rezervacija smije napraviti jedna adresa.
+ *
+ * Ovo nije zaštita podataka nego zaštita kalendara i pretinca. Ruta je javna,
+ * a svaki poziv radi dvije skupe stvari: zauzme termin (i time ga sakrije od
+ * pravih gostiju) i pošalje mail. Bez ograničenja, jedna petlja u pozadini
+ * zaključa cijelu sezonu za nekoliko sekundi, a vlasniku stigne hiljadu
+ * obavijesti — i to bez ijedne ukradene lozinke.
+ *
+ * Granica je namjerno labava: pravi gost rijetko rezerviše dvaput zaredom, ali
+ * se predomisli, otkaže i rezerviše ponovo. Pet u deset minuta to pokriva.
+ */
+const MAX_BOOKINGS = 5;
+const BOOKING_WINDOW_MS = 10 * 60_000;
 
 /**
  * Jedini put kojim gost pravi rezervaciju — bez obzira na način plaćanja.
@@ -20,8 +38,24 @@ export async function POST(request: Request) {
   // Jezik gosta određuje i poruke o greškama i, kasnije, jezik svih mailova.
   const locale = localeFromRequest(request);
 
+  // Rezervaciju pravi gost sa NAŠE forme. Zahtjev koji je poslala tuđa
+  // stranica nema šta tražiti ovdje — vidi `csrf.ts`.
+  const wrongOrigin = requireSameOrigin(request, locale);
+  if (wrongOrigin) return wrongOrigin;
+
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;
+
+  const key = rateLimitKey(request, 'booking-reserve');
+  if (key) {
+    const limit = consumeRateLimit(key, MAX_BOOKINGS, BOOKING_WINDOW_MS);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: getStrings(locale).errors.TOO_MANY_REQUESTS, code: 'TOO_MANY_REQUESTS' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfter) } }
+      );
+    }
+  }
 
   const parsed = bookingRequestSchema.safeParse(await readJson(request));
   if (!parsed.success) return invalidInput(locale);

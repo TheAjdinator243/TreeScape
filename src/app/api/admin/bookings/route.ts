@@ -1,5 +1,6 @@
 import { after, NextResponse } from 'next/server';
 
+import { requireAdmin } from '@/lib/admin-guard';
 import {
   describeIssues,
   invalidInput,
@@ -25,6 +26,9 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: Request) {
   const locale = localeFromRequest(request);
+
+  const denied = await requireAdmin(request, locale);
+  if (denied) return denied;
 
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;
@@ -86,6 +90,9 @@ export async function POST(request: Request) {
 /** Otkazivanje potvrđene rezervacije ili oslobađanje blokiranog termina. */
 export async function DELETE(request: Request) {
   const locale = localeFromRequest(request);
+
+  const denied = await requireAdmin(request, locale);
+  if (denied) return denied;
 
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;

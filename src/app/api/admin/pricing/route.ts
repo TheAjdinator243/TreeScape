@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { requireAdmin } from '@/lib/admin-guard';
 import {
   describeIssues,
   invalidInput,
@@ -14,9 +15,14 @@ import { ratePeriodSchema, settingsSchema } from '@/lib/validation';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** Izmjena osnovnih postavki i cijena. */
 export async function PUT(request: Request) {
   const locale = localeFromRequest(request);
+
+  const denied = await requireAdmin(request, locale);
+  if (denied) return denied;
 
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;
@@ -42,6 +48,9 @@ export async function PUT(request: Request) {
 export async function POST(request: Request) {
   const locale = localeFromRequest(request);
 
+  const denied = await requireAdmin(request, locale);
+  if (denied) return denied;
+
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
@@ -66,11 +75,19 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   const locale = localeFromRequest(request);
 
+  const denied = await requireAdmin(request, locale);
+  if (denied) return denied;
+
   const notReady = requireDatabase(locale);
   if (notReady) return notReady;
 
+  /**
+   * `rate_periods.id` je uuid. Provjerava se ovdje, a ne tek u bazi: bilo šta
+   * drugo Postgres odbija greškom o tipu, koja se onda vraća pozivaocu kao
+   * gola poruka iz baze umjesto uredne "neispravan zahtjev".
+   */
   const id = new URL(request.url).searchParams.get('id');
-  if (!id) return invalidInput(locale);
+  if (!id || !UUID.test(id)) return invalidInput(locale);
 
   const { error } = await supabaseAdmin().from('rate_periods').delete().eq('id', id);
 

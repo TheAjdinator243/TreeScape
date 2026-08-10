@@ -291,6 +291,10 @@ export const bs: Dictionary = {
     ALREADY_RESOLVED: 'Ovaj zahtjev je već riješen. Osvježite stranicu.',
     DATABASE_MISSING:
       'Baza nije podešena. Dodaj Supabase ključeve u .env.local (ili u Vercel → Environment Variables) i pokreni migracije iz supabase/migrations.',
+    TOO_MANY_REQUESTS: 'Previše pokušaja u kratkom vremenu. Sačekajte koji minut pa probajte ponovo.',
+    ADMIN_CODE_WEAK: (min) =>
+      `ADMIN_ACCESS_CODE je prekratak — mora imati najmanje ${min} znakova. ` +
+      'Prijava je onemogućena dok se ne produži. Novi kod: openssl rand -base64 24',
     ADMIN_MISSING:
       'Administracija nije podešena — nedostaju ADMIN_ACCESS_CODE i ADMIN_SESSION_SECRET.',
   },

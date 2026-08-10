@@ -324,6 +324,13 @@ if (!env.ADMIN_ACCESS_CODE) {
     'ADMIN_ACCESS_CODE je primjer iz uputstva — javno poznat',
     'obriši tu liniju iz .env.local pa pokreni: npm run setup'
   );
+} else if (env.ADMIN_ACCESS_CODE.length < 12) {
+  // Ovo nije savjet nego stanje: prijava s ovako kratkim kodom se odbija
+  // (vidi MIN_ACCESS_CODE_LENGTH u src/lib/admin-auth.ts).
+  bad(
+    `pristupni kod ima ${env.ADMIN_ACCESS_CODE.length} znakova — prijava je onemogućena`,
+    'najmanje 12, a najbolje: openssl rand -base64 24'
+  );
 } else if (env.ADMIN_ACCESS_CODE.length < 16) {
   warn(
     `pristupni kod ima ${env.ADMIN_ACCESS_CODE.length} znakova`,
@@ -358,7 +365,7 @@ if (!env.ADMIN_SESSION_SECRET) {
 }
 
 if (!env.CRON_SECRET) {
-  warn('nema CRON_SECRET — svako bi mogao pozvati cron adresu', 'npm run setup');
+  bad('nema CRON_SECRET — cron ruta se ne izvršava (vraća 401)', 'npm run setup');
 } else {
   ok('cron tajna postavljena');
 }
