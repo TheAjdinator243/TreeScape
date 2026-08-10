@@ -1,3 +1,4 @@
+import { LineReveal } from '@/components/motion/LineReveal';
 import { Reveal } from '@/components/motion/Reveal';
 import { getServerStrings } from '@/lib/i18n/server';
 import type { Settings } from '@/lib/types';
@@ -28,8 +29,8 @@ export async function PlusFaq({ settings }: { settings: Settings }) {
       <div className="plus-section grid gap-12 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-16">
         <Reveal className="lg:sticky lg:top-32 lg:self-start">
           <p className="plus-eyebrow">{t.nav.faq}</p>
-          <h2 className="plus-title">{t.faq.heading}</h2>
-          <p className="plus-lead">{t.faq.lead}</p>
+          <LineReveal as="h2" className="plus-title" text={t.faq.heading} />
+          <LineReveal as="p" className="plus-lead" text={t.faq.lead} delay={120} stagger={70} />
         </Reveal>
 
         <div className="border-t border-paper-200">

@@ -1054,6 +1054,45 @@ html[lang='ar'] body * {
   animation: scroll-hint 2.2s var(--ease-out-soft) infinite;
 }
 
+/* ── Otkrivanje naslova red po red ───────────────────────────────────────
+   Pripada `motion/LineReveal.tsx`. Redni broj reda upisuje JavaScript, jer
+   samo preglednik zna gdje se tekst prelomio; sve ostalo — maska, pomak,
+   kašnjenje — je čist CSS.
+   ─────────────────────────────────────────────────────────────────────── */
+
+.line-reveal-mask {
+  display: inline-flex;
+  overflow: hidden;
+  /* Bez ovoga maska odsiječe repove slova koja se spuštaju ispod osnovne
+     linije (j, g, p, ć) — a u bosanskom i arapskom ih ima u svakom naslovu. */
+  padding-bottom: 0.14em;
+  vertical-align: bottom;
+}
+
+.line-reveal-word {
+  display: inline-block;
+  opacity: 0;
+  /* Pomak je u `em`, a ne u pikselima: naslov je na telefonu upola manji, pa
+     bi fiksnih 40px tamo bacilo riječ daleko ispod reza. U `em` je pomak
+     uvijek tačno "jedna visina slova". */
+  transform: translateY(1.05em);
+  transition:
+    opacity 0.85s var(--ease-out-expo),
+    transform 0.85s var(--ease-out-expo);
+  /*
+   * Kašnjenje po REDU, ne po riječi.
+   *
+   * `--line` upisuje JavaScript nakon mjerenja; dok ga nema, `var(..., 0)`
+   * znači da cijeli naslov krene odjednom — ružnije, ali nikad zaglavljeno.
+   */
+  transition-delay: calc(var(--line-delay, 0ms) + var(--line, 0) * var(--line-step, 90ms));
+}
+
+.line-reveal[data-shown='true'] .line-reveal-word {
+  opacity: 1;
+  transform: none;
+}
+
 /* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */
 @media (prefers-reduced-motion: reduce) {
   html {

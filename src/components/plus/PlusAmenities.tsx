@@ -1,3 +1,5 @@
+import { LineReveal } from '@/components/motion/LineReveal';
+import { Parallax } from '@/components/motion/Parallax';
 import { Reveal } from '@/components/motion/Reveal';
 import { AmenityIcon } from '@/components/site/AmenityIcon';
 import { AMENITIES } from '@/lib/amenities';
@@ -20,22 +22,34 @@ export async function PlusAmenities() {
 
   return (
     <section id="sadrzaji" className="relative overflow-hidden bg-pine-900 text-paper-100">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            'radial-gradient(60% 55% at 15% 0%, rgb(58 122 96 / 0.28), transparent 70%),' +
-            'radial-gradient(45% 45% at 90% 100%, rgb(184 106 65 / 0.16), transparent 70%)',
-        }}
-      />
+      {/* Svjetlosne mrlje se kreću BRŽE od sadržaja preko njih (negativna
+          brzina), pa ploha dobija dubinu: tekst kao da stoji ispred svjetla,
+          a ne na njemu. Ploha je viša od odjeljka da se pri pomjeranju ne vidi
+          gdje mrlje prestaju. */}
+      <Parallax speed={-0.12} className="pointer-events-none absolute -inset-y-24 inset-x-0">
+        <div
+          aria-hidden="true"
+          className="h-full w-full"
+          style={{
+            backgroundImage:
+              'radial-gradient(60% 55% at 15% 0%, rgb(58 122 96 / 0.28), transparent 70%),' +
+              'radial-gradient(45% 45% at 90% 100%, rgb(184 106 65 / 0.16), transparent 70%)',
+          }}
+        />
+      </Parallax>
 
       <div className="plus-section relative">
         <Reveal>
           <p className="plus-eyebrow-onlight">{t.site.name}</p>
-          <h2 className="plus-title text-paper-50">{t.amenities.heading}</h2>
-          <p className="plus-lead text-paper-200/75">{t.amenities.lead}</p>
         </Reveal>
+        <LineReveal as="h2" className="plus-title text-paper-50" text={t.amenities.heading} />
+        <LineReveal
+          as="p"
+          className="plus-lead text-paper-200/75"
+          text={t.amenities.lead}
+          delay={120}
+          stagger={70}
+        />
 
         <ul className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {AMENITIES.map((key, i) => (

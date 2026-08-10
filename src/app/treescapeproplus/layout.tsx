@@ -1,5 +1,7 @@
 import { Instrument_Serif, Manrope } from 'next/font/google';
 
+import { SmoothScroll } from '@/components/motion/SmoothScroll';
+
 /**
  * Pismo "plus" izgleda.
  *
@@ -34,5 +36,25 @@ const plusSans = Manrope({
  * verzije žive jedna pored druge u istoj aplikaciji, na istoj bazi.
  */
 export default function PlusLayout({ children }: { children: React.ReactNode }) {
-  return <div className={`plus ${plusDisplay.variable} ${plusSans.variable}`}>{children}</div>;
+  return (
+    <div className={`plus ${plusDisplay.variable} ${plusSans.variable}`}>
+      {/*
+        Bez JavaScripta se redovi naslova nikad ne izmjere, pa bi ostali na
+        `opacity: 0` — tekst bi jednostavno nestao. Ovo ih odmah pokaže.
+
+        Stoji ovdje, a ne u glavnom rasporedu, jer se otkrivanje red po red
+        koristi samo na ovoj stranici. (Isto pravilo za `.reveal` blokove već
+        stoji u `app/layout.tsx` i vrijedi za sve tri verzije.)
+      */}
+      <noscript>
+        <style>{`.line-reveal-word { opacity: 1 !important; transform: none !important; }`}</style>
+      </noscript>
+
+      {/* Glatki skrol s inercijom — samo na ovoj stranici, i samo onome ko
+          nije tražio manje animacija. */}
+      <SmoothScroll />
+
+      {children}
+    </div>
+  );
 }

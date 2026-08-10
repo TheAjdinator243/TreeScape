@@ -1,6 +1,8 @@
 import Image from 'next/image';
 
 import { Counter } from '@/components/motion/Counter';
+import { LineReveal } from '@/components/motion/LineReveal';
+import { Parallax } from '@/components/motion/Parallax';
 import { Reveal } from '@/components/motion/Reveal';
 import { ABOUT_IMAGE } from '@/lib/gallery';
 import { getServerStrings } from '@/lib/i18n/server';
@@ -30,9 +32,9 @@ export async function PlusAbout() {
         <div className="lg:col-span-7">
           <Reveal>
             <p className="plus-eyebrow">{t.site.tagline}</p>
-            <h2 className="plus-title">{t.about.heading}</h2>
-            <p className="plus-lead">{t.about.lead}</p>
           </Reveal>
+          <LineReveal as="h2" className="plus-title" text={t.about.heading} />
+          <LineReveal as="p" className="plus-lead" text={t.about.lead} delay={120} stagger={70} />
 
           <Reveal delay={80}>
             <div className="mt-8 space-y-5 text-base leading-[1.8] text-pine-900/75 md:text-[1.05rem]">
@@ -65,14 +67,19 @@ export async function PlusAbout() {
             slika ionako ispod teksta, pa bi bio samo praznina. */}
         <Reveal delay={120} variant="clip" className="lg:col-span-5 lg:pt-16">
           <div className="relative aspect-[4/5] overflow-hidden rounded-panel shadow-raise">
-            <Image
-              src={ABOUT_IMAGE}
-              alt={t.about.imageAlt}
-              fill
-              placeholder="blur"
-              sizes="(max-width: 1024px) 100vw, 40vw"
-              className="object-cover"
-            />
+            {/* Slika je viša od okvira (`-inset-y-12`) da se pri pomjeranju ne
+                vidi rub ispod nje. Sporija je od hero fotografije: ovo je
+                unutar kartice, pa i mali pomak izgleda veliko. */}
+            <Parallax speed={0.07} className="absolute -inset-y-12 inset-x-0">
+              <Image
+                src={ABOUT_IMAGE}
+                alt={t.about.imageAlt}
+                fill
+                placeholder="blur"
+                sizes="(max-width: 1024px) 100vw, 40vw"
+                className="object-cover"
+              />
+            </Parallax>
           </div>
         </Reveal>
       </div>

@@ -1,3 +1,4 @@
+import { Parallax } from '@/components/motion/Parallax';
 import { CONTACT } from '@/components/site/Footer';
 import { getServerStrings } from '@/lib/i18n/server';
 
@@ -73,17 +74,25 @@ export async function PlusFooter() {
         </div>
 
         {/* Ime kuće preko cijele širine — `clamp` da se skalira s ekranom
-            umjesto da se lomi ili prelijeva na uske telefone. */}
-        <p
-          className="mt-16 select-none leading-none text-paper-100/[0.07]"
-          style={{
-            fontFamily: 'var(--font-plus-display)',
-            fontSize: 'clamp(3rem, 16vw, 12rem)',
-          }}
-          aria-hidden="true"
-        >
-          {t.site.name}
-        </p>
+            umjesto da se lomi ili prelijeva na uske telefone.
+
+            Kreće se sporije od podnožja koje ga nosi, pa se pri dolasku na dno
+            stranice "podigne" u vidno polje umjesto da samo dođe s njim.
+            `overflow-hidden` na omotaču drži taj višak unutar podnožja. */}
+        <div className="mt-16 overflow-hidden">
+          <Parallax speed={0.05}>
+            <p
+              className="select-none leading-none text-paper-100/[0.07]"
+              style={{
+                fontFamily: 'var(--font-plus-display)',
+                fontSize: 'clamp(3rem, 16vw, 12rem)',
+              }}
+              aria-hidden="true"
+            >
+              {t.site.name}
+            </p>
+          </Parallax>
+        </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-paper-100/10 pt-6 text-xs text-paper-200/50">
           <p>
