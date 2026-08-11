@@ -108,8 +108,37 @@ export const ar: Dictionary = {
     next: 'الصورة التالية',
     close: 'أغلق المعرض',
     counter: (index, total) => `${index} / ${total}`,
-    itemAlt: (n) => `صورة ${n}`,
-    itemCaption: (n) => `صورة ${n}`,
+    /**
+     * Opis svake fotografije, po njenom rednom broju (vidi `lib/gallery.ts`).
+     * `alt` čita čitač ekrana i Google; natpis se vidi pri prelasku mišem i
+     * ispod uvećane slike.
+     */
+    itemAlt: (n) =>
+      (
+        ({
+          2: 'المسبح والشرفة في أصيل الصيف',
+          3: 'شرفة مسقوفة تطل على الوادي',
+          4: 'المسبح وكراسي الاستلقاء تحت أضواء المساء',
+          5: 'غروب الشمس فوق المسبح',
+          6: 'جاكوزي على الشرفة يطل على الغابة',
+          7: 'شواية ومدفأة من الطوب تحت سقف خشبي',
+          8: 'غرفة نوم في العلية بعوارض خشبية ظاهرة',
+          9: 'احتفال مُعدّ في الفناء',
+        }) as Record<number, string>
+      )[n] ?? 'صورة للمنزل',
+    itemCaption: (n) =>
+      (
+        ({
+          2: 'المسبح والشرفة',
+          3: 'شرفة بإطلالة',
+          4: 'المسبح ليلًا',
+          5: 'الغروب فوق المسبح',
+          6: 'جاكوزي',
+          7: 'الشواية والمدفأة',
+          8: 'غرفة العلية',
+          9: 'احتفالات في الفناء',
+        }) as Record<number, string>
+      )[n] ?? 'صورة للمنزل',
   },
 
   amenities: {
@@ -229,16 +258,13 @@ export const ar: Dictionary = {
     payMethodTitle: 'طريقة الدفع',
 
     payTransfer: 'تحويل بنكي',
-    payTransferHint:
-      'تصلك بيانات الحساب ورقم مرجع الدفع. نحتفظ لك بالموعد حتى وصول التحويل.',
+    payTransferHint: 'تصلك بيانات الحساب ورقم مرجع الدفع. نحتفظ لك بالموعد حتى وصول التحويل.',
 
     payCash: 'الدفع نقدًا',
-    payCashHint:
-      'ترسل طلبًا إلى المضيف. نحتفظ لك بالموعد حتى يؤكّده المضيف — عادةً في اليوم نفسه.',
+    payCashHint: 'ترسل طلبًا إلى المضيف. نحتفظ لك بالموعد حتى يؤكّده المضيف — عادةً في اليوم نفسه.',
 
     payTest: 'حجز تجريبي',
-    payTestHint:
-      'للتجربة فقط — يؤكّد الحجز من دون أي دفع. لا يظهر هذا الخيار للضيوف.',
+    payTestHint: 'للتجربة فقط — يؤكّد الحجز من دون أي دفع. لا يظهر هذا الخيار للضيوف.',
 
     reserve: 'احجز',
     submitting: 'لحظة من فضلك…',
@@ -253,8 +279,7 @@ export const ar: Dictionary = {
     pageTitle: 'حجزك',
 
     confirmedTitle: 'تم تأكيد حجزك',
-    confirmedLead:
-      'أكّد المضيف حجزك. الموعد لك، ويظهر للضيوف الآخرين على أنه محجوز.',
+    confirmedLead: 'أكّد المضيف حجزك. الموعد لك، ويظهر للضيوف الآخرين على أنه محجوز.',
 
     pendingTitle: 'الموعد محجوز لك',
     pendingLead:
@@ -396,7 +421,8 @@ export const ar: Dictionary = {
     pricingLead: 'تسري على كل تاريخ لا ينتمي إلى أي موسم.',
     defaultNightly: 'السعر الأساسي لليوم',
     weekendPrice: 'سعر السبت والأحد',
-    weekendPriceHint: 'أدخل 0 ليُحتسب السعر الأساسي في عطلة نهاية الأسبوع أيضًا. الموسم، إن كان محدَّدًا، تبقى له الأولوية.',
+    weekendPriceHint:
+      'أدخل 0 ليُحتسب السعر الأساسي في عطلة نهاية الأسبوع أيضًا. الموسم، إن كان محدَّدًا، تبقى له الأولوية.',
     maxNights: 'الحد الأقصى لعدد الأيام',
     maxGuests: 'الحد الأقصى لعدد الضيوف',
     holdMinutes: 'مدة حجز الموعد أثناء الدفع (دقيقة)',
@@ -408,8 +434,7 @@ export const ar: Dictionary = {
     saved: 'تم الحفظ.',
 
     seasonsHeading: 'أسعار المواسم',
-    seasonsLead:
-      'إذا تداخل موسمان، يسري الموسم صاحب الأولوية الأعلى. يوم المغادرة لا يُحتسب.',
+    seasonsLead: 'إذا تداخل موسمان، يسري الموسم صاحب الأولوية الأعلى. يوم المغادرة لا يُحتسب.',
     seasonName: 'اسم الموسم',
     seasonNamePlaceholder: 'مثلًا: موسم صيف 2027',
     seasonFrom: 'من',
@@ -488,8 +513,7 @@ export const ar: Dictionary = {
     rowPhone: 'الهاتف',
     rowNote: 'ملاحظة الضيف',
 
-    addressLater:
-      'سنرسل قبل وصولك العنوان الدقيق وإرشادات الوصول وبيانات التواصل مع المضيف.',
+    addressLater: 'سنرسل قبل وصولك العنوان الدقيق وإرشادات الوصول وبيانات التواصل مع المضيف.',
     payOnArrival: 'يُدفع المبلغ نقدًا عند الوصول.',
 
     confirmedSubject: 'تم تأكيد الحجز',
@@ -512,8 +536,7 @@ export const ar: Dictionary = {
 
     cashRequestSubject: 'تم استلام الطلب',
     cashRequestTitle: 'تم استلام طلب الحجز',
-    cashRequestBody:
-      'استلمنا طلبك. نحتفظ لك بالموعد حتى يؤكّده المضيف — وسنتواصل معك في أقرب وقت.',
+    cashRequestBody: 'استلمنا طلبك. نحتفظ لك بالموعد حتى يؤكّده المضيف — وسنتواصل معك في أقرب وقت.',
 
     cashApprovedSubject: 'تم تأكيد الحجز',
     cashApprovedTitle: 'أكّد المضيف حجزك',
@@ -521,8 +544,7 @@ export const ar: Dictionary = {
 
     cancelledSubject: 'إلغاء الحجز',
     cancelledTitle: 'تم إلغاء حجزك',
-    cancelledBody:
-      'نأسف لاضطرارنا إلى إلغاء حجزك المؤكَّد. تم تحرير المواعيد، ونعتذر عن الإزعاج.',
+    cancelledBody: 'نأسف لاضطرارنا إلى إلغاء حجزك المؤكَّد. تم تحرير المواعيد، ونعتذر عن الإزعاج.',
     reasonLabel: 'السبب',
     openBooking: 'افتح حجزك',
     ownerGuestCancelledTitle: 'ألغى ضيف حجزه',

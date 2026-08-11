@@ -103,8 +103,37 @@ export const en: Dictionary = {
     next: 'Next photo',
     close: 'Close gallery',
     counter: (index, total) => `${index} / ${total}`,
-    itemAlt: (n) => `Photo ${n}`,
-    itemCaption: (n) => `Photo ${n}`,
+    /**
+     * Opis svake fotografije, po njenom rednom broju (vidi `lib/gallery.ts`).
+     * `alt` čita čitač ekrana i Google; natpis se vidi pri prelasku mišem i
+     * ispod uvećane slike.
+     */
+    itemAlt: (n) =>
+      (
+        ({
+          2: 'The pool and terrace on a summer afternoon',
+          3: 'Covered terrace looking out over the valley',
+          4: 'The pool and loungers under the evening lights',
+          5: 'Sunset above the pool',
+          6: 'Hot tub on the terrace, facing the forest',
+          7: 'Brick barbecue and fireplace under the timber roof',
+          8: 'Attic bedroom with exposed timber beams',
+          9: 'A celebration set up in the yard',
+        }) as Record<number, string>
+      )[n] ?? 'A photo of the house',
+    itemCaption: (n) =>
+      (
+        ({
+          2: 'Pool and terrace',
+          3: 'Terrace with a view',
+          4: 'The pool at night',
+          5: 'Sunset over the pool',
+          6: 'Hot tub',
+          7: 'Barbecue and fireplace',
+          8: 'Attic bedroom',
+          9: 'Celebrations in the yard',
+        }) as Record<number, string>
+      )[n] ?? 'A photo of the house',
   },
 
   amenities: {
@@ -320,7 +349,8 @@ export const en: Dictionary = {
     ADMIN_CODE_WEAK: (min) =>
       `ADMIN_ACCESS_CODE is too short — it must be at least ${min} characters. ` +
       'Sign-in stays disabled until it is longer. Generate one with: openssl rand -base64 24',
-    ADMIN_MISSING: 'The admin area is not configured — ADMIN_ACCESS_CODE and ADMIN_SESSION_SECRET are missing.',
+    ADMIN_MISSING:
+      'The admin area is not configured — ADMIN_ACCESS_CODE and ADMIN_SESSION_SECRET are missing.',
   },
 
   admin: {
@@ -392,7 +422,8 @@ export const en: Dictionary = {
     pricingLead: 'Applies to every date that does not fall into a season.',
     defaultNightly: 'Base rate per day',
     weekendPrice: 'Saturday and Sunday rate',
-    weekendPriceHint: 'Enter 0 to charge the base rate at weekends too. A season, where set, still takes precedence.',
+    weekendPriceHint:
+      'Enter 0 to charge the base rate at weekends too. A season, where set, still takes precedence.',
     maxNights: 'Maximum number of days',
     maxGuests: 'Maximum number of guests',
     holdMinutes: 'How long dates are held during payment (min)',

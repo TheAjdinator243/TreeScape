@@ -9,11 +9,6 @@ import slika06 from '@/assets/gallery/slika-06.jpg';
 import slika07 from '@/assets/gallery/slika-07.jpg';
 import slika08 from '@/assets/gallery/slika-08.jpg';
 import slika09 from '@/assets/gallery/slika-09.jpg';
-import slika10 from '@/assets/gallery/slika-10.jpg';
-import slika11 from '@/assets/gallery/slika-11.jpg';
-import slika12 from '@/assets/gallery/slika-12.jpg';
-import slika13 from '@/assets/gallery/slika-13.jpg';
-import slika14 from '@/assets/gallery/slika-14.jpg';
 
 /**
  * ┌─────────────────────────────────────────────────────────────────────────┐
@@ -55,17 +50,12 @@ export const HERO_IMAGE = slika01;
 export const ABOUT_IMAGE = slika03;
 
 export const GALLERY: GalleryImage[] = [
-  { image: slika02, n: 2, span: 'wide' },
-  { image: slika04, n: 4 },
-  { image: slika06, n: 6, span: 'tall' },
+  { image: slika02, n: 2 },
   { image: slika03, n: 3, span: 'tall' },
+  { image: slika04, n: 4, span: 'wide' },
   { image: slika05, n: 5 },
-  { image: slika07, n: 7, span: 'wide' },
+  { image: slika06, n: 6 },
+  { image: slika07, n: 7, span: 'tall' },
   { image: slika08, n: 8 },
   { image: slika09, n: 9 },
-  { image: slika10, n: 10 },
-  { image: slika11, n: 11 },
-  { image: slika12, n: 12, span: 'wide' },
-  { image: slika13, n: 13 },
-  { image: slika14, n: 14 },
 ];
