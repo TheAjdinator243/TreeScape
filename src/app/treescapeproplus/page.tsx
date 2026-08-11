@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 
 import { PlusAbout } from '@/components/plus/PlusAbout';
-import { PlusAmenities } from '@/components/plus/PlusAmenities';
 import { PlusBooking } from '@/components/plus/PlusBooking';
 import { PlusCta } from '@/components/plus/PlusCta';
+import { PlusExtras } from '@/components/plus/PlusExtras';
 import { PlusFaq } from '@/components/plus/PlusFaq';
 import { PlusFooter } from '@/components/plus/PlusFooter';
-import { PlusGallery } from '@/components/plus/PlusGallery';
 import { PlusHero } from '@/components/plus/PlusHero';
 import { PlusLocation } from '@/components/plus/PlusLocation';
 import { PlusNav } from '@/components/plus/PlusNav';
+import { PlusShowcase } from '@/components/plus/PlusShowcase';
 import { PlusSteps } from '@/components/plus/PlusSteps';
 import { getBookingContext } from '@/lib/data';
 import { firstFreeDate, lowestNightlyCents } from '@/lib/pricing';
@@ -22,10 +22,13 @@ import { firstFreeDate, lowestNightlyCents } from '@/lib/pricing';
  * je isti poziv koji rade i početna stranica i `/treescapepro`, pa termin
  * zauzet u jednoj verziji istog trena postane zauzet i u ostale dvije.
  *
- * Redoslijed odjeljaka nije isti kao u prve dvije verzije, i to je jedina
- * stvarna razlika u sadržaju: između "o kući" i galerije stoji objašnjenje
- * kako rezervacija teče (`PlusSteps`), a prije podnožja posljednji poziv
- * (`PlusCta`). Oba odgovaraju na pitanja koja gost inače postavi telefonom.
+ * Razlike u odnosu na prve dvije verzije su u rasporedu, ne u podacima:
+ * između "o kući" i fotografija stoji objašnjenje kako rezervacija teče
+ * (`PlusSteps`), a prije podnožja posljednji poziv (`PlusCta`) — oba
+ * odgovaraju na pitanja koja gost inače postavi telefonom. Mreža sličica i
+ * kartice sa sadržajima su spojene: fotografija sada nosi svoj naslov i opis
+ * pored sebe (`PlusShowcase`), a ono što nema fotografiju stoji u popisu
+ * ispod (`PlusExtras`).
  */
 export const dynamic = 'force-dynamic';
 
@@ -56,8 +59,8 @@ export default async function PlusPage() {
         />
         <PlusAbout />
         <PlusSteps />
-        <PlusGallery />
-        <PlusAmenities />
+        <PlusShowcase />
+        <PlusExtras />
         <PlusBooking context={context} />
         <PlusLocation />
         <PlusFaq settings={context.settings} />

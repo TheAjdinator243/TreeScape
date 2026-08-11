@@ -172,6 +172,27 @@ export interface Dictionary {
     items: Record<AmenityKey, { label: string; note: string }>;
   };
 
+  /**
+   * Ono što kuća ima, ispričano fotografijom.
+   *
+   * Koristi ga samo "plus" izgled: umjesto mreže sličica i kartica s ikonama,
+   * svaka stavka je jedan red — fotografija s jedne strane, naslov i opis s
+   * druge. Tekst NIKAD ne ide preko slike.
+   *
+   * `item` se traži po rednom broju fotografije (isti onaj iz `lib/gallery.ts`),
+   * a ne po položaju u nizu: tako se raspored slika može mijenjati, a tekst
+   * ostaje vezan za svoju sliku.
+   */
+  showcase: {
+    eyebrow: string;
+    heading: string;
+    lead: string;
+    item: (n: number) => Step;
+    /** Sve ostalo — ono što nema svoju fotografiju. */
+    extraTitle: string;
+    extraLead: string;
+  };
+
   location: {
     heading: string;
     lead: string;
