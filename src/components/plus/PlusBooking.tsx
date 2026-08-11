@@ -117,7 +117,14 @@ export function PlusBooking({ context }: { context: BookingContext }) {
         : 1;
 
   return (
-    <section id="rezervacija" className="border-y border-paper-200 bg-paper-100">
+    <section
+      id="rezervacija"
+      // `plus-onyx` daje odjeljku vlastite promjenljive za boje; `data-skin`
+      // bira KOJE su to vrijednosti. Presvlačenje je time jedna riječ, a ne
+      // prolazak kroz komponentu.
+      data-skin="onyx"
+      className="plus-onyx plus-rule border-y"
+    >
       <div className="plus-section">
         <Reveal>
           <p className="plus-eyebrow">{t.nav.book}</p>
@@ -148,7 +155,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                     />
                   </div>
 
-                  <div className="xl:border-s xl:border-paper-200 xl:ps-8">
+                  <div className="plus-rule xl:border-s xl:ps-8">
                     <dl className="space-y-3 text-sm">
                       <Row
                         label={t.booking.checkIn}
@@ -162,16 +169,16 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                       />
                     </dl>
 
-                    <p className="mt-4 text-xs leading-relaxed text-pine-900/50">
+                    <p className="mt-4 text-xs leading-relaxed plus-dim">
                       {t.booking.timesNote(settings.checkin_time, settings.checkout_time)}
                     </p>
 
                     {!range?.from && (
-                      <p className="mt-4 text-xs text-pine-900/50">{t.booking.singleDayHint}</p>
+                      <p className="mt-4 text-xs plus-dim">{t.booking.singleDayHint}</p>
                     )}
 
                     {singleDay && (
-                      <p className="mt-4 rounded-xl bg-sage-100 px-4 py-3 text-xs leading-relaxed text-pine-800">
+                      <p className="mt-4 plus-note px-4 py-3 text-xs leading-relaxed plus-total">
                         {t.booking.singleDayNote}
                       </p>
                     )}
@@ -179,7 +186,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                     {stayError && (
                       <p
                         role="alert"
-                        className="animate-fade-rise mt-4 rounded-xl border border-danger-600/25 bg-danger-600/5 px-4 py-3 text-xs leading-relaxed text-danger-600"
+                        className="animate-fade-rise mt-4 plus-alert px-4 py-3 text-xs leading-relaxed"
                       >
                         {stayError}
                       </p>
@@ -189,7 +196,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                       <button
                         type="button"
                         onClick={form.clearRange}
-                        className="mt-4 text-xs font-semibold text-clay-500 underline underline-offset-4 transition-colors hover:text-clay-600"
+                        className="plus-link mt-4 text-xs font-semibold underline underline-offset-4 transition-colors"
                       >
                         {t.booking.clearDates}
                       </button>
@@ -261,7 +268,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                   </div>
                 </div>
 
-                <fieldset className="mt-6 border-t border-paper-200 pt-6">
+                <fieldset className="mt-6 plus-rule border-t pt-6">
                   <legend className="sr-only">{t.booking.payMethodTitle}</legend>
                   <p className="plus-label">{t.booking.payMethodTitle}</p>
 
@@ -275,11 +282,9 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                         <label
                           key={id}
                           data-on={selected}
-                          className={`plus-pick plus-press relative flex cursor-pointer gap-3 rounded-xl border p-4 pe-11 transition-[background-color,border-color,box-shadow] duration-300 ${
-                            selected
-                              ? 'border-pine-600 bg-sage-100/50 ring-4 ring-pine-600/10'
-                              : 'border-paper-300 hover:border-pine-600/40'
-                          } ${busy ? 'cursor-not-allowed opacity-60' : ''}`}
+                          className={`plus-pick plus-press relative flex cursor-pointer gap-3 p-4 pe-11 ${
+                            busy ? 'cursor-not-allowed opacity-60' : ''
+                          }`}
                         >
                           <input
                             type="radio"
@@ -288,17 +293,17 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                             checked={selected}
                             disabled={busy}
                             onChange={() => form.setMethod(id)}
-                            className="mt-0.5 h-4 w-4 shrink-0 accent-pine-700"
+                            className="plus-pick-radio mt-0.5 h-4 w-4 shrink-0"
                           />
                           <span className="min-w-0">
                             <span
                               className={`block text-sm font-semibold ${
-                                id === 'test' ? 'text-clay-600' : 'text-pine-900'
+                                id === 'test' ? 'plus-warn' : 'plus-ink'
                               }`}
                             >
                               {copy.label}
                             </span>
-                            <span className="mt-1 block text-xs leading-relaxed text-pine-900/60">
+                            <span className="mt-1 block text-xs leading-relaxed plus-dim">
                               {copy.hint}
                             </span>
                           </span>
@@ -315,9 +320,9 @@ export function PlusBooking({ context }: { context: BookingContext }) {
 
               {/* ── 3. Potvrda ── */}
               <Panel active={step === 2} label={t.booking.wizard.stepOf(3, STEPS)}>
-                <p className="text-sm text-pine-900/60">{t.booking.wizard.reviewLead}</p>
+                <p className="text-sm plus-dim">{t.booking.wizard.reviewLead}</p>
 
-                <dl className="mt-6 space-y-3 border-t border-paper-200 pt-6 text-sm">
+                <dl className="mt-6 space-y-3 plus-rule border-t pt-6 text-sm">
                   <Row
                     label={t.booking.checkIn}
                     value={start ? formatLong(start, locale) : null}
@@ -344,7 +349,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                 </dl>
 
                 {quote && new Set(quote.days.map((d) => d.cents)).size > 1 && (
-                  <p className="mt-4 text-xs text-pine-900/50">
+                  <p className="mt-4 text-xs plus-dim">
                     {quote.days.some((d) => d.periodName === WEEKEND_PERIOD)
                       ? t.booking.weekendNote
                       : t.booking.seasonalNote}
@@ -352,10 +357,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                 )}
 
                 {(error || stayError) && (
-                  <p
-                    role="alert"
-                    className="animate-fade-rise mt-5 rounded-xl border border-danger-600/25 bg-danger-600/5 px-4 py-3 text-sm text-danger-600"
-                  >
+                  <p role="alert" className="animate-fade-rise mt-5 plus-alert px-4 py-3 text-sm">
                     {error ?? stayError}
                   </p>
                 )}
@@ -374,16 +376,16 @@ export function PlusBooking({ context }: { context: BookingContext }) {
             {/* ── Cijena i kretanje kroz korake ──
                 Cijena stoji ovdje, ispod svih koraka, jer je jedini podatak
                 koji je jednako bitan u sva tri. */}
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-paper-200 pt-6">
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 plus-rule border-t pt-6">
               <div className="min-w-0">
                 {quote ? (
                   <>
-                    <p className="text-xs text-pine-900/55">
+                    <p className="text-xs plus-dim">
                       {t.booking.daysLabel(quote.dayCount)} ×{' '}
                       {formatMoney(quote.averageDailyCents, quote.currencySymbol, locale)}
                     </p>
                     <p
-                      className="text-2xl tabular-nums text-pine-800"
+                      className="text-2xl tabular-nums plus-total"
                       style={{ fontFamily: 'var(--font-plus-display)' }}
                     >
                       <CountTo
@@ -393,7 +395,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                     </p>
                   </>
                 ) : (
-                  <p className="text-xs text-pine-900/45">{t.booking.selectDatesFirst}</p>
+                  <p className="text-xs plus-dimmer">{t.booking.selectDatesFirst}</p>
                 )}
               </div>
 
@@ -423,7 +425,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
             {/* Zašto je "Dalje" ugašeno — bez ovoga gost pritisne dugme koje ne
                 reaguje i nema pojma šta se od njega traži. */}
             {step === 1 && detailsError && (
-              <p className="mt-3 text-end text-xs text-pine-900/50">{detailsError}</p>
+              <p className="mt-3 text-end text-xs plus-dim">{detailsError}</p>
             )}
           </div>
         </Reveal>
@@ -431,14 +433,14 @@ export function PlusBooking({ context }: { context: BookingContext }) {
 
       {/* Na mobitelu cijena prati gosta dok bira datume. */}
       {quote && !stayError && (
-        <div className="animate-fade-rise fixed inset-x-0 bottom-0 z-30 border-t border-paper-200 bg-paper-50/95 px-5 py-3 shadow-raise backdrop-blur-xl lg:hidden">
+        <div className="plus-bar animate-fade-rise plus-rule fixed inset-x-0 bottom-0 z-30 border-t px-5 py-3 shadow-raise backdrop-blur-xl lg:hidden">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="truncate text-xs text-pine-900/60">
+              <p className="truncate text-xs plus-dim">
                 {start && end ? count(locale, daysBetween(start, end), t.common.days) : ''}
               </p>
               <p
-                className="text-xl tabular-nums text-pine-800"
+                className="text-xl tabular-nums plus-total"
                 style={{ fontFamily: 'var(--font-plus-display)' }}
               >
                 <CountTo
@@ -483,12 +485,12 @@ function Rail({ labels, step, filled }: { labels: string[]; step: number; filled
           viri izvan njih. */}
       <span
         aria-hidden="true"
-        className="absolute inset-x-0 top-4 mx-auto h-px bg-paper-300"
+        className="plus-rail-track absolute inset-x-0 top-4 mx-auto h-px"
         style={{ left: '16.66%', right: '16.66%' }}
       />
       <span
         aria-hidden="true"
-        className="plus-rail-fill absolute top-4 h-px bg-pine-600"
+        className="plus-rail-fill absolute top-4 h-px"
         style={{
           left: '16.66%',
           width: `calc(66.68% * ${step / (labels.length - 1)})`,
@@ -522,7 +524,7 @@ function Rail({ labels, step, filled }: { labels: string[]; step: number; filled
                     stroke="currentColor"
                     strokeWidth="2.5"
                     strokeLinecap="round"
-                    className="plus-rail-ring text-pine-600"
+                    className="plus-rail-ring"
                     style={{
                       strokeDasharray: ring,
                       strokeDashoffset: ring * (1 - filled),
@@ -531,23 +533,11 @@ function Rail({ labels, step, filled }: { labels: string[]; step: number; filled
                 </svg>
               )}
 
-              <span
-                className={`plus-rail-dot flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold tabular-nums ${
-                  state === 'todo'
-                    ? 'border-paper-300 bg-paper-50 text-pine-900/40'
-                    : state === 'active'
-                      ? 'border-transparent bg-sage-100 text-pine-800'
-                      : 'border-pine-600 bg-pine-600 text-paper-50'
-                }`}
-              >
+              <span className="plus-rail-dot flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold tabular-nums">
                 {state === 'done' ? <Check /> : i + 1}
               </span>
             </span>
-            <span
-              className={`plus-sans text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs ${
-                state === 'todo' ? 'text-pine-900/40' : 'text-pine-800'
-              }`}
-            >
+            <span className="plus-rail-name plus-sans text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs">
               {label}
             </span>
           </li>
@@ -596,8 +586,8 @@ function Check({ className = 'h-4 w-4' }: { className?: string }) {
 function Row({ label, value, empty }: { label: string; value: string | null; empty: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-pine-900/60">{label}</dt>
-      <dd className="text-end font-medium text-pine-900">
+      <dt className="plus-dim">{label}</dt>
+      <dd className="text-end font-medium plus-ink">
         {/*
          * `key` je sama vrijednost, pa React pri promjeni ne prepiše tekst
          * nego napravi NOVI element — a time se CSS animacija upali iznova.
@@ -605,7 +595,7 @@ function Row({ label, value, empty }: { label: string; value: string | null; emp
          * dodir uopće primljen.
          */}
         <span key={value ?? 'prazno'} className="plus-value-swap">
-          {value ?? <span className="font-normal text-pine-900/40">{empty}</span>}
+          {value ?? <span className="font-normal plus-dimmer">{empty}</span>}
         </span>
       </dd>
     </div>

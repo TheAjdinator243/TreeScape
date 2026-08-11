@@ -51,10 +51,7 @@ export function GuestStepper({
     <div className="plus-live">
       <p className="plus-label">{label}</p>
 
-      <div
-        className="flex items-center gap-4 rounded-xl border border-paper-300 bg-white px-3 py-2.5"
-        data-dir={dir}
-      >
+      <div className="plus-guest-box flex items-center gap-4 px-3 py-2.5" data-dir={dir}>
         <PlusButton
           onClick={() => set(value - 1)}
           disabled={disabled || value <= 1}
@@ -86,7 +83,7 @@ export function GuestStepper({
         >
           {/* `key` je sama vrijednost: React pri promjeni pravi NOVI element,
               pa se animacija upali iznova. Bez njega bi se broj tiho prepisao. */}
-          <span key={value} className="plus-roll block text-lg font-medium text-pine-900">
+          <span key={value} className="plus-roll plus-ink block text-lg font-medium">
             {text}
           </span>
         </div>
