@@ -3,6 +3,7 @@
 import { StayCalendar } from '@/components/booking/StayCalendar';
 import { scrollToSummary, useStayForm } from '@/components/booking/useStayForm';
 import { useI18n } from '@/components/i18n/LocaleProvider';
+import { CountTo } from '@/components/motion/CountTo';
 import { LineReveal } from '@/components/motion/LineReveal';
 import { Reveal } from '@/components/motion/Reveal';
 import { daysBetween, formatLong } from '@/lib/dates';
@@ -144,7 +145,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
               )}
 
               {quote && (
-                <div className="mt-6 border-t border-paper-200 pt-6">
+                <div className="plus-summary-in mt-6 border-t border-paper-200 pt-6">
                   <div className="flex items-baseline justify-between gap-4 text-sm">
                     <span className="text-pine-900/60">
                       {t.booking.daysLabel(quote.dayCount)} ×{' '}
@@ -159,11 +160,24 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                     <span className="plus-sans text-xs font-semibold uppercase tracking-[0.14em] text-pine-900/60">
                       {t.booking.total}
                     </span>
+                    {/*
+                     * Ukupna cijena se PRETAČE sa stare na novu, umjesto da
+                     * skoči. Gost dodirne još jednu noć i vidi kako iznos ide
+                     * gore — veza između poteza i broja je time očigledna, a
+                     * ne nešto što treba primijetiti.
+                     *
+                     * Pretače se samo velik iznos na dnu. Da se pretaču svi
+                     * brojevi u pregledu, tri stvari bi se mrdale odjednom i
+                     * nijedna ne bi ništa značila.
+                     */}
                     <span
                       className="text-3xl tabular-nums text-pine-800"
                       style={{ fontFamily: 'var(--font-plus-display)' }}
                     >
-                      {formatMoney(quote.totalCents, quote.currencySymbol, locale)}
+                      <CountTo
+                        value={quote.totalCents}
+                        format={(cents) => formatMoney(cents, quote.currencySymbol, locale)}
+                      />
                     </span>
                   </div>
 
@@ -306,11 +320,16 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                 </p>
               )}
 
+              {/* Dok se šalje, preko dugmeta prelazi odsjaj. Kotur pored
+                  teksta kaže da se nešto dešava, ali stoji u mjestu; odsjaj
+                  preko cijele širine pokazuje da to još TRAJE. */}
               <button
                 type="button"
                 onClick={() => void form.submit()}
                 disabled={busy || paymentMethods.length === 0}
-                className="plus-btn-accent mt-6 w-full py-4"
+                className={`plus-btn-accent mt-6 w-full py-4 ${
+                  busy ? 'plus-btn-busy relative overflow-hidden' : ''
+                }`}
               >
                 {busy && <Spinner />}
                 {busy ? t.booking.submitting : t.booking.reserve}
@@ -332,7 +351,10 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                 className="text-xl tabular-nums text-pine-800"
                 style={{ fontFamily: 'var(--font-plus-display)' }}
               >
-                {formatMoney(quote.totalCents, quote.currencySymbol, locale)}
+                <CountTo
+                  value={quote.totalCents}
+                  format={(cents) => formatMoney(cents, quote.currencySymbol, locale)}
+                />
               </p>
             </div>
             <button
@@ -354,7 +376,15 @@ function Row({ label, value, empty }: { label: string; value: string | null; emp
     <div className="flex items-baseline justify-between gap-4">
       <dt className="text-pine-900/60">{label}</dt>
       <dd className="text-end font-medium text-pine-900">
-        {value ?? <span className="font-normal text-pine-900/40">{empty}</span>}
+        {/*
+         * `key` je sam datum, pa React pri promjeni ne prepiše tekst nego
+         * napravi NOVI element — a time se CSS animacija upali iznova. Bez
+         * njega bi se datum tiho zamijenio i gost ne bi bio siguran je li
+         * dodir uopće primljen.
+         */}
+        <span key={value ?? 'prazno'} className="plus-value-swap">
+          {value ?? <span className="font-normal text-pine-900/40">{empty}</span>}
+        </span>
       </dd>
     </div>
   );

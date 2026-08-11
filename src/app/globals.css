@@ -1277,6 +1277,126 @@ html[lang='ar'] body * {
   transform: none;
 }
 
+/* ── "Plus" izgled: pokret u rezervaciji ─────────────────────────────────
+ *
+ * Ovdje pokret nije ukras nego POTVRDA. Gost je nešto uradio — dodirnuo
+ * datum, promijenio broj noći, pritisnuo dugme — i svaka od ovih animacija
+ * odgovara na tačno jedan takav potez. Zato ih nema nigdje drugo u formi:
+ * polje koje se miče dok se u njega kuca samo smeta.
+ *
+ * Sve ih gasi `prefers-reduced-motion` blok na dnu ovog fajla.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+/*
+ * Odabrani raspon se PRELIJE preko kalendara, s lijeva na desno.
+ *
+ * Kašnjenje ide po koloni (danu u sedmici), ne po rednom broju ćelije.
+ * Da ide po rednom broju, raspon u posljednjoj sedmici mjeseca bi čekao pola
+ * sekunde prije nego što uopće krene — a gost je dotle već otišao dalje.
+ * Ovako svaka sedmica krene odmah, a unutar nje se dani pale redom.
+ */
+.plus .rdp-day:nth-child(1) {
+  --d: 0;
+}
+.plus .rdp-day:nth-child(2) {
+  --d: 1;
+}
+.plus .rdp-day:nth-child(3) {
+  --d: 2;
+}
+.plus .rdp-day:nth-child(4) {
+  --d: 3;
+}
+.plus .rdp-day:nth-child(5) {
+  --d: 4;
+}
+.plus .rdp-day:nth-child(6) {
+  --d: 5;
+}
+.plus .rdp-day:nth-child(7) {
+  --d: 6;
+}
+
+@keyframes range-fill {
+  from {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.plus .rdp-selected .rdp-day_button {
+  /* `backwards` drži dan skupljenim dok čeka svoj red — bez toga bi svi
+     stajali gotovi pa naglo poskočili. */
+  animation: range-fill 420ms var(--ease-out-soft) backwards;
+  animation-delay: calc(var(--d, 0) * 26ms);
+}
+
+/* Pregled cijene se pojavi tek kad postoji ispravan termin, pa ulazi kao
+   nova obavijest, a ne kao dio koji je oduvijek tu. */
+@keyframes summary-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.plus-summary-in {
+  animation: summary-in 520ms var(--ease-out-soft) both;
+}
+
+/* Datum u pregledu se ne prebaci naglo — stara vrijednost ode, nova dođe
+   odozdo. Pokret je namjerno sitan: ovo je potvrda, ne najava. */
+@keyframes value-swap {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.plus-value-swap {
+  display: inline-block;
+  animation: value-swap 380ms var(--ease-out-soft) both;
+}
+
+/*
+ * Odsjaj koji prelazi preko dugmeta dok se rezervacija šalje.
+ *
+ * Kotur pored teksta kaže da se nešto dešava, ali stoji na jednom mjestu;
+ * odsjaj preko cijele širine pokazuje da traje. Na sporoj vezi je to razlika
+ * između čekanja i drugog klika na isto dugme.
+ */
+@keyframes btn-sweep {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(240%);
+  }
+}
+
+.plus-btn-busy::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.22), transparent);
+  animation: btn-sweep 1.15s linear infinite;
+  content: '';
+}
+
 /* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */
 @media (prefers-reduced-motion: reduce) {
   html {
