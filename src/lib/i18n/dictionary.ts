@@ -43,7 +43,7 @@ export type AmenityKey =
   | 'towel';
 
 /** Odredišta u blizini — vremena vožnje stoje u `Location.tsx`. */
-export type PlaceKey = 'city' | 'airport' | 'shop' | 'ski';
+export type PlaceKey = 'city' | 'airport' | 'shop';
 
 export interface QuestionAnswer {
   q: string;
@@ -175,7 +175,6 @@ export interface Dictionary {
   location: {
     heading: string;
     lead: string;
-    directions: string;
     mapTitle: string;
     /** Tekst dugmeta koje otvara Google Mape u novoj kartici. */
     openInMaps: string;

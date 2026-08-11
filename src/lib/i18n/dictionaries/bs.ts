@@ -74,7 +74,7 @@ export const bs: Dictionary = {
       },
       {
         title: 'Domaćin potvrdi',
-        body: 'Odluka stiže na vaš mail, a stranica s potvrdom se osvježi sama. Tačnu adresu i uputstva za dolazak šaljemo prije dolaska.',
+        body: 'Odluka stiže na vaš mail, a stranica s potvrdom se osvježi sama.',
       },
     ],
   },
@@ -136,7 +136,6 @@ export const bs: Dictionary = {
   location: {
     heading: 'Gdje se nalazimo',
     lead: 'Dovoljno blizu da se lako stigne, dovoljno daleko da se čuje samo šuma.',
-    directions: 'Tačnu adresu i uputstva za dolazak šaljemo nakon potvrde rezervacije.',
     mapTitle: 'Karta lokacije vile TreeScape',
     openInMaps: 'Otvori u Google Mapama',
     opensInNewTab: 'otvara se u novoj kartici',
@@ -145,7 +144,6 @@ export const bs: Dictionary = {
       city: 'Sarajevo',
       airport: 'Aerodrom',
       shop: 'Najbliža prodavnica',
-      ski: 'Skijalište',
     },
   },
 

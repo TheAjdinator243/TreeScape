@@ -48,10 +48,6 @@ export async function PlusLocation() {
             ))}
           </dl>
 
-          <p className="mt-6 rounded-2xl bg-paper-100 px-5 py-4 text-sm leading-relaxed text-pine-900/65">
-            {t.location.directions}
-          </p>
-
           <a
             href={GOOGLE_MAPS_URL}
             target="_blank"

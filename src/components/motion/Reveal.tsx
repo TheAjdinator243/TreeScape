@@ -34,7 +34,15 @@ export type RevealVariant =
   /** S početka reda (lijevo u bosanskom, desno u arapskom). */
   | 'slide'
   /** Otkrivanje odozdo nagore, kao da se zavjesa diže — za fotografije. */
-  | 'clip';
+  | 'clip'
+  /**
+   * Iskakanje: malo odozdo I iz manjeg, s izraženijim usporavanjem na kraju.
+   *
+   * Za kartice koje se pojavljuju jedna po jedna dok se skrola. Razlika prema
+   * `rise` je namjerno mala — dovoljna da se osjeti kao "iskočilo je", a ne
+   * toliko da poskakuje.
+   */
+  | 'pop';
 
 const HIDDEN: Record<RevealVariant, { transform?: string; clipPath?: string }> = {
   rise: { transform: 'translate3d(0, 20px, 0)' },
@@ -43,6 +51,7 @@ const HIDDEN: Record<RevealVariant, { transform?: string; clipPath?: string }> =
   // `var(--reveal-slide)` okreće smjer u arapskom — vidi `globals.css`.
   slide: { transform: 'translate3d(var(--reveal-slide, -24px), 0, 0)' },
   clip: { transform: 'scale(1.04)', clipPath: 'inset(14% 0 0 0)' },
+  pop: { transform: 'translate3d(0, 26px, 0) scale(0.96)' },
 };
 
 const DURATION: Record<RevealVariant, number> = {
@@ -51,6 +60,7 @@ const DURATION: Record<RevealVariant, number> = {
   scale: 800,
   slide: 700,
   clip: 1000,
+  pop: 620,
 };
 
 export function Reveal({
@@ -58,6 +68,7 @@ export function Reveal({
   delay = 0,
   variant = 'rise',
   className = '',
+  margin,
   as: Tag = 'div',
 }: {
   children: React.ReactNode;
@@ -65,6 +76,15 @@ export function Reveal({
   delay?: number;
   variant?: RevealVariant;
   className?: string;
+  /**
+   * Koliko ranije ili kasnije se okida, u odnosu na ivicu ekrana.
+   *
+   * Podrazumijevano se sadržaj pojavi čim zagrebe dno ekrana. Za kartice koje
+   * treba da iskaču JEDNA PO JEDNA dok se skrola to je prerano — one se tada
+   * sve upale još dok su na samom rubu. Negativan donji rub (npr.
+   * `0px 0px -15% 0px`) pomjeri okidanje dublje u ekran, pa svaka sačeka svoj red.
+   */
+  margin?: string;
   /** Element koji se ispisuje. `li` kad `Reveal` stoji unutar spiska. */
   as?: 'div' | 'li' | 'span';
 }) {
@@ -73,25 +93,28 @@ export function Reveal({
   const hidden = HIDDEN[variant];
   const duration = DURATION[variant];
 
-  const ref = useOnceInView<HTMLElement>((node) => {
-    if (shown.current) return;
-    shown.current = true;
+  const ref = useOnceInView<HTMLElement>(
+    (node) => {
+      if (shown.current) return;
+      shown.current = true;
 
-    node.style.opacity = '1';
-    node.style.transform = 'none';
-    // Maska se vraća samo onom obliku koji je i ima. Da se ovdje svakome
-    // upiše `inset(0 0 0 0)`, kartice bi ostale s maskom po ivici kutije i
-    // ona bi odsjekla njihovu sjenu.
-    if (hidden.clipPath) node.style.clipPath = 'inset(0 0 0 0)';
+      node.style.opacity = '1';
+      node.style.transform = 'none';
+      // Maska se vraća samo onom obliku koji je i ima. Da se ovdje svakome
+      // upiše `inset(0 0 0 0)`, kartice bi ostale s maskom po ivici kutije i
+      // ona bi odsjekla njihovu sjenu.
+      if (hidden.clipPath) node.style.clipPath = 'inset(0 0 0 0)';
 
-    // `will-change` je obećanje pregledniku da će se nešto mijenjati — i on
-    // za to obećanje drži zaseban sloj u memoriji. Kad se animacija završi,
-    // obećanje treba povući, inače svaki od desetak ovakvih blokova na
-    // stranici zauvijek drži sloj koji se više nikad ne mijenja.
-    window.setTimeout(() => {
-      if (node.isConnected) node.style.willChange = 'auto';
-    }, delay + duration);
-  });
+      // `will-change` je obećanje pregledniku da će se nešto mijenjati — i on
+      // za to obećanje drži zaseban sloj u memoriji. Kad se animacija završi,
+      // obećanje treba povući, inače svaki od desetak ovakvih blokova na
+      // stranici zauvijek drži sloj koji se više nikad ne mijenja.
+      window.setTimeout(() => {
+        if (node.isConnected) node.style.willChange = 'auto';
+      }, delay + duration);
+    },
+    margin ? { rootMargin: margin } : undefined
+  );
 
   return (
     <Tag

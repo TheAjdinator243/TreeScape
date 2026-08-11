@@ -25,10 +25,6 @@ export async function Location() {
             ))}
           </dl>
 
-          <p className="mt-6 rounded-xl bg-sand-100 px-5 py-4 text-sm leading-relaxed text-ink-500">
-            {t.location.directions}
-          </p>
-
           <a
             href={GOOGLE_MAPS_URL}
             target="_blank"
