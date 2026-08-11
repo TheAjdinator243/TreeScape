@@ -143,9 +143,9 @@ export function PlusNav() {
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline-flex">
               {/* Jedino mjesto gdje se koža bira u komponenti, a ne u CSS-u: ton je
-                  ovdje svojstvo, pa ne može pratiti `data-skin`. `pro` ton je
+                  ovdje svojstvo, pa ne može pratiti `data-skin`. `onyx` ton je
                   isti oblik i ista boja koje nosi i ostatak ove kože. */}
-              <LanguageSwitcher tone={solid ? 'pro' : 'dark'} />
+              <LanguageSwitcher tone={solid ? 'onyx' : 'dark'} />
             </span>
 
             <a
@@ -260,7 +260,7 @@ function PlusMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
       </a>
 
       <div className="mt-auto flex justify-center pt-10">
-        <LanguageSwitcher tone="pro" />
+        <LanguageSwitcher tone="onyx" />
       </div>
     </div>
   );

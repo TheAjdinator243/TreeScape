@@ -15,7 +15,7 @@ import { useReducedMotion } from './use-reduced-motion';
  * skrolanje i dodirni ekran. Sve ostale animacije su i dalje pisane ovdje.
  *
  * Uključuje se SAMO na /treescapeproplus (stoji u tom rasporedu), pa osnovni
- * sajt i "pro" skrolaju kao i prije.
+ * sajt skrola kao i prije.
  *
  * ── Tri stvari bez kojih ovo ne valja ─────────────────────────────────────
  *

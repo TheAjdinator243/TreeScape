@@ -6,7 +6,7 @@ import { SmoothScroll } from '@/components/motion/SmoothScroll';
  * Pismo "plus" izgleda.
  *
  * `preload: false` je isti razlog kao kod arapskog fonta u glavnom rasporedu i
- * kod pisama "pro" izgleda: bez njega bi Next ova dva pisma slao SVAKOM
+ * u glavnom rasporedu: bez njega bi Next ova dva pisma slao SVAKOM
  * posjetiocu, i onima koji nikad ne otvore /treescapeproplus. Ovako
  * promjenljive stoje samo na ovom podstablu, pa ih preuzme samo onaj ko je
  * zaista ovdje.
@@ -32,8 +32,8 @@ const plusSans = Manrope({
 
 /**
  * Klasa `plus` uključuje cijelu treću kožu (vidi globals.css). Stoji na
- * omotaču, a ne na <html>, pa i osnovni sajt i "pro" ostaju netaknuti — tri
- * verzije žive jedna pored druge u istoj aplikaciji, na istoj bazi.
+ * omotaču, a ne na <html>, pa osnovni sajt ostaje netaknut — dvije verzije
+ * žive jedna pored druge u istoj aplikaciji, na istoj bazi.
  *
  * `data-skin` bira BOJE te kože. Nijedna komponenta ne piše boju u svom
  * JSX-u — sve idu preko imena poslova (`plus-ink`, `plus-surface`, `plus-rule`

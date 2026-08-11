@@ -76,7 +76,7 @@ export function StayCalendar({
       />
 
       {/*
-        `stay-legend` i `data-tone` nisu ukras nego rukohvat: "pro" izgled je
+        `stay-legend` i `data-tone` nisu ukras nego rukohvat: druga koža je
         taman, pa ove tri boje tamo moraju biti druge. Preko imena i oznake se
         prebojaju iz CSS-a (vidi globals.css), bez ijedne nove zastavice u
         komponenti koju oba izgleda dijele.

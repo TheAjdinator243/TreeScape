@@ -17,7 +17,7 @@ import { useI18n } from './LocaleProvider';
  * osvježenje sa servera. Bez toga bi stranica na trenutak stajala s arapskim
  * tekstom u lijevo-desnom rasporedu, dok ne stigne novi odgovor.
  */
-export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' | 'pro' }) {
+export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' | 'onyx' }) {
   const { locale, t } = useI18n();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -33,14 +33,14 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' |
   }
 
   /**
-   * `pro` nije samo druga boja nego i drugi oblik: bez zaobljenja i s
+   * `onyx` nije samo druga boja nego i drugi oblik: bez zaobljenja i s
    * razmaknutim velikim slovima, da se ne razlikuje od ostatka tog izgleda.
    * Zato oblik ide uz ton, a ne u zajednički dio klase.
    */
   const styles = {
     light: 'rounded-full border-sand-300 bg-white text-ink-700 hover:border-forest-600',
     dark: 'rounded-full border-white/30 bg-white/10 text-white hover:bg-white/20',
-    pro: 'border-ivory-100/25 bg-transparent text-ivory-100 text-[0.7rem] uppercase tracking-[0.16em] hover:border-brass-400 hover:text-brass-300',
+    onyx: 'border-ivory-100/25 bg-transparent text-ivory-100 text-[0.7rem] uppercase tracking-[0.16em] hover:border-brass-400 hover:text-brass-300',
   }[tone];
 
   return (

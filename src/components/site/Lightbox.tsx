@@ -29,7 +29,7 @@ export function Lightbox({
    * Skok pravo na sliku iz trake sličica pri dnu.
    *
    * Neobavezno, i to namjerno: traku ima samo "plus" izgled. Osnovna verzija i
-   * "pro" ovaj prikaz koriste bez nje i izgledaju tačno kao i prije — dodatak
+   * Osnovni sajt ovaj prikaz koristi bez nje i izgleda tačno kao prije — dodatak
    * se ne pojavljuje dok ga neko izričito ne zatraži.
    */
   onSelect?: (index: number) => void;
