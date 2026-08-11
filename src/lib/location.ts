@@ -50,5 +50,4 @@ export const TRAVEL = [
   { key: 'city', minutes: 35 },
   { key: 'airport', minutes: 45 },
   { key: 'shop', minutes: 8 },
-  { key: 'ski', minutes: 25 },
 ] as const;

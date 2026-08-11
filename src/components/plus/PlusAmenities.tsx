@@ -56,9 +56,23 @@ export async function PlusAmenities() {
             <Reveal
               key={key}
               as="li"
-              // Kašnjenje staje na devetoj: sadržaja je četrnaest, a kolona
-              // tri — posljednji red je već na ekranu dok bi po redu tek čekao.
-              delay={Math.min(i, 8) * 45}
+              variant="pop"
+              /*
+               * Kartice iskaču JEDNA PO JEDNA dok se skrola.
+               *
+               * Prvi pokušaj je svakoj davao kašnjenje po njenom rednom broju
+               * (`i * 45`), pa je četrnaesta čekala pola sekunde nakon što je
+               * već bila na ekranu — a prvih šest se upalilo odjednom, jer sve
+               * uđu u isti kadar. Sada svaka ima svoj osmatrač i pali se kad
+               * ONA dođe na red; kašnjenje je samo mali pomak unutar reda
+               * (`i % 3`), da se ne upale sve tri kolone u istoj sekundi.
+               *
+               * `margin` gura okidanje 18% dublje u ekran: bez toga se kartica
+               * upali dok je tek zagrebala donju ivicu, pa se pojavljivanje ni
+               * ne vidi.
+               */
+              delay={(i % 3) * 90}
+              margin="0px 0px -18% 0px"
               className="group h-full rounded-2xl border border-paper-100/10 bg-paper-100/[0.04] p-6 transition-[background-color,border-color] duration-500 hover:border-paper-100/20 hover:bg-paper-100/[0.07]"
             >
               <span

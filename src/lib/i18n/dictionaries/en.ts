@@ -69,7 +69,7 @@ export const en: Dictionary = {
       },
       {
         title: 'The host confirms',
-        body: 'The decision arrives by email and your booking page refreshes itself. We send the exact address and directions before you arrive.',
+        body: 'The decision arrives by email and your booking page refreshes itself.',
       },
     ],
   },
@@ -137,7 +137,6 @@ export const en: Dictionary = {
   location: {
     heading: 'Where we are',
     lead: 'Close enough to reach easily, far enough to hear nothing but the forest.',
-    directions: 'We send the exact address and directions once your booking is confirmed.',
     mapTitle: 'Map of the TreeScape villa location',
     openInMaps: 'Open in Google Maps',
     opensInNewTab: 'opens in a new tab',
@@ -146,7 +145,6 @@ export const en: Dictionary = {
       city: 'Sarajevo',
       airport: 'Airport',
       shop: 'Nearest shop',
-      ski: 'Ski resort',
     },
   },
 

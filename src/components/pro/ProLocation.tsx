@@ -39,10 +39,6 @@ export async function ProLocation() {
             ))}
           </dl>
 
-          <p className="mt-8 max-w-lg text-base font-light leading-[1.9] text-ivory-400">
-            {t.location.directions}
-          </p>
-
           <a
             href={GOOGLE_MAPS_URL}
             target="_blank"
