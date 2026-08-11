@@ -1483,7 +1483,346 @@ html[lang='ar'] body * {
 }
 
 .plus-rail-step[data-state='active'] .plus-rail-dot {
-  transform: scale(1.12);
+  transform: scale(0.86);
+}
+
+/* Prsten oko aktivne tačke prati kucanje: raste sa svakim poljem koje
+   postane ispravno, a ne s klikom na "Dalje". */
+.plus-rail-ring {
+  transition: stroke-dashoffset 460ms var(--ease-out-soft);
+}
+
+/* Kvačica na odabranom načinu plaćanja — isti potez kao u poljima. */
+.plus-pick-tick {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 0.9rem;
+  height: 1.1rem;
+  width: 1.1rem;
+  color: var(--color-pine-600);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.5);
+  transition:
+    opacity 240ms var(--ease-out-soft),
+    transform 380ms var(--ease-out-soft);
+}
+
+.plus-pick-tick path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset 460ms var(--ease-out-soft) 60ms;
+}
+
+.plus-pick[data-on='true'] .plus-pick-tick {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+.plus-pick[data-on='true'] .plus-pick-tick path {
+  stroke-dashoffset: 0;
+}
+
+/* ── "Plus" izgled: forma koja reaguje ───────────────────────────────────
+ *
+ * Sve odavde odgovara na jedan jedini potez gosta — dodir dugmeta ili slovo
+ * u polju. Ništa se ne pokreće samo od sebe, ništa ne ide u krug. Zato je
+ * ovaj pokret jednako dobrodošao i onome koga animacije inače smetaju: on
+ * ne oduzima pažnju nego je vraća, i to na mjesto na kojem se upravo nešto
+ * desilo.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+/* ── Val iz tačke dodira ── */
+.plus-ripple {
+  position: absolute;
+  top: var(--ry, 50%);
+  left: var(--rx, 50%);
+  z-index: -1;
+  height: 10px;
+  width: 10px;
+  margin: -5px;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.plus-ripple[data-on='true'] {
+  animation: ripple-out 640ms var(--ease-out-soft);
+}
+
+@keyframes ripple-out {
+  from {
+    opacity: 0.32;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(42);
+  }
+}
+
+/* Dugme slegne pod prstom. Jedan piksel gore-dolje ne bi se ni osjetio na
+   dodirnom ekranu, gdje prst ionako prekriva pola dugmeta. */
+.plus-press {
+  transition: transform 160ms var(--ease-out-soft);
+}
+
+.plus-press:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* Okruglo dugme u brojaču gostiju. */
+.plus-step-btn {
+  display: flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--color-paper-300);
+  color: var(--color-pine-800);
+  transition:
+    background-color 240ms var(--ease-out-soft),
+    border-color 240ms var(--ease-out-soft),
+    transform 160ms var(--ease-out-soft);
+}
+
+.plus-step-btn:hover:not(:disabled) {
+  border-color: var(--color-pine-600);
+  background-color: var(--color-sage-100);
+}
+
+.plus-step-btn:disabled {
+  opacity: 0.35;
+}
+
+/* ── Polje koje odgovara na svako slovo ── */
+.plus-live-box {
+  position: relative;
+}
+
+.plus-live-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-paper-300);
+  background-color: #fff;
+  padding: 1.4rem 2.6rem 0.55rem 1rem;
+  color: var(--color-pine-900);
+  transition:
+    border-color 260ms var(--ease-out-soft),
+    box-shadow 260ms var(--ease-out-soft);
+}
+
+[dir='rtl'] .plus-live-input {
+  padding-left: 2.6rem;
+  padding-right: 1rem;
+}
+
+.plus-live-input:focus {
+  border-color: var(--color-pine-600);
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-pine-600) 12%, transparent);
+}
+
+.plus-live-input:disabled {
+  background-color: var(--color-paper-100);
+  color: color-mix(in oklab, var(--color-pine-900) 40%, transparent);
+}
+
+.plus-live-input::placeholder {
+  color: color-mix(in oklab, var(--color-pine-900) 35%, transparent);
+}
+
+/*
+ * Natpis stoji U polju dok je prazno, pa se podigne u njegov gornji rub.
+ *
+ * `translate` i `scale` umjesto promjene `font-size`: veličina slova se ne
+ * može animirati bez da preglednik iznova računa raspored u svakom kadru, a
+ * `transform` mu ne dira ništa osim slike.
+ */
+.plus-live-label {
+  position: absolute;
+  top: 0.95rem;
+  inset-inline-start: 1rem;
+  /* Natpis se skuplja prema svom početku, pa mora znati gdje mu je početak —
+     u arapskom je to desna strana. */
+  transform-origin: left center;
+  color: color-mix(in oklab, var(--color-pine-900) 50%, transparent);
+  pointer-events: none;
+  transition:
+    transform 300ms var(--ease-out-soft),
+    color 300ms var(--ease-out-soft);
+}
+
+[dir='rtl'] .plus-live-label {
+  transform-origin: right center;
+}
+
+.plus-live[data-lifted='true'] .plus-live-label {
+  transform: translateY(-0.72rem) scale(0.76);
+  color: color-mix(in oklab, var(--color-pine-900) 60%, transparent);
+}
+
+.plus-live:focus-within .plus-live-label {
+  color: var(--color-pine-700);
+}
+
+/* Linija se razvlači iz sredine na obje strane. */
+.plus-live-underline {
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0.75rem;
+  height: 2px;
+  border-radius: 9999px;
+  background-color: var(--color-pine-600);
+  transform: scaleX(0);
+  transition:
+    transform 420ms var(--ease-out-soft),
+    background-color 300ms var(--ease-out-soft);
+}
+
+.plus-live:focus-within .plus-live-underline,
+.plus-live[data-ok='true'] .plus-live-underline {
+  transform: scaleX(1);
+}
+
+.plus-live[data-ok='true'] .plus-live-underline {
+  background-color: var(--color-pine-500);
+}
+
+.plus-live[data-bad='true'] .plus-live-underline {
+  background-color: var(--color-danger-600);
+  transform: scaleX(1);
+}
+
+.plus-live[data-bad='true'] .plus-live-input {
+  border-color: color-mix(in oklab, var(--color-danger-600) 50%, transparent);
+}
+
+/*
+ * Kvačica se NACRTA, ne pojavi.
+ *
+ * `stroke-dashoffset` pomjera prazninu duž poteza, pa linija izgleda kao da
+ * se vuče. Gotova kvačica koja bljesne je obavještenje; nacrtana je odgovor.
+ */
+.plus-live-tick {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 0.85rem;
+  height: 1.15rem;
+  width: 1.15rem;
+  color: var(--color-pine-600);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.6);
+  pointer-events: none;
+  transition:
+    opacity 240ms var(--ease-out-soft),
+    transform 380ms var(--ease-out-soft);
+}
+
+.plus-live-tick path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transition: stroke-dashoffset 460ms var(--ease-out-soft) 60ms;
+}
+
+.plus-live[data-ok='true'] .plus-live-tick {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+.plus-live[data-ok='true'] .plus-live-tick path {
+  stroke-dashoffset: 0;
+}
+
+/* Polje s više redova: kvačica ide uz gornju ivicu, ne uz sredinu okvira. */
+.plus-live-box:has(textarea) .plus-live-tick {
+  top: 1.5rem;
+  transform: scale(0.6);
+}
+
+.plus-live[data-ok='true'] .plus-live-box:has(textarea) .plus-live-tick {
+  transform: scale(1);
+}
+
+.plus-live-count {
+  position: absolute;
+  bottom: 0.5rem;
+  inset-inline-end: 0.85rem;
+  font-family: var(--font-plus-sans);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--color-pine-900) 40%, transparent);
+}
+
+/* Polje se strese pri izlasku s neispravnim sadržajem. Kratko i sitno —
+   ovo je opomena, ne kazna. */
+@keyframes field-shake {
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+.plus-live[data-bad='true'] .plus-live-box {
+  animation: field-shake 420ms var(--ease-out-soft);
+}
+
+/* ── Broj gostiju: stari broj ode, novi dođe ── */
+@keyframes roll-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.7em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes roll-down {
+  from {
+    opacity: 0;
+    transform: translateY(-0.7em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.plus-roll {
+  animation: roll-up 320ms var(--ease-out-soft) both;
+}
+
+[data-dir='down'] .plus-roll {
+  animation-name: roll-down;
+}
+
+.plus-guest-value {
+  overflow: hidden;
+}
+
+.plus-guest-dot {
+  color: color-mix(in oklab, var(--color-pine-900) 18%, transparent);
+  transform: scale(0.82);
+  transition:
+    color 320ms var(--ease-out-soft),
+    transform 320ms var(--ease-out-soft);
+}
+
+.plus-guest-dot[data-on='true'] {
+  color: var(--color-pine-600);
+  transform: none;
 }
 
 /* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */

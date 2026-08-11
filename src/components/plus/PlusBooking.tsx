@@ -3,11 +3,20 @@
 import { useRef, useState } from 'react';
 
 import { StayCalendar } from '@/components/booking/StayCalendar';
-import { guestDetailsError, useStayForm } from '@/components/booking/useStayForm';
+import {
+  guestDetailsError,
+  isEmail,
+  isName,
+  isPhone,
+  useStayForm,
+} from '@/components/booking/useStayForm';
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { CountTo } from '@/components/motion/CountTo';
 import { LineReveal } from '@/components/motion/LineReveal';
 import { Reveal } from '@/components/motion/Reveal';
+import { GuestStepper } from '@/components/plus/GuestStepper';
+import { LiveField } from '@/components/plus/LiveField';
+import { PlusButton } from '@/components/plus/PlusButton';
 import { daysBetween, formatLong } from '@/lib/dates';
 import { count } from '@/lib/i18n';
 import { WEEKEND_PERIOD, formatMoney } from '@/lib/pricing';
@@ -91,6 +100,22 @@ export function PlusBooking({ context }: { context: BookingContext }) {
 
   const railLabels = [t.booking.wizard.dates, t.booking.wizard.details, t.booking.wizard.review];
 
+  /**
+   * Koliko je trenutni korak popunjen, od 0 do 1.
+   *
+   * Ovo je jedino mjesto gdje se kucanje vidi IZVAN polja u koje se kuca:
+   * prsten oko tačke u traci raste sa svakim poljem koje postane ispravno.
+   * Gost time zna koliko mu je još ostalo, a da ne mora brojati polja.
+   */
+  const filled =
+    step === 0
+      ? datesReady
+        ? 1
+        : 0
+      : step === 1
+        ? [isName(name), isEmail(email), isPhone(phone), method !== null].filter(Boolean).length / 4
+        : 1;
+
   return (
     <section id="rezervacija" className="border-y border-paper-200 bg-paper-100">
       <div className="plus-section">
@@ -102,7 +127,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
 
         <Reveal delay={100} className="mt-12">
           <div ref={cardRef} id="pregled" className="plus-card mx-auto max-w-5xl p-5 sm:p-8">
-            <Rail labels={railLabels} step={step} />
+            <Rail labels={railLabels} step={step} filled={filled} />
 
             <div data-dir={dir} className="mt-8">
               {/* ── 1. Datumi ── */}
@@ -176,70 +201,61 @@ export function PlusBooking({ context }: { context: BookingContext }) {
               {/* ── 2. Vaši podaci ── */}
               <Panel active={step === 1} label={t.booking.wizard.stepOf(2, STEPS)}>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="plus-guests" className="plus-label">
-                      {t.booking.guests}
-                    </label>
-                    <select
-                      id="plus-guests"
+                  <div className="sm:col-span-2">
+                    <GuestStepper
                       value={guests}
-                      onChange={(e) => form.setGuests(Number(e.target.value))}
-                      className="plus-field"
+                      max={settings.max_guests}
+                      onChange={form.setGuests}
+                      label={t.booking.guests}
+                      text={count(locale, guests, t.common.guests)}
                       disabled={busy}
-                    >
-                      {Array.from({ length: settings.max_guests }, (_, i) => i + 1).map((n) => (
-                        <option key={n} value={n}>
-                          {count(locale, n, t.common.guests)}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
 
-                  <Field
-                    id="plus-name"
+                  {/* `valid` dolazi iz istih funkcija koje provjeravaju i
+                      slanje, pa polje ne može upaliti kvačicu za nešto što bi
+                      server odbio. */}
+                  <LiveField
                     label={t.booking.name}
                     value={name}
                     onChange={form.setName}
+                    valid={isName(name)}
                     placeholder={t.booking.namePlaceholder}
                     autoComplete="name"
                     disabled={busy}
                   />
-                  <Field
-                    id="plus-email"
+                  <LiveField
                     label={t.booking.email}
                     type="email"
                     value={email}
                     onChange={form.setEmail}
+                    valid={isEmail(email)}
                     placeholder={t.booking.emailPlaceholder}
                     autoComplete="email"
                     disabled={busy}
                   />
-                  <Field
-                    id="plus-phone"
+                  <LiveField
                     label={t.booking.phone}
                     type="tel"
                     value={phone}
                     onChange={form.setPhone}
+                    valid={isPhone(phone)}
                     placeholder={t.booking.phonePlaceholder}
                     autoComplete="tel"
                     disabled={busy}
                   />
 
                   <div className="sm:col-span-2">
-                    <label htmlFor="plus-note" className="plus-label">
-                      {t.booking.note}{' '}
-                      <span className="font-normal normal-case tracking-normal text-pine-900/45">
-                        ({t.booking.optional})
-                      </span>
-                    </label>
-                    <textarea
-                      id="plus-note"
+                    {/* Napomena nema `valid`: ona je neobavezna, pa nema šta
+                        ni da potvrdi ni da prigovori. */}
+                    <LiveField
+                      label={t.booking.note}
+                      optionalNote={`(${t.booking.optional})`}
                       value={note}
-                      onChange={(e) => form.setNote(e.target.value)}
+                      onChange={form.setNote}
                       rows={3}
                       maxLength={500}
                       placeholder={t.booking.notePlaceholder}
-                      className="plus-field resize-none"
                       disabled={busy}
                     />
                   </div>
@@ -258,7 +274,8 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                       return (
                         <label
                           key={id}
-                          className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-[background-color,border-color,box-shadow] duration-300 ${
+                          data-on={selected}
+                          className={`plus-pick plus-press relative flex cursor-pointer gap-3 rounded-xl border p-4 pe-11 transition-[background-color,border-color,box-shadow] duration-300 ${
                             selected
                               ? 'border-pine-600 bg-sage-100/50 ring-4 ring-pine-600/10'
                               : 'border-paper-300 hover:border-pine-600/40'
@@ -285,6 +302,10 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                               {copy.hint}
                             </span>
                           </span>
+
+                          {/* Kvačica se nacrta pri odabiru — isti odgovor kao
+                              u poljima, pa cijela forma govori jednim jezikom. */}
+                          <Check className="plus-pick-tick" />
                         </label>
                       );
                     })}
@@ -339,17 +360,14 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                   </p>
                 )}
 
-                <button
-                  type="button"
+                <PlusButton
                   onClick={() => void form.submit()}
                   disabled={busy || paymentMethods.length === 0}
-                  className={`plus-btn-accent mt-6 w-full py-4 ${
-                    busy ? 'plus-btn-busy relative overflow-hidden' : ''
-                  }`}
+                  className={`plus-btn-accent mt-6 w-full py-4 ${busy ? 'plus-btn-busy' : ''}`}
                 >
                   {busy && <Spinner />}
                   {busy ? t.booking.submitting : t.booking.reserve}
-                </button>
+                </PlusButton>
               </Panel>
             </div>
 
@@ -381,25 +399,23 @@ export function PlusBooking({ context }: { context: BookingContext }) {
 
               <div className="flex items-center gap-3">
                 {step > 0 && (
-                  <button
-                    type="button"
+                  <PlusButton
                     onClick={() => go(step - 1, 'back')}
                     disabled={busy}
                     className="plus-btn-ghost px-5 py-2.5"
                   >
                     {t.booking.wizard.back}
-                  </button>
+                  </PlusButton>
                 )}
 
                 {step < STEPS - 1 && (
-                  <button
-                    type="button"
+                  <PlusButton
                     onClick={() => go(step + 1, 'fwd')}
                     disabled={step === 0 ? !datesReady : detailsError !== null}
                     className="plus-btn-primary px-6 py-2.5"
                   >
                     {t.booking.wizard.next}
-                  </button>
+                  </PlusButton>
                 )}
               </div>
             </div>
@@ -435,14 +451,13 @@ export function PlusBooking({ context }: { context: BookingContext }) {
             {/* Na posljednjem koraku traka nema kuda dalje — dugme bi vodilo
                 na korak na kojem gost već stoji. */}
             {step < STEPS - 1 && (
-              <button
-                type="button"
+              <PlusButton
                 onClick={() => go(step + 1, 'fwd')}
                 disabled={step === 0 ? !datesReady : detailsError !== null}
                 className="plus-btn-primary shrink-0 px-5 py-2.5"
               >
                 {t.booking.wizard.next}
-              </button>
+              </PlusButton>
             )}
           </div>
         </div>
@@ -458,7 +473,10 @@ export function PlusBooking({ context }: { context: BookingContext }) {
  * pređenim koracima mijenja u kvačicu — to je jedino mjesto gdje se vidi šta
  * je gotovo, a šta tek dolazi.
  */
-function Rail({ labels, step }: { labels: string[]; step: number }) {
+function Rail({ labels, step, filled }: { labels: string[]; step: number; filled: number }) {
+  // Obim kruga poluprečnika 15 — koliko poteza ima prsten oko aktivne tačke.
+  const ring = 2 * Math.PI * 15;
+
   return (
     <ol className="relative flex items-start justify-between gap-2">
       {/* Linija ide IZA tačaka i staje na sredini prve i posljednje, da ne
@@ -486,14 +504,44 @@ function Rail({ labels, step }: { labels: string[]; step: number }) {
             data-state={state}
             className="plus-rail-step relative z-10 flex flex-1 flex-col items-center gap-2 text-center"
           >
-            <span
-              className={`plus-rail-dot flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold tabular-nums ${
-                state === 'todo'
-                  ? 'border-paper-300 bg-paper-50 text-pine-900/40'
-                  : 'border-pine-600 bg-pine-600 text-paper-50'
-              }`}
-            >
-              {state === 'done' ? <Check /> : i + 1}
+            <span className="relative flex h-8 w-8 items-center justify-center">
+              {/* Prsten oko aktivne tačke raste dok se korak popunjava. Crta
+                  se od dvanaest sati naviše (`rotate(-90)`), jer se napredak
+                  čita odozgo, a ne s desne strane. */}
+              {state === 'active' && (
+                <svg
+                  className="absolute inset-0 h-8 w-8 -rotate-90"
+                  viewBox="0 0 34 34"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="17"
+                    cy="17"
+                    r="15"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    className="plus-rail-ring text-pine-600"
+                    style={{
+                      strokeDasharray: ring,
+                      strokeDashoffset: ring * (1 - filled),
+                    }}
+                  />
+                </svg>
+              )}
+
+              <span
+                className={`plus-rail-dot flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold tabular-nums ${
+                  state === 'todo'
+                    ? 'border-paper-300 bg-paper-50 text-pine-900/40'
+                    : state === 'active'
+                      ? 'border-transparent bg-sage-100 text-pine-800'
+                      : 'border-pine-600 bg-pine-600 text-paper-50'
+                }`}
+              >
+                {state === 'done' ? <Check /> : i + 1}
+              </span>
             </span>
             <span
               className={`plus-sans text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs ${
@@ -531,9 +579,9 @@ function Panel({
   );
 }
 
-function Check() {
+function Check({ className = 'h-4 w-4' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className={className} fill="none" aria-hidden="true">
       <path
         d="m5 13 4.2 4.2L19 7.5"
         stroke="currentColor"
@@ -582,43 +630,5 @@ function Spinner() {
         strokeLinecap="round"
       />
     </svg>
-  );
-}
-
-function Field({
-  id,
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = 'text',
-  autoComplete,
-  disabled,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
-  autoComplete?: string;
-  disabled?: boolean;
-}) {
-  return (
-    <div>
-      <label htmlFor={id} className="plus-label">
-        {label}
-      </label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        disabled={disabled}
-        className="plus-field"
-      />
-    </div>
   );
 }

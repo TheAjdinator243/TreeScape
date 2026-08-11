@@ -77,12 +77,26 @@ export function guestDetailsError(
   fields: { name: string; email: string; phone: string; method: PaymentMethod | null },
   t: Dictionary
 ): string | null {
-  if (fields.name.trim().length < 2) return t.errors.REQUIRED_NAME;
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fields.email.trim())) return t.errors.REQUIRED_EMAIL;
-  if (fields.phone.trim().length < 6) return t.errors.REQUIRED_PHONE;
+  if (!isName(fields.name)) return t.errors.REQUIRED_NAME;
+  if (!isEmail(fields.email)) return t.errors.REQUIRED_EMAIL;
+  if (!isPhone(fields.phone)) return t.errors.REQUIRED_PHONE;
   if (!fields.method) return t.errors.REQUIRED_METHOD;
   return null;
 }
+
+/**
+ * Pravilo po polju — jedno po jedno.
+ *
+ * `guestDetailsError` javlja SAMO prvu grešku, jer je to sve što treba onome
+ * ko šalje formu. Ali "plus" izgled pali kvačicu na svakom polju čim ono
+ * postane ispravno, dok se još kuca, pa mu treba odgovor za svako posebno.
+ *
+ * Zato su pravila ovdje, a `guestDetailsError` ih zove — inače bi ista
+ * provjera postojala na dva mjesta i prvi ispravak bi zahvatio samo jedno.
+ */
+export const isName = (value: string): boolean => value.trim().length >= 2;
+export const isEmail = (value: string): boolean => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.trim());
+export const isPhone = (value: string): boolean => value.trim().length >= 6;
 
 export function useStayForm(context: BookingContext): StayForm {
   const router = useRouter();
