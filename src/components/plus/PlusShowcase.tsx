@@ -100,11 +100,20 @@ export function PlusShowcase() {
               />
             </button>
 
-            {/* Natpis ne hvata klik — ispod njega je dugme koje otvara sliku. */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-10 sm:px-8 sm:pb-14 lg:pb-20">
-              <div className="mx-auto w-full max-w-6xl">
+            {/*
+             * Natpis ide u DONJI UGAO, nikad preko sredine kadra.
+             *
+             * Zato se drži uz samu ivicu ekrana (a ne uz sredinu stranice) i
+             * širok je najviše `max-w-md` — otprilike trećina širine na
+             * stolnom računaru. Sredina fotografije, gdje je po pravilu ono
+             * zbog čega je slika i snimljena, ostaje slobodna.
+             *
+             * Ne hvata klik: ispod njega je dugme koje otvara sliku.
+             */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-8 sm:px-10 sm:pb-10 lg:px-14 lg:pb-12">
+              <div className="w-full">
                 <div
-                  className={`plus-shot-copy relative max-w-xl ${
+                  className={`plus-shot-copy relative max-w-md ${
                     toEnd ? 'lg:ms-auto lg:text-end' : ''
                   }`}
                 >
@@ -116,7 +125,7 @@ export function PlusShowcase() {
                     // Ispod `sm` je nema: na uskom ekranu brojka te veličine
                     // izlazi izvan ivice i ono što ostane vidljivo više liči
                     // na mrlju nego na broj.
-                    className={`plus-shot-num plus-sans absolute -top-16 hidden text-[9rem] font-semibold leading-none tabular-nums text-paper-50/10 sm:block ${
+                    className={`plus-shot-num plus-sans absolute -top-12 hidden text-[7rem] font-semibold leading-none tabular-nums text-paper-50/10 sm:block ${
                       toEnd ? '-start-3 lg:-end-3 lg:start-auto' : '-start-3'
                     }`}
                   >
@@ -126,14 +135,17 @@ export function PlusShowcase() {
                   <div className="relative">
                     <LineReveal
                       as="h3"
-                      className="text-[2.4rem] leading-[1.05] text-paper-50 drop-shadow-[0_2px_18px_rgb(6_20_14/0.55)] sm:text-6xl lg:text-[4.2rem]"
+                      // Manji nego kad je natpis imao pola ekrana: u uskoj
+                      // koloni bi se naslov ove veličine lomio na tri reda i
+                      // popeo se natrag prema sredini slike.
+                      className="text-[2rem] leading-[1.08] text-paper-50 drop-shadow-[0_2px_18px_rgb(6_20_14/0.55)] sm:text-[2.6rem] lg:text-[3rem]"
                       text={copy.title}
                       stagger={80}
                     />
 
                     <LineReveal
                       as="p"
-                      className="mt-4 text-base leading-[1.75] text-paper-100/85 drop-shadow-[0_1px_10px_rgb(6_20_14/0.6)] sm:mt-5 sm:text-lg"
+                      className="mt-3 text-[0.95rem] leading-[1.7] text-paper-100/85 drop-shadow-[0_1px_10px_rgb(6_20_14/0.6)] sm:mt-4 sm:text-base"
                       text={copy.body}
                       delay={160}
                       stagger={55}
