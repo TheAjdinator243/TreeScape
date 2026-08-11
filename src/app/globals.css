@@ -168,10 +168,30 @@
      * umjesto ka njoj.
      */
     --reveal-slide: -24px;
+
+    /*
+     * Koliko i s koje strane ulazi novi korak u rezervaciji.
+     *
+     * Pozitivno znači "s one strane na koju se ide". Predznak se okreće u
+     * arapskom, gdje "naprijed" znači ulijevo, i još jednom pri povratku
+     * unazad — to drugo okretanje radi `data-dir` ispod.
+     */
+    --step-in: 28px;
   }
 
   [dir='rtl'] {
     --reveal-slide: 24px;
+    --step-in: -28px;
+  }
+
+  /* Povratak na prethodni korak: sadržaj dolazi s one strane s koje smo i
+     došli, dakle obrnuto od kretanja naprijed. */
+  [data-dir='back'] {
+    --step-in: -28px;
+  }
+
+  [dir='rtl'] [data-dir='back'] {
+    --step-in: 28px;
   }
 
   body {
@@ -1395,6 +1415,75 @@ html[lang='ar'] body * {
   background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.22), transparent);
   animation: btn-sweep 1.15s linear infinite;
   content: '';
+}
+
+/* ── "Plus" izgled: rezervacija u tri koraka ─────────────────────────────
+ *
+ * Sva tri koraka su STALNO u DOM-u; mijenja se samo koji je otvoren. Da se
+ * neaktivni odspoje, forma bi pri svakom "Nazad" izgubila ono što je gost
+ * upisao, a i sam pokret bi imao odakle da krene tek nakon što se sadržaj
+ * pojavi — pa bi prvi kadar uvijek bio prazan.
+ *
+ * Neaktivni koraci nose `inert`, pa u njih ne može ni tabulator ni čitač
+ * ekrana. Skriveno polje koje i dalje hvata fokus je gore nego nikakvo.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+/*
+ * Visina se animira preko `grid-template-rows: 0fr → 1fr`.
+ *
+ * To je jedini način da se visina animira a da se unaprijed NE zna kolika je.
+ * Korak s greškom je viši od istog koraka bez nje, a korak s podacima je
+ * različite visine na telefonu i na stolnom računaru; svako mjerenje u
+ * JavaScriptu bi ovdje bilo pogađanje koje jednom promaši.
+ */
+.plus-step {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 480ms var(--ease-out-soft);
+}
+
+.plus-step[data-active='true'] {
+  grid-template-rows: 1fr;
+}
+
+.plus-step-inner {
+  overflow: hidden;
+  opacity: 0;
+  /* Predznak dolazi iz smjera kretanja: naprijed ulazi s one strane na koju
+     se ide, nazad s one s koje se vraća. U arapskom su strane obrnute. */
+  transform: translate3d(var(--step-in), 0, 0);
+  transition:
+    opacity 340ms var(--ease-out-soft),
+    transform 460ms var(--ease-out-soft);
+  /* Prostor za prstenove fokusa, koje bi `overflow: hidden` inače odrezao uz
+     samu ivicu koraka. */
+  padding: 6px;
+  margin: -6px;
+}
+
+.plus-step[data-active='true'] .plus-step-inner {
+  opacity: 1;
+  transform: none;
+  /* Sadržaj kreće tek kad se visina počela otvarati — inače ulazi u okvir
+     koji ga još nema gdje primiti. */
+  transition-delay: 90ms;
+}
+
+/* Traka napretka: linija koja se puni ispod tri tačke. */
+.plus-rail-fill {
+  transition: width 520ms var(--ease-out-soft);
+}
+
+.plus-rail-dot {
+  transition:
+    background-color 380ms var(--ease-out-soft),
+    border-color 380ms var(--ease-out-soft),
+    color 380ms var(--ease-out-soft),
+    transform 380ms var(--ease-out-soft);
+}
+
+.plus-rail-step[data-state='active'] .plus-rail-dot {
+  transform: scale(1.12);
 }
 
 /* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */

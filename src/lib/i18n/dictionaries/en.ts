@@ -316,6 +316,16 @@ export const en: Dictionary = {
     singleDayHint: 'Click one date for a day stay, or another one for a longer stay.',
     unavailableRange:
       'The selected range contains dates that are already booked. Please pick a range without them.',
+
+    wizard: {
+      dates: 'Dates',
+      details: 'Your details',
+      review: 'Review',
+      next: 'Next',
+      back: 'Back',
+      stepOf: (step, total) => `Step ${step} of ${total}`,
+      reviewLead: 'Check everything before you send it.',
+    },
   },
 
   confirmation: {

@@ -315,6 +315,16 @@ export const bs: Dictionary = {
     singleDayHint: 'Kliknite jedan datum za boravak bez noćenja, ili još jedan za duži boravak.',
     unavailableRange:
       'U odabranom rasponu ima već rezervisanih dana. Odaberite termin bez zauzetih datuma.',
+
+    wizard: {
+      dates: 'Datumi',
+      details: 'Vaši podaci',
+      review: 'Potvrda',
+      next: 'Dalje',
+      back: 'Nazad',
+      stepOf: (step, total) => `Korak ${step} od ${total}`,
+      reviewLead: 'Provjerite podatke prije slanja.',
+    },
   },
 
   confirmation: {

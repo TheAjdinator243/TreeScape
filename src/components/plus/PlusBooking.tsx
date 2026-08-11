@@ -1,7 +1,9 @@
 'use client';
 
+import { useRef, useState } from 'react';
+
 import { StayCalendar } from '@/components/booking/StayCalendar';
-import { scrollToSummary, useStayForm } from '@/components/booking/useStayForm';
+import { guestDetailsError, useStayForm } from '@/components/booking/useStayForm';
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { CountTo } from '@/components/motion/CountTo';
 import { LineReveal } from '@/components/motion/LineReveal';
@@ -12,17 +14,30 @@ import { WEEKEND_PERIOD, formatMoney } from '@/lib/pricing';
 import type { BookingContext } from '@/lib/types';
 
 /**
- * Rezervacija u "plus" izgledu.
+ * Rezervacija u "plus" izgledu — u tri koraka.
  *
- * Ovdje je SAMO izgled. Stanje, cijena, provjere i slanje žive u `useStayForm`,
- * koji dijele sve tri verzije sajta — pa se ne može desiti da jedna prima
- * termin koji druga odbija, ni da se ispravka provjere popravi samo na jednom
- * mjestu.
+ * Ovdje je SAMO izgled i redoslijed. Stanje, cijena i provjere žive u
+ * `useStayForm`, koji dijele sve tri verzije sajta; ovdje se ne provjerava
+ * ništa što se tamo već provjerava. Prelaz s podataka na potvrdu pita
+ * `guestDetailsError` — istu funkciju koju pri slanju zove i sam `useStayForm`,
+ * pa ne postoji način da korak propusti ono što bi slanje odbilo.
  *
  * Isto vrijedi i za kalendar: `StayCalendar` je zajednički, a boje mu daje
  * `.plus .rdp-root` blok u `globals.css`. Nijedan piksel kalendara nije
  * prepisan.
+ *
+ * ── Zašto koraci, a ne jedna duga kartica ─────────────────────────────────
+ * Zato što je na telefonu ta kartica bila duža od tri ekrana: kalendar,
+ * pregled, pet polja, načini plaćanja i dugme, sve odjednom. Ovako gost u
+ * svakom trenutku vidi jednu odluku i koliko ih je još ostalo.
+ *
+ * Cijena je pritom vidljiva u SVA tri koraka, u traci pri dnu kartice. Ona je
+ * jedini podatak zbog kojeg bi se gost vraćao unazad, pa nema razloga da ga
+ * mora tražiti.
  */
+
+const STEPS = 3;
+
 export function PlusBooking({ context }: { context: BookingContext }) {
   const { locale, t } = useI18n();
   const { settings, paymentMethods } = context;
@@ -52,6 +67,30 @@ export function PlusBooking({ context }: { context: BookingContext }) {
     busy,
   } = form;
 
+  const [step, setStep] = useState(0);
+  /** Smjer posljednjeg pomaka — CSS iz njega zna s koje strane sadržaj ulazi. */
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd');
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  /** Prelaz naprijed traži ispravan termin; ovo su iste provjere kao pri slanju. */
+  const datesReady = Boolean(quote) && !stayError;
+  const detailsError = guestDetailsError({ name, email, phone, method }, t);
+
+  function go(next: number, direction: 'fwd' | 'back') {
+    setDir(direction);
+    setStep(next);
+
+    // Kartica se vraća na svoj vrh. Bez ovoga gost koji je na dnu dugačkog
+    // koraka pritisne "Dalje" i sljedeći korak počne negdje iznad njega, van
+    // ekrana — pomak se desio, ali ga niko nije vidio.
+    const card = cardRef.current;
+    if (card && card.getBoundingClientRect().top < 0) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  const railLabels = [t.booking.wizard.dates, t.booking.wizard.details, t.booking.wizard.review];
+
   return (
     <section id="rezervacija" className="border-y border-paper-200 bg-paper-100">
       <div className="plus-section">
@@ -61,285 +100,320 @@ export function PlusBooking({ context }: { context: BookingContext }) {
         <LineReveal as="h2" className="plus-title" text={t.booking.heading} />
         <LineReveal as="p" className="plus-lead" text={t.booking.lead} delay={120} stagger={70} />
 
-        <div className="mt-12 grid gap-5 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6">
-          {/* ── Kalendar ── */}
-          <Reveal className="plus-card p-4 sm:p-8">
-            {/* Forma desno je znatno viša od kalendara. Bez ovoga bi kalendar
-                ostao gore, a ispod njega bi zjapilo pola ekrana praznine —
-                ovako prati gosta dok popunjava podatke. */}
-            <div className="lg:sticky lg:top-28">
-              <h3
-                className="mb-6 text-center text-2xl text-pine-900"
-                style={{ fontFamily: 'var(--font-plus-display)' }}
-              >
-                {t.booking.pickDates}
-              </h3>
-              <StayCalendar
-                slots={slots}
-                range={range}
-                onRangeChange={form.setRange}
-                maxNights={settings.max_nights}
-              />
-            </div>
-          </Reveal>
+        <Reveal delay={100} className="mt-12">
+          <div ref={cardRef} id="pregled" className="plus-card mx-auto max-w-5xl p-5 sm:p-8">
+            <Rail labels={railLabels} step={step} />
 
-          {/* ── Sažetak i forma ── */}
-          {/* Sažetak je viša od dvije kolone, pa on stoji, a kalendar pored
-              njega prati gosta (`lg:sticky` iznad). Da su obje ljepljive,
-              tukle bi se za isti vrh ekrana. */}
-          <Reveal delay={100}>
-            {/* `id` je meta za dugme iz donje trake na mobitelu — gost je već
-                odabrao datum, pa ga vodimo pravo na pregled i formu, a ne na
-                vrh kalendara koji je upravo popunio.
-
-                Bez `scroll-mt-*`: globalni `scroll-padding-top: 5rem` u
-                globals.css već sklanja fiksnu navigaciju. Da su oba, razmak bi
-                se udvostručio i pregled bi pao predaleko od vrha. */}
-            <div id="pregled" className="plus-card p-6 sm:p-7">
-              <h3
-                className="text-2xl text-pine-900"
-                style={{ fontFamily: 'var(--font-plus-display)' }}
-              >
-                {t.booking.summaryTitle}
-              </h3>
-
-              <dl className="mt-6 space-y-3 text-sm">
-                <Row
-                  label={t.booking.checkIn}
-                  value={start ? formatLong(start, locale) : null}
-                  empty={t.booking.notSelected}
-                />
-                <Row
-                  label={t.booking.checkOut}
-                  value={end ? formatLong(end, locale) : null}
-                  empty={t.booking.notSelected}
-                />
-              </dl>
-
-              {/* Vremena prijave i odjave dolaze iz postavki — ista ona koja
-                  vlasnik mijenja u administraciji. Ovdje stoje da gost odmah
-                  vidi zašto dan odlaska jednog i dan dolaska drugog gosta mogu
-                  biti isti dan. */}
-              <p className="mt-4 text-xs leading-relaxed text-pine-900/50">
-                {t.booking.timesNote(settings.checkin_time, settings.checkout_time)}
-              </p>
-
-              {singleDay && (
-                <p className="mt-4 rounded-xl bg-sage-100 px-4 py-3 text-xs leading-relaxed text-pine-800">
-                  {t.booking.singleDayNote}
-                </p>
-              )}
-
-              {!range?.from && (
-                <p className="mt-4 text-xs text-pine-900/50">{t.booking.singleDayHint}</p>
-              )}
-
-              {range?.from && (
-                <button
-                  type="button"
-                  onClick={form.clearRange}
-                  className="mt-4 text-xs font-semibold text-clay-500 underline underline-offset-4 transition-colors hover:text-clay-600"
-                >
-                  {t.booking.clearDates}
-                </button>
-              )}
-
-              {quote && (
-                <div className="plus-summary-in mt-6 border-t border-paper-200 pt-6">
-                  <div className="flex items-baseline justify-between gap-4 text-sm">
-                    <span className="text-pine-900/60">
-                      {t.booking.daysLabel(quote.dayCount)} ×{' '}
-                      {formatMoney(quote.averageDailyCents, quote.currencySymbol, locale)}
-                    </span>
-                    <span className="tabular-nums text-pine-900">
-                      {formatMoney(quote.totalCents, quote.currencySymbol, locale)}
-                    </span>
+            <div data-dir={dir} className="mt-8">
+              {/* ── 1. Datumi ── */}
+              <Panel active={step === 0} label={t.booking.wizard.stepOf(1, STEPS)}>
+                {/*
+                 * Sažetak ide pored kalendara tek od `xl`. Ispod toga kalendar
+                 * uzima cijelu širinu: prikazuje DVA mjeseca odjednom i u užoj
+                 * koloni mu se prvi mjesec odreže — a `overflow: hidden`, koji
+                 * drži animaciju visine, taj višak nemilosrdno pojede.
+                 */}
+                <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_240px]">
+                  <div className="min-w-0">
+                    <StayCalendar
+                      slots={slots}
+                      range={range}
+                      onRangeChange={form.setRange}
+                      maxNights={settings.max_nights}
+                    />
                   </div>
 
-                  <div className="mt-4 flex items-baseline justify-between gap-4 border-t border-paper-200 pt-4">
-                    <span className="plus-sans text-xs font-semibold uppercase tracking-[0.14em] text-pine-900/60">
-                      {t.booking.total}
-                    </span>
-                    {/*
-                     * Ukupna cijena se PRETAČE sa stare na novu, umjesto da
-                     * skoči. Gost dodirne još jednu noć i vidi kako iznos ide
-                     * gore — veza između poteza i broja je time očigledna, a
-                     * ne nešto što treba primijetiti.
-                     *
-                     * Pretače se samo velik iznos na dnu. Da se pretaču svi
-                     * brojevi u pregledu, tri stvari bi se mrdale odjednom i
-                     * nijedna ne bi ništa značila.
-                     */}
-                    <span
-                      className="text-3xl tabular-nums text-pine-800"
+                  <div className="xl:border-s xl:border-paper-200 xl:ps-8">
+                    <dl className="space-y-3 text-sm">
+                      <Row
+                        label={t.booking.checkIn}
+                        value={start ? formatLong(start, locale) : null}
+                        empty={t.booking.notSelected}
+                      />
+                      <Row
+                        label={t.booking.checkOut}
+                        value={end ? formatLong(end, locale) : null}
+                        empty={t.booking.notSelected}
+                      />
+                    </dl>
+
+                    <p className="mt-4 text-xs leading-relaxed text-pine-900/50">
+                      {t.booking.timesNote(settings.checkin_time, settings.checkout_time)}
+                    </p>
+
+                    {!range?.from && (
+                      <p className="mt-4 text-xs text-pine-900/50">{t.booking.singleDayHint}</p>
+                    )}
+
+                    {singleDay && (
+                      <p className="mt-4 rounded-xl bg-sage-100 px-4 py-3 text-xs leading-relaxed text-pine-800">
+                        {t.booking.singleDayNote}
+                      </p>
+                    )}
+
+                    {stayError && (
+                      <p
+                        role="alert"
+                        className="animate-fade-rise mt-4 rounded-xl border border-danger-600/25 bg-danger-600/5 px-4 py-3 text-xs leading-relaxed text-danger-600"
+                      >
+                        {stayError}
+                      </p>
+                    )}
+
+                    {range?.from && (
+                      <button
+                        type="button"
+                        onClick={form.clearRange}
+                        className="mt-4 text-xs font-semibold text-clay-500 underline underline-offset-4 transition-colors hover:text-clay-600"
+                      >
+                        {t.booking.clearDates}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </Panel>
+
+              {/* ── 2. Vaši podaci ── */}
+              <Panel active={step === 1} label={t.booking.wizard.stepOf(2, STEPS)}>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="plus-guests" className="plus-label">
+                      {t.booking.guests}
+                    </label>
+                    <select
+                      id="plus-guests"
+                      value={guests}
+                      onChange={(e) => form.setGuests(Number(e.target.value))}
+                      className="plus-field"
+                      disabled={busy}
+                    >
+                      {Array.from({ length: settings.max_guests }, (_, i) => i + 1).map((n) => (
+                        <option key={n} value={n}>
+                          {count(locale, n, t.common.guests)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <Field
+                    id="plus-name"
+                    label={t.booking.name}
+                    value={name}
+                    onChange={form.setName}
+                    placeholder={t.booking.namePlaceholder}
+                    autoComplete="name"
+                    disabled={busy}
+                  />
+                  <Field
+                    id="plus-email"
+                    label={t.booking.email}
+                    type="email"
+                    value={email}
+                    onChange={form.setEmail}
+                    placeholder={t.booking.emailPlaceholder}
+                    autoComplete="email"
+                    disabled={busy}
+                  />
+                  <Field
+                    id="plus-phone"
+                    label={t.booking.phone}
+                    type="tel"
+                    value={phone}
+                    onChange={form.setPhone}
+                    placeholder={t.booking.phonePlaceholder}
+                    autoComplete="tel"
+                    disabled={busy}
+                  />
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="plus-note" className="plus-label">
+                      {t.booking.note}{' '}
+                      <span className="font-normal normal-case tracking-normal text-pine-900/45">
+                        ({t.booking.optional})
+                      </span>
+                    </label>
+                    <textarea
+                      id="plus-note"
+                      value={note}
+                      onChange={(e) => form.setNote(e.target.value)}
+                      rows={3}
+                      maxLength={500}
+                      placeholder={t.booking.notePlaceholder}
+                      className="plus-field resize-none"
+                      disabled={busy}
+                    />
+                  </div>
+                </div>
+
+                <fieldset className="mt-6 border-t border-paper-200 pt-6">
+                  <legend className="sr-only">{t.booking.payMethodTitle}</legend>
+                  <p className="plus-label">{t.booking.payMethodTitle}</p>
+
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {paymentMethods.map((id) => {
+                      const copy = methodCopy[id];
+                      if (!copy) return null;
+                      const selected = method === id;
+
+                      return (
+                        <label
+                          key={id}
+                          className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-[background-color,border-color,box-shadow] duration-300 ${
+                            selected
+                              ? 'border-pine-600 bg-sage-100/50 ring-4 ring-pine-600/10'
+                              : 'border-paper-300 hover:border-pine-600/40'
+                          } ${busy ? 'cursor-not-allowed opacity-60' : ''}`}
+                        >
+                          <input
+                            type="radio"
+                            name="plus_payment_method"
+                            value={id}
+                            checked={selected}
+                            disabled={busy}
+                            onChange={() => form.setMethod(id)}
+                            className="mt-0.5 h-4 w-4 shrink-0 accent-pine-700"
+                          />
+                          <span className="min-w-0">
+                            <span
+                              className={`block text-sm font-semibold ${
+                                id === 'test' ? 'text-clay-600' : 'text-pine-900'
+                              }`}
+                            >
+                              {copy.label}
+                            </span>
+                            <span className="mt-1 block text-xs leading-relaxed text-pine-900/60">
+                              {copy.hint}
+                            </span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+              </Panel>
+
+              {/* ── 3. Potvrda ── */}
+              <Panel active={step === 2} label={t.booking.wizard.stepOf(3, STEPS)}>
+                <p className="text-sm text-pine-900/60">{t.booking.wizard.reviewLead}</p>
+
+                <dl className="mt-6 space-y-3 border-t border-paper-200 pt-6 text-sm">
+                  <Row
+                    label={t.booking.checkIn}
+                    value={start ? formatLong(start, locale) : null}
+                    empty={t.booking.notSelected}
+                  />
+                  <Row
+                    label={t.booking.checkOut}
+                    value={end ? formatLong(end, locale) : null}
+                    empty={t.booking.notSelected}
+                  />
+                  <Row
+                    label={t.booking.guests}
+                    value={count(locale, guests, t.common.guests)}
+                    empty=""
+                  />
+                  <Row label={t.booking.name} value={name.trim() || null} empty="—" />
+                  <Row label={t.booking.email} value={email.trim() || null} empty="—" />
+                  <Row label={t.booking.phone} value={phone.trim() || null} empty="—" />
+                  <Row
+                    label={t.booking.payMethodTitle}
+                    value={method ? (methodCopy[method]?.label ?? null) : null}
+                    empty="—"
+                  />
+                </dl>
+
+                {quote && new Set(quote.days.map((d) => d.cents)).size > 1 && (
+                  <p className="mt-4 text-xs text-pine-900/50">
+                    {quote.days.some((d) => d.periodName === WEEKEND_PERIOD)
+                      ? t.booking.weekendNote
+                      : t.booking.seasonalNote}
+                  </p>
+                )}
+
+                {(error || stayError) && (
+                  <p
+                    role="alert"
+                    className="animate-fade-rise mt-5 rounded-xl border border-danger-600/25 bg-danger-600/5 px-4 py-3 text-sm text-danger-600"
+                  >
+                    {error ?? stayError}
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => void form.submit()}
+                  disabled={busy || paymentMethods.length === 0}
+                  className={`plus-btn-accent mt-6 w-full py-4 ${
+                    busy ? 'plus-btn-busy relative overflow-hidden' : ''
+                  }`}
+                >
+                  {busy && <Spinner />}
+                  {busy ? t.booking.submitting : t.booking.reserve}
+                </button>
+              </Panel>
+            </div>
+
+            {/* ── Cijena i kretanje kroz korake ──
+                Cijena stoji ovdje, ispod svih koraka, jer je jedini podatak
+                koji je jednako bitan u sva tri. */}
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-paper-200 pt-6">
+              <div className="min-w-0">
+                {quote ? (
+                  <>
+                    <p className="text-xs text-pine-900/55">
+                      {t.booking.daysLabel(quote.dayCount)} ×{' '}
+                      {formatMoney(quote.averageDailyCents, quote.currencySymbol, locale)}
+                    </p>
+                    <p
+                      className="text-2xl tabular-nums text-pine-800"
                       style={{ fontFamily: 'var(--font-plus-display)' }}
                     >
                       <CountTo
                         value={quote.totalCents}
                         format={(cents) => formatMoney(cents, quote.currencySymbol, locale)}
                       />
-                    </span>
-                  </div>
-
-                  {/* Ako svi dani nisu iste cijene, gost zaslužuje objašnjenje —
-                      i to ono pravo: vikend i sezona nisu isti razlog. */}
-                  {new Set(quote.days.map((d) => d.cents)).size > 1 && (
-                    <p className="mt-2 text-xs text-pine-900/50">
-                      {quote.days.some((d) => d.periodName === WEEKEND_PERIOD)
-                        ? t.booking.weekendNote
-                        : t.booking.seasonalNote}
                     </p>
-                  )}
-                </div>
-              )}
-
-              {/* ── Podaci gosta ── */}
-              <div className="mt-6 space-y-4 border-t border-paper-200 pt-6">
-                <div>
-                  <label htmlFor="plus-guests" className="plus-label">
-                    {t.booking.guests}
-                  </label>
-                  <select
-                    id="plus-guests"
-                    value={guests}
-                    onChange={(e) => form.setGuests(Number(e.target.value))}
-                    className="plus-field"
-                    disabled={busy}
-                  >
-                    {Array.from({ length: settings.max_guests }, (_, i) => i + 1).map((n) => (
-                      <option key={n} value={n}>
-                        {count(locale, n, t.common.guests)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <Field
-                  id="plus-name"
-                  label={t.booking.name}
-                  value={name}
-                  onChange={form.setName}
-                  placeholder={t.booking.namePlaceholder}
-                  autoComplete="name"
-                  disabled={busy}
-                />
-                <Field
-                  id="plus-email"
-                  label={t.booking.email}
-                  type="email"
-                  value={email}
-                  onChange={form.setEmail}
-                  placeholder={t.booking.emailPlaceholder}
-                  autoComplete="email"
-                  disabled={busy}
-                />
-                <Field
-                  id="plus-phone"
-                  label={t.booking.phone}
-                  type="tel"
-                  value={phone}
-                  onChange={form.setPhone}
-                  placeholder={t.booking.phonePlaceholder}
-                  autoComplete="tel"
-                  disabled={busy}
-                />
-
-                <div>
-                  <label htmlFor="plus-note" className="plus-label">
-                    {t.booking.note}{' '}
-                    <span className="font-normal normal-case tracking-normal text-pine-900/45">
-                      ({t.booking.optional})
-                    </span>
-                  </label>
-                  <textarea
-                    id="plus-note"
-                    value={note}
-                    onChange={(e) => form.setNote(e.target.value)}
-                    rows={3}
-                    maxLength={500}
-                    placeholder={t.booking.notePlaceholder}
-                    className="plus-field resize-none"
-                    disabled={busy}
-                  />
-                </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-pine-900/45">{t.booking.selectDatesFirst}</p>
+                )}
               </div>
 
-              {/* ── Način plaćanja ── */}
-              <fieldset className="mt-6 border-t border-paper-200 pt-6">
-                <legend className="sr-only">{t.booking.payMethodTitle}</legend>
-                <p className="plus-label">{t.booking.payMethodTitle}</p>
+              <div className="flex items-center gap-3">
+                {step > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => go(step - 1, 'back')}
+                    disabled={busy}
+                    className="plus-btn-ghost px-5 py-2.5"
+                  >
+                    {t.booking.wizard.back}
+                  </button>
+                )}
 
-                <div className="space-y-2.5">
-                  {paymentMethods.map((id) => {
-                    const copy = methodCopy[id];
-                    if (!copy) return null;
-                    const selected = method === id;
-
-                    return (
-                      <label
-                        key={id}
-                        className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-[background-color,border-color,box-shadow] duration-300 ${
-                          selected
-                            ? 'border-pine-600 bg-sage-100/50 ring-4 ring-pine-600/10'
-                            : 'border-paper-300 hover:border-pine-600/40'
-                        } ${busy ? 'cursor-not-allowed opacity-60' : ''}`}
-                      >
-                        <input
-                          type="radio"
-                          name="plus_payment_method"
-                          value={id}
-                          checked={selected}
-                          disabled={busy}
-                          onChange={() => form.setMethod(id)}
-                          className="mt-0.5 h-4 w-4 shrink-0 accent-pine-700"
-                        />
-                        <span className="min-w-0">
-                          <span
-                            className={`block text-sm font-semibold ${
-                              id === 'test' ? 'text-clay-600' : 'text-pine-900'
-                            }`}
-                          >
-                            {copy.label}
-                          </span>
-                          <span className="mt-1 block text-xs leading-relaxed text-pine-900/60">
-                            {copy.hint}
-                          </span>
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </fieldset>
-
-              {(error || stayError) && (
-                <p
-                  role="alert"
-                  className="animate-fade-rise mt-5 rounded-xl border border-danger-600/25 bg-danger-600/5 px-4 py-3 text-sm text-danger-600"
-                >
-                  {error ?? stayError}
-                </p>
-              )}
-
-              {/* Dok se šalje, preko dugmeta prelazi odsjaj. Kotur pored
-                  teksta kaže da se nešto dešava, ali stoji u mjestu; odsjaj
-                  preko cijele širine pokazuje da to još TRAJE. */}
-              <button
-                type="button"
-                onClick={() => void form.submit()}
-                disabled={busy || paymentMethods.length === 0}
-                className={`plus-btn-accent mt-6 w-full py-4 ${
-                  busy ? 'plus-btn-busy relative overflow-hidden' : ''
-                }`}
-              >
-                {busy && <Spinner />}
-                {busy ? t.booking.submitting : t.booking.reserve}
-              </button>
+                {step < STEPS - 1 && (
+                  <button
+                    type="button"
+                    onClick={() => go(step + 1, 'fwd')}
+                    disabled={step === 0 ? !datesReady : detailsError !== null}
+                    className="plus-btn-primary px-6 py-2.5"
+                  >
+                    {t.booking.wizard.next}
+                  </button>
+                )}
+              </div>
             </div>
-          </Reveal>
-        </div>
+
+            {/* Zašto je "Dalje" ugašeno — bez ovoga gost pritisne dugme koje ne
+                reaguje i nema pojma šta se od njega traži. */}
+            {step === 1 && detailsError && (
+              <p className="mt-3 text-end text-xs text-pine-900/50">{detailsError}</p>
+            )}
+          </div>
+        </Reveal>
       </div>
 
-      {/* Na mobitelu sažetak cijene prati gosta dok bira datume. */}
+      {/* Na mobitelu cijena prati gosta dok bira datume. */}
       {quote && !stayError && (
         <div className="animate-fade-rise fixed inset-x-0 bottom-0 z-30 border-t border-paper-200 bg-paper-50/95 px-5 py-3 shadow-raise backdrop-blur-xl lg:hidden">
           <div className="flex items-center justify-between gap-4">
@@ -357,17 +431,117 @@ export function PlusBooking({ context }: { context: BookingContext }) {
                 />
               </p>
             </div>
-            <button
-              type="button"
-              onClick={scrollToSummary}
-              className="plus-btn-primary shrink-0 px-5 py-2.5"
-            >
-              {t.nav.book}
-            </button>
+
+            {/* Na posljednjem koraku traka nema kuda dalje — dugme bi vodilo
+                na korak na kojem gost već stoji. */}
+            {step < STEPS - 1 && (
+              <button
+                type="button"
+                onClick={() => go(step + 1, 'fwd')}
+                disabled={step === 0 ? !datesReady : detailsError !== null}
+                className="plus-btn-primary shrink-0 px-5 py-2.5"
+              >
+                {t.booking.wizard.next}
+              </button>
+            )}
           </div>
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * Traka napretka.
+ *
+ * Linija ispod tačaka se puni do trenutnog koraka. Broj u tački se na
+ * pređenim koracima mijenja u kvačicu — to je jedino mjesto gdje se vidi šta
+ * je gotovo, a šta tek dolazi.
+ */
+function Rail({ labels, step }: { labels: string[]; step: number }) {
+  return (
+    <ol className="relative flex items-start justify-between gap-2">
+      {/* Linija ide IZA tačaka i staje na sredini prve i posljednje, da ne
+          viri izvan njih. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-4 mx-auto h-px bg-paper-300"
+        style={{ left: '16.66%', right: '16.66%' }}
+      />
+      <span
+        aria-hidden="true"
+        className="plus-rail-fill absolute top-4 h-px bg-pine-600"
+        style={{
+          left: '16.66%',
+          width: `calc(66.68% * ${step / (labels.length - 1)})`,
+        }}
+      />
+
+      {labels.map((label, i) => {
+        const state = i < step ? 'done' : i === step ? 'active' : 'todo';
+
+        return (
+          <li
+            key={label}
+            data-state={state}
+            className="plus-rail-step relative z-10 flex flex-1 flex-col items-center gap-2 text-center"
+          >
+            <span
+              className={`plus-rail-dot flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold tabular-nums ${
+                state === 'todo'
+                  ? 'border-paper-300 bg-paper-50 text-pine-900/40'
+                  : 'border-pine-600 bg-pine-600 text-paper-50'
+              }`}
+            >
+              {state === 'done' ? <Check /> : i + 1}
+            </span>
+            <span
+              className={`plus-sans text-[11px] font-semibold uppercase tracking-[0.12em] sm:text-xs ${
+                state === 'todo' ? 'text-pine-900/40' : 'text-pine-800'
+              }`}
+            >
+              {label}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/**
+ * Jedan korak.
+ *
+ * Uvijek je u DOM-u; `data-active` odlučuje je li otvoren, a `inert` da li u
+ * njega uopće može fokus. Sve ostalo — visinu i ulazak sadržaja — radi CSS.
+ */
+function Panel({
+  active,
+  label,
+  children,
+}: {
+  active: boolean;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="plus-step" data-active={active} inert={!active} aria-label={label}>
+      <div className="plus-step-inner">{children}</div>
+    </div>
+  );
+}
+
+function Check() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <path
+        d="m5 13 4.2 4.2L19 7.5"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -377,9 +551,9 @@ function Row({ label, value, empty }: { label: string; value: string | null; emp
       <dt className="text-pine-900/60">{label}</dt>
       <dd className="text-end font-medium text-pine-900">
         {/*
-         * `key` je sam datum, pa React pri promjeni ne prepiše tekst nego
-         * napravi NOVI element — a time se CSS animacija upali iznova. Bez
-         * njega bi se datum tiho zamijenio i gost ne bi bio siguran je li
+         * `key` je sama vrijednost, pa React pri promjeni ne prepiše tekst
+         * nego napravi NOVI element — a time se CSS animacija upali iznova.
+         * Bez njega bi se datum tiho zamijenio i gost ne bi bio siguran je li
          * dodir uopće primljen.
          */}
         <span key={value ?? 'prazno'} className="plus-value-swap">

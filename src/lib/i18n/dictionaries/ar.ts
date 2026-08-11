@@ -318,6 +318,16 @@ export const ar: Dictionary = {
     singleDayHint: 'انقر على تاريخ واحد لإقامة نهارية، أو على تاريخ آخر لإقامة أطول.',
     unavailableRange:
       'المدة المختارة تتضمّن أيامًا محجوزة مسبقًا. اختر مدة خالية من التواريخ المحجوزة.',
+
+    wizard: {
+      dates: 'التواريخ',
+      details: 'بياناتك',
+      review: 'التأكيد',
+      next: 'التالي',
+      back: 'رجوع',
+      stepOf: (step, total) => `الخطوة ${step} من ${total}`,
+      reviewLead: 'راجع البيانات قبل الإرسال.',
+    },
   },
 
   confirmation: {

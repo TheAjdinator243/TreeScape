@@ -262,6 +262,24 @@ export interface Dictionary {
     selectDatesFirst: string;
     singleDayHint: string;
     unavailableRange: string;
+
+    /**
+     * Forma u koracima — koristi je samo "plus" izgled.
+     *
+     * Oznake su kratke jer stoje u traci napretka, gdje na telefonu tri
+     * natpisa dijele širinu ekrana.
+     */
+    wizard: {
+      dates: string;
+      details: string;
+      review: string;
+      next: string;
+      back: string;
+      /** Za čitače ekrana: "Korak 2 od 3". */
+      stepOf: (step: number, total: number) => string;
+      /** Naslov iznad pregleda na posljednjem koraku. */
+      reviewLead: string;
+    };
   };
 
   confirmation: {

@@ -6,6 +6,7 @@ import type { DateRange } from 'react-day-picker';
 
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { addDaysStr, toDateStr } from '@/lib/dates';
+import type { Dictionary } from '@/lib/i18n/dictionary';
 import { quoteStay, rangeHasConflict, validateStay } from '@/lib/pricing';
 import type { BookingContext, PaymentMethod, PriceBreakdown } from '@/lib/types';
 
@@ -60,6 +61,29 @@ export interface StayForm {
   submit: () => Promise<void>;
 }
 
+/**
+ * Šta fali u podacima gosta — ime, mail, telefon, način plaćanja.
+ *
+ * Izdvojeno iz `formError` jer treba na DVA mjesta: ovdje, pri slanju, i u
+ * "plus" izgledu, gdje se forma popunjava u koracima pa se mora znati smije
+ * li se s podataka preći na potvrdu. Da su pravila prepisana na oba mjesta,
+ * prva ispravka bi se desila samo na jednom — a to je tačno ono što ovaj
+ * fajl inače sprečava.
+ *
+ * Redoslijed provjera je i redoslijed polja u formi, pa gost uvijek dobije
+ * prigovor na prvo polje koje treba popraviti, a ne na neko pri dnu.
+ */
+export function guestDetailsError(
+  fields: { name: string; email: string; phone: string; method: PaymentMethod | null },
+  t: Dictionary
+): string | null {
+  if (fields.name.trim().length < 2) return t.errors.REQUIRED_NAME;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fields.email.trim())) return t.errors.REQUIRED_EMAIL;
+  if (fields.phone.trim().length < 6) return t.errors.REQUIRED_PHONE;
+  if (!fields.method) return t.errors.REQUIRED_METHOD;
+  return null;
+}
+
 export function useStayForm(context: BookingContext): StayForm {
   const router = useRouter();
   const { locale, t } = useI18n();
@@ -107,11 +131,7 @@ export function useStayForm(context: BookingContext): StayForm {
 
   function formError(): string | null {
     if (!complete) return t.booking.selectDatesFirst;
-    if (name.trim().length < 2) return t.errors.REQUIRED_NAME;
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return t.errors.REQUIRED_EMAIL;
-    if (phone.trim().length < 6) return t.errors.REQUIRED_PHONE;
-    if (!method) return t.errors.REQUIRED_METHOD;
-    return stayError;
+    return guestDetailsError({ name, email, phone, method }, t) ?? stayError;
   }
 
   async function submit() {
