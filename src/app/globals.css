@@ -490,6 +490,76 @@
   }
 }
 
+/* ── "Plus" izgled: fotografija preko cijele širine, tekst na njoj ───────
+ *
+ * Cijeli pokret ovdje visi o JEDNOM broju: `--q`, koji `ScrollRange` upisuje
+ * i koji kaže koliko je fotografija prošla kroz ekran (0 = tek ušla odozdo,
+ * 0.5 = na sredini, 1 = izašla iznad). Sve ostalo je `calc()`.
+ *
+ * Tri sloja se kreću RAZLIČITOM brzinom, i to je ono što daje dubinu:
+ * fotografija najbrže, tekst sporije i u suprotnom smjeru, krupna brojka iza
+ * teksta najsporije od svega. Da se svi kreću jednako, ne bi se micalo ništa
+ * — pokret se vidi samo u odnosu na susjeda.
+ *
+ * Ništa se ne animira `transition`-om: vrijednosti dolaze iz skrola, kadar po
+ * kadar. Prijelaz bi ovdje samo dodao kašnjenje za sobom.
+ */
+
+.plus-shot {
+  /*
+   * Početna vrijednost stoji OVDJE, ne samo u JavaScriptu. Bez skripte — i uz
+   * "smanji animacije", kad se petlja uopće ne pokreće — sve ostaje u stanju
+   * "na sredini ekrana", dakle mirno i poravnato, a ne u nekom poluulaznom
+   * položaju.
+   */
+  --q: 0.5;
+
+  /* 0 u sredini prolaza, 1 na oba kraja. */
+  --edge: max(calc((var(--q) - 0.5) * 2), calc((0.5 - var(--q)) * 2));
+}
+
+/*
+ * Kamera se smiruje: fotografija uđe krupnija i kroz cijeli prolaz se lagano
+ * otvara, uz to klizeći sporije od stranice.
+ *
+ * Uvećanje nikad ne pada ispod 1.1 — pomjeranje unutar okvira mora imati
+ * odakle, inače se pri vrhu ili dnu ukaže prazan rub ispod slike.
+ */
+.plus-shot-img {
+  transform: translate3d(0, calc((var(--q) - 0.5) * -8%), 0)
+    scale(calc(1.26 - var(--q) * 0.14));
+}
+
+/* Tekst ide sporije i u suprotnom smjeru od fotografije — po toj razlici oko
+   razdvaja natpis od slike i bez ijedne linije između njih. */
+.plus-shot-copy {
+  transform: translate3d(0, calc((0.5 - var(--q)) * 44px), 0);
+}
+
+/* Najdublji sloj, pa putuje najdalje. */
+.plus-shot-num {
+  transform: translate3d(0, calc((0.5 - var(--q)) * 104px), 0);
+}
+
+/* Zatamnjenje je najjače kad je fotografija na sredini ekrana — tamo se tekst
+   i čita. Na krajevima prolaza popusti i slika se vidi čistija. */
+.plus-shot-scrim {
+  opacity: calc(1 - var(--edge) * 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plus-shot-copy,
+  .plus-shot-num {
+    transform: none;
+  }
+
+  /* Uvećanje ostaje tek toliko da `object-cover` nema šta da otkrije na
+     ivicama; pokreta nema. */
+  .plus-shot-img {
+    transform: scale(1.02);
+  }
+}
+
 /* ── "Plus" izgled: kalendar ─────────────────────────────────────────────
    react-day-picker se boji varijablama, pa se cijeli kalendar prelije na
    novu paletu bez ijedne prepisane komponente. */

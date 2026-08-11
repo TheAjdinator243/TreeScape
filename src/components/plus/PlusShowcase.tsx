@@ -5,30 +5,35 @@ import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { LineReveal } from '@/components/motion/LineReveal';
-import { Parallax } from '@/components/motion/Parallax';
 import { Reveal } from '@/components/motion/Reveal';
+import { ScrollRange } from '@/components/motion/ScrollRange';
 import { Lightbox, galleryStep } from '@/components/site/Lightbox';
 import { GALLERY } from '@/lib/gallery';
 
 /**
  * Kuća, dio po dio.
  *
- * Zamjenjuje mrežu sličica i kartice s ikonama koje su ovdje stajale ranije.
- * Svaka stavka je jedan red: fotografija s jedne strane, naslov i opis s
- * druge. Strane se izmjenjuju, pa oko ide cik-cak niz stranicu umjesto da
- * klizi niz jednu kolonu.
+ * Osam fotografija preko cijele širine ekrana, jedna ispod druge, bez razmaka
+ * — traka kadrova kroz koju se prolazi. Naslov i opis stoje NA fotografiji, u
+ * njenom donjem uglu, a strana se izmjenjuje red po red.
  *
- * ── Tekst NIKAD ne ide preko slike ────────────────────────────────────────
- * Natpis preko fotografije traži tamnu opnu da bi se pročitao, a ta opna
- * pojede upravo ono što fotografija pokazuje. Zato tekst stoji pored: slika
- * ostaje čitava, a opis se čita bez naprezanja.
+ * ── Zašto tekst na slici ipak ostaje čitljiv ──────────────────────────────
+ * Zato što ispod njega ide zatamnjenje, i to samo pri dnu: od pune tame do
+ * prozirnog na dvije trećine visine. Gornji dio fotografije ostaje netaknut,
+ * pa se slika i dalje vidi kakva jeste, a slova imaju na čemu da stoje. Ravna
+ * prozirna ploha preko cijele slike bi je cijelu isprala.
  *
- * ── Šta se animira ────────────────────────────────────────────────────────
- * Fotografija se otkriva odozdo (`clip`) i unutar okvira se kreće sporije od
- * stranice (`Parallax`); naslov ide red po red, a opis za njim. Svaki red ima
- * svoj osmatrač, pa se pali kad ON dođe na red — ne svi odjednom.
+ * ── Pokret ────────────────────────────────────────────────────────────────
+ * Sve visi o `--q` iz `ScrollRange` — koliko je fotografija prošla kroz ekran.
+ * Iz tog jednog broja `globals.css` računa tri različite brzine: fotografija
+ * se lagano otvara i klizi, tekst ide sporije i u suprotnom smjeru, krupna
+ * brojka iza teksta najsporije. Razlika u brzinama je ono što pravi dubinu —
+ * kad bi se svi slojevi kretali jednako, ne bi se micalo ništa.
  *
- * Klik na fotografiju je i dalje otvara preko cijelog ekrana, kao i prije.
+ * Povrh toga, kad red prvi put uđe u ekran, naslov se otkriva RED PO RED
+ * (`LineReveal`); to je jednokratno i ne ponavlja se pri povratku gore.
+ *
+ * Klik bilo gdje po fotografiji je otvara preko cijelog ekrana.
  */
 export function PlusShowcase() {
   const { t } = useI18n();
@@ -40,82 +45,106 @@ export function PlusShowcase() {
 
   return (
     <section id="galerija" className="bg-paper-50">
-      <div className="plus-section">
+      <div className="plus-section pb-10 md:pb-14 lg:pb-16">
         <Reveal>
           <p className="plus-eyebrow">{t.showcase.eyebrow}</p>
         </Reveal>
         <LineReveal as="h2" className="plus-title" text={t.showcase.heading} />
         <LineReveal as="p" className="plus-lead" text={t.showcase.lead} delay={120} stagger={70} />
-
-        <div className="mt-16 space-y-20 md:mt-20 md:space-y-28">
-          {GALLERY.map((photo, i) => {
-            const copy = t.showcase.item(photo.n);
-            // Parni redovi: slika lijevo. Neparni: slika desno. Ispod `lg`
-            // slika je uvijek prva — na telefonu je ona ta koja uvodi u tekst.
-            const imageRight = i % 2 === 1;
-
-            return (
-              <article key={photo.n} className="grid items-center gap-8 lg:grid-cols-12 lg:gap-14">
-                <Reveal
-                  variant="clip"
-                  margin="0px 0px -12% 0px"
-                  className={`lg:col-span-7 ${imageRight ? 'lg:order-2' : ''}`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpenIndex(i)}
-                    aria-label={`${t.gallery.open}: ${copy.title}`}
-                    className="group relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden rounded-panel shadow-raise"
-                  >
-                    {/* Slika je viša od okvira (`-inset-y-10`) da se pri
-                        pomjeranju ne vidi rub ispod nje. */}
-                    <Parallax speed={0.06} className="absolute -inset-y-10 inset-x-0">
-                      <Image
-                        src={photo.image}
-                        alt={t.gallery.itemAlt(photo.n)}
-                        fill
-                        placeholder="blur"
-                        sizes="(max-width: 1024px) 100vw, 58vw"
-                        className="object-cover transition-transform duration-[900ms] ease-[var(--ease-out-soft)] group-hover:scale-[1.04]"
-                      />
-                    </Parallax>
-
-                    {/* Vlas-okvir iznutra: bez njega svijetla fotografija na
-                        papirnatoj podlozi nema gdje da završi. */}
-                    <span
-                      className="pointer-events-none absolute inset-0 rounded-panel ring-1 ring-inset ring-pine-950/10"
-                      aria-hidden="true"
-                    />
-                  </button>
-                </Reveal>
-
-                <div className={`lg:col-span-5 ${imageRight ? 'lg:order-1' : ''}`}>
-                  <Reveal margin="0px 0px -12% 0px">
-                    <p className="plus-sans text-xs font-semibold tabular-nums tracking-[0.22em] text-clay-500">
-                      {String(i + 1).padStart(2, '0')}
-                    </p>
-                  </Reveal>
-
-                  <LineReveal
-                    as="h3"
-                    className="mt-4 text-[2rem] leading-[1.1] text-pine-900 sm:text-[2.4rem]"
-                    text={copy.title}
-                    stagger={80}
-                  />
-
-                  <LineReveal
-                    as="p"
-                    className="mt-4 max-w-md text-base leading-[1.8] text-pine-900/70 md:text-[1.05rem]"
-                    text={copy.body}
-                    delay={140}
-                    stagger={55}
-                  />
-                </div>
-              </article>
-            );
-          })}
-        </div>
       </div>
+
+      {GALLERY.map((photo, i) => {
+        const copy = t.showcase.item(photo.n);
+        // Natpis se seli s kraja na početak i nazad. Ispod `lg` je uvijek na
+        // početnoj strani — na telefonu za drugu kolonu nema mjesta.
+        const toEnd = i % 2 === 1;
+
+        return (
+          <ScrollRange
+            as="article"
+            key={photo.n}
+            className="plus-shot relative block h-[88svh] min-h-[520px] w-full overflow-hidden bg-pine-950"
+          >
+            <button
+              type="button"
+              onClick={() => setOpenIndex(i)}
+              aria-label={`${t.gallery.open}: ${copy.title}`}
+              className="absolute inset-0 cursor-zoom-in"
+            >
+              {/* Pomjera se OMOTAČ, ne sama slika: `next/image` sa `fill` već
+                  koristi svoj raspored za popunjavanje okvira. */}
+              <span className="plus-shot-img absolute inset-0 block">
+                <Image
+                  src={photo.image}
+                  alt={t.gallery.itemAlt(photo.n)}
+                  fill
+                  placeholder="blur"
+                  sizes="100vw"
+                  // Prve dvije su odmah ispod naslova odjeljka i gost do njih
+                  // dođe za sekundu; ostalih šest čeka svoj red.
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  className="object-cover"
+                />
+              </span>
+
+              {/*
+               * Zatamnjenje samo pri DNU, i to s izričitim položajima:
+               * puno na dnu, na 42% već popušta, a od 75% naviše ga nema.
+               * Gornje dvije trećine fotografije ostaju netaknute — ravna
+               * tamna opna preko cijele slike bi je isprala, a upravo nju
+               * je gost došao vidjeti.
+               */}
+              <span
+                aria-hidden="true"
+                className="plus-shot-scrim absolute inset-0 bg-gradient-to-t from-pine-950/92 from-0% via-pine-950/35 via-42% to-transparent to-75%"
+              />
+            </button>
+
+            {/* Natpis ne hvata klik — ispod njega je dugme koje otvara sliku. */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 px-5 pb-10 sm:px-8 sm:pb-14 lg:pb-20">
+              <div className="mx-auto w-full max-w-6xl">
+                <div
+                  className={`plus-shot-copy relative max-w-xl ${
+                    toEnd ? 'lg:ms-auto lg:text-end' : ''
+                  }`}
+                >
+                  {/* Brojka stoji na ISTOJ strani na koju je poravnat tekst.
+                      Na desno poravnatom redu bi lijeva brojka visila sama u
+                      praznom, odvojena od naslova kojem pripada. */}
+                  <span
+                    aria-hidden="true"
+                    // Ispod `sm` je nema: na uskom ekranu brojka te veličine
+                    // izlazi izvan ivice i ono što ostane vidljivo više liči
+                    // na mrlju nego na broj.
+                    className={`plus-shot-num plus-sans absolute -top-16 hidden text-[9rem] font-semibold leading-none tabular-nums text-paper-50/10 sm:block ${
+                      toEnd ? '-start-3 lg:-end-3 lg:start-auto' : '-start-3'
+                    }`}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+
+                  <div className="relative">
+                    <LineReveal
+                      as="h3"
+                      className="text-[2.4rem] leading-[1.05] text-paper-50 drop-shadow-[0_2px_18px_rgb(6_20_14/0.55)] sm:text-6xl lg:text-[4.2rem]"
+                      text={copy.title}
+                      stagger={80}
+                    />
+
+                    <LineReveal
+                      as="p"
+                      className="mt-4 text-base leading-[1.75] text-paper-100/85 drop-shadow-[0_1px_10px_rgb(6_20_14/0.6)] sm:mt-5 sm:text-lg"
+                      text={copy.body}
+                      delay={160}
+                      stagger={55}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollRange>
+        );
+      })}
 
       {openIndex !== null && (
         <Lightbox
