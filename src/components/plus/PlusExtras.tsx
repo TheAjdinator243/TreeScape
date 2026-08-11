@@ -28,24 +28,24 @@ export async function PlusExtras() {
   const rest = AMENITIES.filter((key) => !SHOWN_IN_PHOTOS.has(key));
 
   return (
-    <section id="sadrzaji" className="bg-pine-900 text-paper-100">
+    <section id="sadrzaji" className="plus-surface-deep plus-dim-on">
       <div className="plus-section">
         <p className="plus-eyebrow-onlight">{t.site.name}</p>
-        <h2 className="plus-title text-paper-50">{t.showcase.extraTitle}</h2>
-        <p className="plus-lead text-paper-200/75">{t.showcase.extraLead}</p>
+        <h2 className="plus-title plus-ink-on">{t.showcase.extraTitle}</h2>
+        <p className="plus-lead plus-dim-on">{t.showcase.extraLead}</p>
 
         <ul className="mt-12 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {rest.map((key) => (
-            <li key={key} className="flex gap-4 border-t border-paper-100/10 pt-5">
-              <span className="mt-0.5 shrink-0 text-sage-300" aria-hidden="true">
+            <li key={key} className="flex gap-4 border-t plus-rule-on pt-5">
+              <span className="mt-0.5 shrink-0 plus-accent-on" aria-hidden="true">
                 <AmenityIcon name={key} />
               </span>
 
               <div>
-                <h3 className="plus-sans text-base font-semibold text-paper-50">
+                <h3 className="plus-sans text-base font-semibold plus-ink-on">
                   {t.amenities.items[key].label}
                 </h3>
-                <p className="mt-1 text-sm leading-relaxed text-paper-200/65">
+                <p className="mt-1 text-sm leading-relaxed plus-dimmer-on">
                   {t.amenities.items[key].note}
                 </p>
               </div>

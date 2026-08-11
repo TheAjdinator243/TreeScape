@@ -18,7 +18,7 @@ export async function PlusSteps() {
   const { t } = await getServerStrings();
 
   return (
-    <section id="kako-ide" className="border-y border-paper-200 bg-paper-100">
+    <section id="kako-ide" className="border-y plus-rule plus-surface-alt">
       <div className="plus-section">
         <Reveal>
           <p className="plus-eyebrow">{t.steps.eyebrow}</p>
@@ -35,19 +35,19 @@ export async function PlusSteps() {
               className="plus-card-lift flex h-full flex-col p-7 lg:p-8"
             >
               <span
-                className="plus-sans inline-flex h-10 w-10 items-center justify-center rounded-full bg-pine-800 text-sm font-semibold tabular-nums text-paper-50"
+                className="plus-sans inline-flex h-10 w-10 items-center justify-center rounded-full plus-badge text-sm font-semibold tabular-nums"
                 aria-hidden="true"
               >
                 {String(i + 1).padStart(2, '0')}
               </span>
 
               <h3
-                className="mt-6 text-2xl text-pine-900"
+                className="mt-6 text-2xl plus-ink"
                 style={{ fontFamily: 'var(--font-plus-display)' }}
               >
                 {step.title}
               </h3>
-              <p className="mt-3 text-base leading-relaxed text-pine-900/65">{step.body}</p>
+              <p className="mt-3 text-base leading-relaxed plus-dim">{step.body}</p>
             </Reveal>
           ))}
         </ol>

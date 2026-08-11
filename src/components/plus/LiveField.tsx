@@ -95,7 +95,7 @@ export function LiveField({
 
         <label htmlFor={id} className="plus-live-label">
           {label}
-          {optionalNote && <span className="font-normal text-pine-900/45"> {optionalNote}</span>}
+          {optionalNote && <span className="plus-dimmer font-normal"> {optionalNote}</span>}
         </label>
 
         {/* Linija se razvlači iz sredine na obje strane — bez obzira na to

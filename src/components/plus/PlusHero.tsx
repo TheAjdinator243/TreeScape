@@ -53,7 +53,7 @@ export async function PlusHero({
   ];
 
   return (
-    <Scene id="vrh" className="plus-scene bg-pine-950">
+    <Scene id="vrh" className="plus-scene plus-surface-deepest">
       <div className="plus-scene-pin">
         {/* ── Sloj 1: nebo ─────────────────────────────────────────────── */}
         <div
@@ -79,7 +79,7 @@ export async function PlusHero({
           />
           {/* Opna preko fotografije: bez nje su i bijeli tekst i tamna silueta
               nečitljivi na svijetlom dijelu slike. */}
-          <div className="absolute inset-0 bg-pine-950/45" aria-hidden="true" />
+          <div className="plus-photo-veil absolute inset-0" aria-hidden="true" />
         </div>
 
         {/* ── Sloj 3: ime kuće u prostoru ──────────────────────────────── */}
@@ -94,14 +94,14 @@ export async function PlusHero({
         </div>
 
         {/* ── Sloj 4: krošnja i četinari, prednji plan ─────────────────── */}
-        <CanopyTop className="scene-canopy-top pointer-events-none absolute inset-x-0 top-0 h-[26svh] w-full text-pine-950" />
-        <TreelineBottom className="scene-trees-bottom pointer-events-none absolute inset-x-0 bottom-0 h-[34svh] w-full text-pine-950" />
+        <CanopyTop className="scene-canopy-top pointer-events-none absolute inset-x-0 top-0 h-[26svh] w-full plus-silhouette" />
+        <TreelineBottom className="scene-trees-bottom pointer-events-none absolute inset-x-0 bottom-0 h-[34svh] w-full plus-silhouette" />
 
         {/* ── Sloj 5: tekst ────────────────────────────────────────────── */}
         <div className="scene-copy absolute inset-0 flex items-end">
           <div className="mx-auto w-full max-w-6xl px-5 pb-16 pt-32 sm:px-8 sm:pb-20 md:pb-24">
-            <p className="animate-fade-rise plus-sans flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-sage-300">
-              <span className="h-px w-8 bg-sage-300/50" aria-hidden="true" />
+            <p className="animate-fade-rise plus-sans flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] plus-accent-on">
+              <span className="plus-accent-line h-px w-8" aria-hidden="true" />
               {t.hero.eyebrow}
             </p>
 
@@ -176,8 +176,8 @@ export async function PlusHero({
                 style={{ animationDelay: '500ms' }}
               >
                 <span className="relative flex h-2 w-2" aria-hidden="true">
-                  <span className="animate-pulse-ring absolute inset-0 rounded-full bg-sage-400" />
-                  <span className="relative h-2 w-2 rounded-full bg-sage-400" />
+                  <span className="animate-pulse-ring plus-pulse absolute inset-0 rounded-full" />
+                  <span className="plus-pulse relative h-2 w-2 rounded-full" />
                 </span>
                 {freeToday ? t.hero.freeToday : t.hero.freeFrom(formatLong(firstFree, locale))}
               </p>
@@ -187,7 +187,7 @@ export async function PlusHero({
 
         {/* ── Sloj 6: ispiranje u boju papira ──────────────────────────── */}
         <div
-          className="scene-wash pointer-events-none absolute inset-0 bg-paper-50"
+          className="scene-wash plus-surface pointer-events-none absolute inset-0"
           aria-hidden="true"
         />
 

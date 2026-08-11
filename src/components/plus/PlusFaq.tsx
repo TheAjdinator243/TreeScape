@@ -25,7 +25,7 @@ export async function PlusFaq({ settings }: { settings: Settings }) {
   });
 
   return (
-    <section id="pitanja" className="border-t border-paper-200 bg-paper-50">
+    <section id="pitanja" className="border-t plus-rule plus-surface">
       <div className="plus-section grid gap-12 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:gap-16">
         <Reveal className="lg:sticky lg:top-32 lg:self-start">
           <p className="plus-eyebrow">{t.nav.faq}</p>
@@ -33,17 +33,17 @@ export async function PlusFaq({ settings }: { settings: Settings }) {
           <LineReveal as="p" className="plus-lead" text={t.faq.lead} delay={120} stagger={70} />
         </Reveal>
 
-        <div className="border-t border-paper-200">
+        <div className="border-t plus-rule">
           {items.map((item, i) => (
             <Reveal key={item.q} delay={Math.min(i, 5) * 50}>
-              <details className="group border-b border-paper-200">
-                <summary className="plus-sans flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-start text-lg font-medium text-pine-900 transition-colors hover:text-pine-600 [&::-webkit-details-marker]:hidden">
+              <details className="group border-b plus-rule">
+                <summary className="plus-sans flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-start text-lg font-medium plus-ink transition-colors hover:plus-accent [&::-webkit-details-marker]:hidden">
                   {item.q}
 
                   {/* Plus koji se pri otvaranju okrene u minus: uspravna crta
                       se skupi po visini. Jedan pokret, bez druge ikone. */}
                   <span
-                    className="relative h-4 w-4 shrink-0 text-clay-500 transition-transform duration-300 ease-[var(--ease-out-expo)] group-open:rotate-180"
+                    className="relative h-4 w-4 shrink-0 plus-link transition-transform duration-300 ease-[var(--ease-out-expo)] group-open:rotate-180"
                     aria-hidden="true"
                   >
                     <span className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-current" />
@@ -51,9 +51,7 @@ export async function PlusFaq({ settings }: { settings: Settings }) {
                   </span>
                 </summary>
 
-                <p className="max-w-2xl pb-6 pe-10 text-base leading-relaxed text-pine-900/65">
-                  {item.a}
-                </p>
+                <p className="max-w-2xl pb-6 pe-10 text-base leading-relaxed plus-dim">{item.a}</p>
               </details>
             </Reveal>
           ))}

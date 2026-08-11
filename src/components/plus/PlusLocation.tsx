@@ -18,7 +18,7 @@ export async function PlusLocation() {
   const { t } = await getServerStrings();
 
   return (
-    <section id="lokacija" className="bg-paper-50">
+    <section id="lokacija" className="plus-surface">
       <div className="plus-section grid gap-12 lg:grid-cols-2 lg:gap-16">
         <Reveal>
           <p className="plus-eyebrow">{t.nav.location}</p>
@@ -31,15 +31,15 @@ export async function PlusLocation() {
             stagger={70}
           />
 
-          <dl className="mt-10 border-t border-paper-200">
+          <dl className="mt-10 border-t plus-rule">
             {TRAVEL.map((row) => (
               <div
                 key={row.key}
-                className="flex items-baseline justify-between gap-4 border-b border-paper-200 py-4"
+                className="flex items-baseline justify-between gap-4 border-b plus-rule py-4"
               >
-                <dt className="text-base text-pine-900/75">{t.location.places[row.key]}</dt>
+                <dt className="text-base plus-dim">{t.location.places[row.key]}</dt>
                 <dd
-                  className="text-xl tabular-nums text-pine-700"
+                  className="text-xl tabular-nums plus-accent"
                   style={{ fontFamily: 'var(--font-plus-display)' }}
                 >
                   {t.location.driveTime(row.minutes)}
@@ -64,7 +64,7 @@ export async function PlusLocation() {
         </Reveal>
 
         <Reveal delay={120} variant="scale">
-          <div className="group h-[380px] overflow-hidden rounded-panel border border-paper-200 shadow-float lg:h-full lg:min-h-[520px]">
+          <div className="plus-surface-alt group h-[380px] overflow-hidden rounded-panel border plus-rule shadow-float lg:h-full lg:min-h-[520px]">
             <iframe
               title={t.location.mapTitle}
               src={MAP_SRC}

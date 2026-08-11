@@ -27,7 +27,7 @@ export async function PlusAbout() {
   ];
 
   return (
-    <section id="o-kuci" className="bg-paper-50">
+    <section id="o-kuci" className="plus-surface">
       <div className="plus-section grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-7">
           <Reveal>
@@ -37,7 +37,7 @@ export async function PlusAbout() {
           <LineReveal as="p" className="plus-lead" text={t.about.lead} delay={120} stagger={70} />
 
           <Reveal delay={80}>
-            <div className="mt-8 space-y-5 text-base leading-[1.8] text-pine-900/75 md:text-[1.05rem]">
+            <div className="mt-8 space-y-5 text-base leading-[1.8] plus-dim md:text-[1.05rem]">
               {t.about.body.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
@@ -45,14 +45,14 @@ export async function PlusAbout() {
           </Reveal>
 
           <Reveal delay={160}>
-            <dl className="mt-12 grid grid-cols-3 gap-x-4 border-t border-paper-200 pt-8">
+            <dl className="mt-12 grid grid-cols-3 gap-x-4 border-t plus-rule pt-8">
               {stats.map((stat) => (
                 // flex-col-reverse: u kodu prvo ide <dt> (kako HTML i traži),
                 // a na ekranu se broj vidi iznad opisa.
                 <div key={stat.label} className="flex flex-col-reverse">
-                  <dt className="mt-2 text-sm text-pine-900/55">{stat.label}</dt>
+                  <dt className="mt-2 text-sm plus-dimmer">{stat.label}</dt>
                   <dd
-                    className="text-4xl text-pine-700 md:text-5xl"
+                    className="text-4xl plus-accent md:text-5xl"
                     style={{ fontFamily: 'var(--font-plus-display)' }}
                   >
                     <Counter value={stat.value} className="tabular-nums" />

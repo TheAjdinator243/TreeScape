@@ -24,7 +24,7 @@ export async function PlusFooter() {
   ];
 
   return (
-    <footer className="bg-pine-950 text-paper-200/80">
+    <footer className="plus-surface-deepest plus-dim-on">
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
         <div className="grid gap-10 md:grid-cols-3">
           <div>
@@ -34,7 +34,7 @@ export async function PlusFooter() {
                 <a
                   href={CONTACT.phoneHref}
                   dir="ltr"
-                  className="inline-block transition-colors hover:text-paper-50"
+                  className="inline-block transition-colors hover:plus-ink-on"
                 >
                   {CONTACT.phone}
                 </a>
@@ -43,12 +43,12 @@ export async function PlusFooter() {
                 <a
                   href={`mailto:${CONTACT.email}`}
                   dir="ltr"
-                  className="inline-block transition-colors hover:text-paper-50"
+                  className="inline-block transition-colors hover:plus-ink-on"
                 >
                   {CONTACT.email}
                 </a>
               </li>
-              <li className="text-paper-200/55">{t.footer.address}</li>
+              <li className="plus-dimmer-on">{t.footer.address}</li>
             </ul>
           </div>
 
@@ -57,7 +57,7 @@ export async function PlusFooter() {
             <ul className="space-y-2.5 text-base">
               {links.map((link) => (
                 <li key={link.href}>
-                  <a href={link.href} className="transition-colors hover:text-paper-50">
+                  <a href={link.href} className="transition-colors hover:plus-ink-on">
                     {link.label}
                   </a>
                 </li>
@@ -67,7 +67,7 @@ export async function PlusFooter() {
 
           <div>
             <p className="plus-eyebrow-onlight">{t.site.tagline}</p>
-            <p className="max-w-xs text-base leading-relaxed text-paper-200/60">
+            <p className="max-w-xs text-base leading-relaxed plus-dimmer-on">
               {t.site.description}
             </p>
           </div>
@@ -82,7 +82,7 @@ export async function PlusFooter() {
         <div className="mt-16 overflow-hidden">
           <Parallax speed={0.05}>
             <p
-              className="select-none leading-none text-paper-100/[0.07]"
+              className="plus-ghost select-none leading-none"
               style={{
                 fontFamily: 'var(--font-plus-display)',
                 fontSize: 'clamp(3rem, 16vw, 12rem)',
@@ -94,7 +94,7 @@ export async function PlusFooter() {
           </Parallax>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-paper-100/10 pt-6 text-xs text-paper-200/50">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t plus-rule-on pt-6 text-xs plus-dimmer-on">
           <p>
             © {year} {t.site.name}. {t.footer.rights}
           </p>

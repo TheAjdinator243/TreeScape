@@ -18,7 +18,7 @@ export async function PlusCta() {
   const { t } = await getServerStrings();
 
   return (
-    <section className="relative overflow-hidden bg-pine-950 text-paper-100">
+    <section className="relative overflow-hidden plus-surface-deepest plus-dim-on">
       {/* Ista svjetlosna mrlja kao na plohi sa sadržajima — dvije tamne plohe
           na istoj stranici moraju izgledati kao ista ploha, a ne kao dvije. */}
       <Parallax speed={-0.12} className="pointer-events-none absolute -inset-y-24 inset-x-0">
@@ -36,12 +36,12 @@ export async function PlusCta() {
       <div className="plus-section relative text-center">
         <LineReveal
           as="h2"
-          className="plus-title mx-auto max-w-3xl text-paper-50"
+          className="plus-title mx-auto max-w-3xl plus-ink-on"
           text={t.finalCta.heading}
         />
         <LineReveal
           as="p"
-          className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-paper-200/75"
+          className="mx-auto mt-6 max-w-xl text-lg leading-relaxed plus-dim-on"
           text={t.finalCta.lead}
           delay={120}
           stagger={70}

@@ -1823,75 +1823,183 @@ html[lang='ar'] body * {
   transform: none;
 }
 
-/* ── Rezervacija: boje odvojene od rasporeda ─────────────────────────────
+/* ── Boje odvojene od rasporeda ──────────────────────────────────────────
  *
- * Odjeljak s rezervacijom ne piše nijednu boju u svom JSX-u. Umjesto
- * `text-pine-900/60` i sličnog, tamo stoje imena poslova — `plus-dim`,
- * `plus-rule`, `plus-total` — a šta ta imena znače odlučuje se ovdje.
+ * Nijedna komponenta ove stranice ne piše boju u svom JSX-u. Umjesto
+ * `text-pine-900/60` i sličnog, tamo stoje imena POSLOVA — `plus-ink`,
+ * `plus-dim`, `plus-rule`, `plus-surface` — a šta ta imena znače odlučuje se
+ * ovdje, na jednom mjestu.
  *
- * Zbog toga se cijeli odjeljak presvlači jednom klasom na `<section>`, bez
- * ijedne izmjene u komponenti. Ista forma, isti pokret, druga koža.
+ * Zbog toga se cijela stranica presvlači jednom riječju: `data-skin` na
+ * omotaču u `layout.tsx`. Isti raspored, isti pokret, druga koža.
+ *
+ * ── Zašto ne samo zamijeniti vrijednosti boja u @theme ────────────────────
+ * Zato što ista boja u ovoj paleti radi dva suprotna posla. `paper-50` je i
+ * svijetla ploha i svijetli tekst NA tamnoj plohi; `pine-900` je i tamno
+ * slovo i tamna ploha. Zamijeniš li vrijednost, jedan posao popraviš a drugi
+ * pokvariš. Imena poslova to razdvajaju: `plus-surface` i `plus-ink-on` mogu
+ * ići u različitim smjerovima.
  * ─────────────────────────────────────────────────────────────────────── */
 
-.plus-onyx {
-  --ui-bg: var(--color-paper-100);
+.plus {
+  /* Plohe */
+  --ui-bg: var(--color-paper-50);
+  --ui-bg-alt: var(--color-paper-100);
   --ui-panel: #fff;
+  --ui-deep: var(--color-pine-900);
+  --ui-deepest: var(--color-pine-950);
+
+  /* Linije */
   --ui-line: var(--color-paper-200);
   --ui-line-soft: var(--color-paper-300);
+  --ui-line-on: color-mix(in oklab, var(--color-paper-100) 10%, transparent);
+
+  /* Slova na svijetloj plohi */
   --ui-ink: var(--color-pine-900);
-  --ui-dim: color-mix(in oklab, var(--color-pine-900) 58%, transparent);
-  --ui-dimmer: color-mix(in oklab, var(--color-pine-900) 42%, transparent);
+  --ui-dim: color-mix(in oklab, var(--color-pine-900) 68%, transparent);
+  --ui-dimmer: color-mix(in oklab, var(--color-pine-900) 48%, transparent);
+
+  /* Slova na tamnoj plohi */
+  --ui-ink-on: var(--color-paper-50);
+  --ui-dim-on: color-mix(in oklab, var(--color-paper-200) 78%, transparent);
+  --ui-dimmer-on: color-mix(in oklab, var(--color-paper-200) 64%, transparent);
+
+  /* Naglasci */
   --ui-accent: var(--color-pine-600);
+  --ui-accent-strong: var(--color-pine-700);
+  --ui-accent-on: var(--color-sage-300);
   --ui-accent-ink: var(--color-paper-50);
   --ui-accent-soft: var(--color-sage-100);
+  --ui-badge: var(--color-pine-800);
   --ui-total: var(--color-pine-800);
+  --ui-link: var(--color-clay-500);
+  --ui-link-hover: var(--color-clay-600);
+
   --ui-radius: var(--radius-panel);
   --ui-radius-sm: 0.75rem;
+}
 
+/* ── Imena poslova ── */
+.plus-surface {
   background-color: var(--ui-bg);
-  border-color: var(--ui-line);
-  color: var(--ui-ink);
+}
+.plus-surface-alt {
+  background-color: var(--ui-bg-alt);
+}
+.plus-surface-deep {
+  background-color: var(--ui-deep);
+}
+.plus-surface-deepest {
+  background-color: var(--ui-deepest);
+}
+.plus-rule-on {
+  border-color: var(--ui-line-on);
+}
+.plus-ink-on {
+  color: var(--ui-ink-on);
+}
+.plus-dim-on {
+  color: var(--ui-dim-on);
+}
+.plus-dimmer-on {
+  color: var(--ui-dimmer-on);
+}
+.plus-accent {
+  color: var(--ui-accent-strong);
+}
+.plus-accent-on {
+  color: var(--ui-accent-on);
+}
+.plus-badge {
+  background-color: var(--ui-badge);
+  color: var(--ui-accent-ink);
 }
 
-.plus-onyx .plus-rule {
+/* Navigacija: pilula koja se pojavi tek kad se odskrola s vrha. */
+.plus-nav-pill {
+  border-color: color-mix(in oklab, var(--ui-line) 80%, transparent);
+  background-color: color-mix(in oklab, var(--ui-bg) 92%, transparent);
+}
+.plus-dot {
+  background-color: var(--ui-link);
+}
+.plus-hover:hover {
+  background-color: color-mix(in oklab, var(--ui-line) 70%, transparent);
+}
+.plus-sheet {
+  background-color: color-mix(in oklab, var(--ui-bg) 95%, transparent);
+}
+.plus-divide > * + * {
   border-color: var(--ui-line);
 }
-.plus-onyx .plus-ink {
+.plus-progress {
+  background-image: linear-gradient(to right, var(--ui-accent), var(--ui-accent-on));
+}
+
+/*
+ * Ovo leži PREKO fotografije, ne preko plohe stranice.
+ *
+ * Zato prati kožu samo utoliko što joj uzima naglasak; svjetlina ostaje ista
+ * u svakoj koži, jer je fotografija ispod uvijek jednako tamna.
+ */
+.plus-accent-line {
+  background-color: color-mix(in oklab, var(--ui-accent-on) 50%, transparent);
+}
+.plus-pulse {
+  background-color: var(--ui-accent-on);
+}
+.plus-photo-veil {
+  background-color: color-mix(in oklab, var(--ui-deepest) 45%, transparent);
+}
+/* Siluete krošanja na dnu prizora — moraju biti iste boje kao ploha koja
+   ispod njih počinje, inače se vidi gdje crtež prestaje. */
+.plus-silhouette {
+  color: var(--ui-deepest);
+}
+/* Ogroman natpis u podnožju, jedva vidljiv iza sadržaja. */
+.plus-ghost {
+  color: color-mix(in oklab, var(--ui-ink-on) 7%, transparent);
+}
+
+.plus .plus-rule {
+  border-color: var(--ui-line);
+}
+.plus .plus-ink {
   color: var(--ui-ink);
 }
-.plus-onyx .plus-dim {
+.plus .plus-dim {
   color: var(--ui-dim);
 }
-.plus-onyx .plus-dimmer {
+.plus .plus-dimmer {
   color: var(--ui-dimmer);
 }
-.plus-onyx .plus-total {
+.plus .plus-total {
   color: var(--ui-total);
 }
-.plus-onyx dt {
+.plus dt {
   color: var(--ui-dim);
 }
-.plus-onyx dd {
+.plus dd {
   color: var(--ui-ink);
 }
 
-.plus-onyx .plus-card {
+.plus .plus-card {
   background-color: var(--ui-panel);
   border-color: var(--ui-line);
   border-radius: var(--ui-radius);
 }
 
-.plus-onyx .plus-bar {
+.plus .plus-bar {
   background-color: color-mix(in oklab, var(--ui-panel) 95%, transparent);
 }
 
-.plus-onyx .plus-note {
+.plus .plus-note {
   border-radius: var(--ui-radius-sm);
   background-color: var(--ui-accent-soft);
   color: var(--color-pine-800);
 }
 
-.plus-onyx .plus-alert {
+.plus .plus-alert {
   border: 1px solid color-mix(in oklab, var(--color-danger-600) 25%, transparent);
   border-radius: var(--ui-radius-sm);
   background-color: color-mix(in oklab, var(--color-danger-600) 5%, transparent);
@@ -1899,41 +2007,41 @@ html[lang='ar'] body * {
 }
 
 /* Traka napretka */
-.plus-onyx .plus-rail-track {
+.plus .plus-rail-track {
   background-color: var(--ui-line-soft);
 }
-.plus-onyx .plus-rail-fill,
-.plus-onyx .plus-rail-ring {
+.plus .plus-rail-fill,
+.plus .plus-rail-ring {
   color: var(--ui-accent);
   background-color: var(--ui-accent);
 }
-.plus-onyx .plus-rail-ring {
+.plus .plus-rail-ring {
   background-color: transparent;
 }
-.plus-onyx .plus-rail-dot {
+.plus .plus-rail-dot {
   border-color: var(--ui-line-soft);
   background-color: var(--color-paper-50);
   color: var(--ui-dimmer);
 }
-.plus-onyx [data-state='active'] .plus-rail-dot {
+.plus [data-state='active'] .plus-rail-dot {
   border-color: transparent;
   background-color: var(--ui-accent-soft);
   color: var(--ui-total);
 }
-.plus-onyx [data-state='done'] .plus-rail-dot {
+.plus [data-state='done'] .plus-rail-dot {
   border-color: var(--ui-accent);
   background-color: var(--ui-accent);
   color: var(--ui-accent-ink);
 }
-.plus-onyx .plus-rail-name {
+.plus .plus-rail-name {
   color: var(--ui-total);
 }
-.plus-onyx [data-state='todo'] .plus-rail-name {
+.plus [data-state='todo'] .plus-rail-name {
   color: var(--ui-dimmer);
 }
 
 /* Način plaćanja */
-.plus-onyx .plus-pick {
+.plus .plus-pick {
   border: 1px solid var(--ui-line-soft);
   border-radius: var(--ui-radius-sm);
   transition:
@@ -1941,33 +2049,33 @@ html[lang='ar'] body * {
     border-color 300ms var(--ease-out-soft),
     box-shadow 300ms var(--ease-out-soft);
 }
-.plus-onyx .plus-pick:hover {
+.plus .plus-pick:hover {
   border-color: color-mix(in oklab, var(--ui-accent) 40%, transparent);
 }
-.plus-onyx .plus-pick[data-on='true'] {
+.plus .plus-pick[data-on='true'] {
   border-color: var(--ui-accent);
   background-color: color-mix(in oklab, var(--ui-accent-soft) 50%, transparent);
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--ui-accent) 10%, transparent);
 }
-.plus-onyx .plus-pick-radio {
+.plus .plus-pick-radio {
   accent-color: var(--color-pine-700);
 }
-.plus-onyx .plus-pick-tick {
+.plus .plus-pick-tick {
   color: var(--ui-accent);
 }
 
 /* Polja i brojač gostiju */
-.plus-onyx .plus-live-input {
+.plus .plus-live-input {
   border-color: var(--ui-line-soft);
   border-radius: var(--ui-radius-sm);
   background-color: var(--ui-panel);
   color: var(--ui-ink);
 }
-.plus-onyx .plus-live-input:focus {
+.plus .plus-live-input:focus {
   border-color: var(--ui-accent);
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--ui-accent) 12%, transparent);
 }
-.plus-onyx .plus-live-label {
+.plus .plus-live-label {
   color: var(--ui-dim);
 }
 
@@ -1979,52 +2087,52 @@ html[lang='ar'] body * {
  * podlozi se to ne primijeti; na tamnoj natpis nestane, jer je tamnozelen na
  * skoro crnom. Ista zamka čeka svaku sljedeću kožu.
  */
-.plus-onyx .plus-live[data-lifted='true'] .plus-live-label {
+.plus .plus-live[data-lifted='true'] .plus-live-label {
   color: var(--ui-dim);
 }
 
-.plus-onyx .plus-live:focus-within .plus-live-label {
+.plus .plus-live:focus-within .plus-live-label {
   color: var(--ui-accent);
 }
-.plus-onyx .plus-live-underline,
-.plus-onyx .plus-live[data-ok='true'] .plus-live-underline {
+.plus .plus-live-underline,
+.plus .plus-live[data-ok='true'] .plus-live-underline {
   background-color: var(--ui-accent);
 }
-.plus-onyx .plus-live-tick {
+.plus .plus-live-tick {
   color: var(--ui-accent);
 }
-.plus-onyx .plus-live-count {
+.plus .plus-live-count {
   color: var(--ui-dimmer);
 }
-.plus-onyx .plus-label {
+.plus .plus-label {
   color: var(--ui-dim);
 }
-.plus-onyx .plus-step-btn {
+.plus .plus-step-btn {
   border-color: var(--ui-line-soft);
   color: var(--ui-total);
 }
-.plus-onyx .plus-step-btn:hover:not(:disabled) {
+.plus .plus-step-btn:hover:not(:disabled) {
   border-color: var(--ui-accent);
   background-color: var(--ui-accent-soft);
 }
-.plus-onyx .plus-guest-box {
+.plus .plus-guest-box {
   border: 1px solid var(--ui-line-soft);
   border-radius: var(--ui-radius-sm);
   background-color: var(--ui-panel);
 }
-.plus-onyx .plus-guest-dot[data-on='true'] {
+.plus .plus-guest-dot[data-on='true'] {
   color: var(--ui-accent);
 }
 
-.plus-onyx .plus-link {
+.plus .plus-link {
   color: var(--color-clay-500);
 }
-.plus-onyx .plus-link:hover {
+.plus .plus-link:hover {
   color: var(--color-clay-600);
 }
 
 /* Probno plaćanje — mora bosti oči, jer nije pravi način plaćanja. */
-.plus-onyx .plus-warn {
+.plus .plus-warn {
   color: var(--color-clay-600);
 }
 
@@ -2036,22 +2144,52 @@ html[lang='ar'] body * {
  * kalendar, koji svoje boje uzima iz vlastitih promjenljivih.
  * ─────────────────────────────────────────────────────────────────────── */
 
-.plus-onyx[data-skin='onyx'] {
+/*
+ * Tokeni tamne kože. Cijela stranica visi o ovih dvadesetak redova.
+ *
+ * Plohe koje su bile svijetle postaju crne, a one koje su BILE tamne ostaju
+ * tamne — samo se razmaknu za jedan ton, da se ivica između odjeljaka i dalje
+ * vidi. Slova idu obrnuto, a svaki naglasak postaje mesing.
+ */
+.plus[data-skin='onyx'] {
   --ui-bg: var(--color-onyx-950);
+  --ui-bg-alt: var(--color-onyx-900);
   --ui-panel: var(--color-onyx-900);
+  --ui-deep: var(--color-onyx-850);
+  --ui-deepest: var(--color-onyx-950);
+
   --ui-line: color-mix(in oklab, var(--color-ivory-100) 12%, transparent);
   --ui-line-soft: color-mix(in oklab, var(--color-ivory-100) 22%, transparent);
+  --ui-line-on: color-mix(in oklab, var(--color-ivory-100) 12%, transparent);
+
   --ui-ink: var(--color-ivory-50);
   --ui-dim: var(--color-ivory-400);
   --ui-dimmer: var(--color-ivory-500);
+
+  --ui-ink-on: var(--color-ivory-50);
+  --ui-dim-on: var(--color-ivory-400);
+  --ui-dimmer-on: var(--color-ivory-500);
+
   --ui-accent: var(--color-brass-400);
+  --ui-accent-strong: var(--color-brass-400);
+  --ui-accent-on: var(--color-brass-400);
   --ui-accent-ink: var(--color-onyx-950);
   --ui-accent-soft: var(--color-onyx-800);
+  --ui-badge: var(--color-brass-400);
   --ui-total: var(--color-brass-300);
+  --ui-link: var(--color-brass-400);
+  --ui-link-hover: var(--color-brass-300);
 
   /* Oštre ivice su pola ovog izgleda. Zaobljenja se ne smanjuju nego gase. */
   --ui-radius: 0;
   --ui-radius-sm: 0;
+}
+
+/* Ploha stranice ispod svih odjeljaka — inače bi se između njih vidjela
+   svijetla podloga glavnog sajta. */
+.plus[data-skin='onyx'] {
+  background-color: var(--ui-bg);
+  color: var(--ui-ink);
 }
 
 [data-skin='onyx'] .plus-card {
@@ -2139,6 +2277,31 @@ html[lang='ar'] body * {
 
 [data-skin='onyx'] .plus-step-btn {
   border-radius: 0;
+}
+
+/* Nadnaslov na tamnoj plohi — u ovoj koži su SVE plohe tamne, pa i on ide
+   na mesing, kao i onaj na svijetloj. */
+[data-skin='onyx'] .plus-eyebrow-onlight {
+  color: var(--color-brass-400);
+}
+[data-skin='onyx'] .plus-eyebrow-onlight::before {
+  background-color: color-mix(in oklab, var(--color-brass-400) 45%, transparent);
+}
+
+/* Dugme preko fotografije (poziv na dnu, jezik u navigaciji). */
+[data-skin='onyx'] .plus-btn-onlight {
+  border-radius: 0;
+  border-color: color-mix(in oklab, var(--color-ivory-100) 30%, transparent);
+  background-color: transparent;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.74rem;
+}
+[data-skin='onyx'] .plus-btn-onlight:hover {
+  border-color: var(--color-brass-400);
+  background-color: transparent;
+  color: var(--color-brass-300);
 }
 
 [data-skin='onyx'] .plus-link {

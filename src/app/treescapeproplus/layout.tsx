@@ -34,10 +34,15 @@ const plusSans = Manrope({
  * Klasa `plus` uključuje cijelu treću kožu (vidi globals.css). Stoji na
  * omotaču, a ne na <html>, pa i osnovni sajt i "pro" ostaju netaknuti — tri
  * verzije žive jedna pored druge u istoj aplikaciji, na istoj bazi.
+ *
+ * `data-skin` bira BOJE te kože. Nijedna komponenta ne piše boju u svom
+ * JSX-u — sve idu preko imena poslova (`plus-ink`, `plus-surface`, `plus-rule`
+ * i tako dalje), pa se cijela stranica presvlači ovom jednom riječju.
+ * Izbaci li se atribut, vraća se svijetla, papirnata varijanta.
  */
 export default function PlusLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`plus ${plusDisplay.variable} ${plusSans.variable}`}>
+    <div data-skin="onyx" className={`plus ${plusDisplay.variable} ${plusSans.variable}`}>
       {/*
         Bez JavaScripta se redovi naslova nikad ne izmjere, pa bi ostali na
         `opacity: 0` — tekst bi jednostavno nestao. Ovo ih odmah pokaže.

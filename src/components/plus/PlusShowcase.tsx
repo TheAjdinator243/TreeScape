@@ -44,7 +44,7 @@ export function PlusShowcase() {
   const next = useCallback(() => setOpenIndex((i) => galleryStep(i, 1)), []);
 
   return (
-    <section id="galerija" className="bg-paper-50">
+    <section id="galerija" className="plus-surface">
       <div className="plus-section pb-10 md:pb-14 lg:pb-16">
         <Reveal>
           <p className="plus-eyebrow">{t.showcase.eyebrow}</p>
@@ -63,7 +63,7 @@ export function PlusShowcase() {
           <ScrollRange
             as="article"
             key={photo.n}
-            className="plus-shot relative block h-[88svh] min-h-[520px] w-full overflow-hidden bg-pine-950"
+            className="plus-shot relative block h-[88svh] min-h-[520px] w-full overflow-hidden plus-surface-deepest"
           >
             <button
               type="button"

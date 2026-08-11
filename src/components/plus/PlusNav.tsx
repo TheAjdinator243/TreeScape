@@ -67,14 +67,14 @@ export function PlusNav() {
     <>
       <a
         href="#rezervacija"
-        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-pine-800 focus:px-5 focus:py-3 focus:text-sm focus:text-paper-50"
+        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-full plus-badge focus:px-5 focus:py-3 focus:text-sm"
       >
         {t.nav.skipToBooking}
       </a>
 
       {/* Koliko je stranice prošlo — vlas-linija uz sam vrh ekrana. */}
       <div className="pointer-events-none fixed inset-x-0 top-0 z-[55] h-0.5">
-        <ScrollProgress className="h-full bg-gradient-to-r from-pine-600 to-sage-400" />
+        <ScrollProgress className="h-full bg-gradient-to-r plus-progress" />
       </div>
 
       <header
@@ -85,7 +85,7 @@ export function PlusNav() {
         <nav
           className={`mx-auto flex max-w-6xl items-center justify-between transition-[height,background-color,border-color,box-shadow,border-radius,padding] duration-500 ease-[var(--ease-out-soft)] ${
             solid
-              ? 'h-14 rounded-full border border-paper-200/80 bg-paper-50/92 px-3 shadow-float backdrop-blur-xl sm:h-16 sm:px-5'
+              ? 'plus-nav-pill h-14 rounded-full border px-3 shadow-float backdrop-blur-xl sm:h-16 sm:px-5'
               : 'h-16 rounded-none border border-transparent px-5 sm:h-20 sm:px-8'
           }`}
           aria-label={t.nav.mainNav}
@@ -93,7 +93,7 @@ export function PlusNav() {
           <a
             href="#vrh"
             className={`rounded-full text-xl tracking-tight transition-colors duration-300 ${
-              solid ? 'text-pine-900' : 'text-white drop-shadow-sm'
+              solid ? 'plus-ink' : 'text-white drop-shadow-sm'
             }`}
             style={{ fontFamily: 'var(--font-plus-display)' }}
           >
@@ -112,8 +112,8 @@ export function PlusNav() {
                     className={`relative block rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-300 ${
                       solid
                         ? current
-                          ? 'text-pine-800'
-                          : 'text-pine-900/65 hover:text-pine-800'
+                          ? 'plus-accent'
+                          : 'plus-dim hover:plus-accent'
                         : current
                           ? 'text-white'
                           : 'text-white/80 drop-shadow-sm hover:text-white'
@@ -131,7 +131,7 @@ export function PlusNav() {
                     <span
                       aria-hidden="true"
                       className={`absolute inset-x-0 -bottom-0.5 mx-auto h-1 w-1 rounded-full transition-transform duration-300 ease-[var(--ease-out-expo)] ${
-                        solid ? 'bg-clay-500' : 'bg-white'
+                        solid ? 'plus-dot' : 'bg-white'
                       } ${current ? 'scale-100' : 'scale-0'}`}
                     />
                   </a>
@@ -142,7 +142,10 @@ export function PlusNav() {
 
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline-flex">
-              <LanguageSwitcher tone={solid ? 'light' : 'dark'} />
+              {/* Jedino mjesto gdje se koža bira u komponenti, a ne u CSS-u: ton je
+                  ovdje svojstvo, pa ne može pratiti `data-skin`. `pro` ton je
+                  isti oblik i ista boja koje nosi i ostatak ove kože. */}
+              <LanguageSwitcher tone={solid ? 'pro' : 'dark'} />
             </span>
 
             <a
@@ -187,7 +190,7 @@ function MenuButton({
       type="button"
       onClick={onClick}
       className={`-me-1 inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden ${
-        solid ? 'text-pine-900 hover:bg-paper-200/70' : 'text-white hover:bg-white/15'
+        solid ? 'plus-ink hover:plus-hover' : 'text-white hover:bg-white/15'
       }`}
       aria-expanded={open}
       aria-controls="plus-meni"
@@ -226,11 +229,11 @@ function PlusMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
     <div
       id="plus-meni"
       inert={!open}
-      className={`fixed inset-0 z-40 flex flex-col overflow-y-auto bg-paper-50/95 px-5 pb-10 pt-24 backdrop-blur-xl transition-[opacity,transform] duration-[400ms] ease-[var(--ease-out-expo)] lg:hidden ${
+      className={`fixed inset-0 z-40 flex flex-col overflow-y-auto plus-sheet px-5 pb-10 pt-24 backdrop-blur-xl transition-[opacity,transform] duration-[400ms] ease-[var(--ease-out-expo)] lg:hidden ${
         open ? 'pointer-events-auto opacity-100' : 'pointer-events-none -translate-y-3 opacity-0'
       }`}
     >
-      <ul className="flex flex-col divide-y divide-paper-200 border-y border-paper-200">
+      <ul className="flex flex-col plus-divide divide-y plus-rule border-y">
         {LINKS.map((link, i) => (
           <li key={link.href}>
             <a
@@ -238,7 +241,7 @@ function PlusMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
               onClick={onClose}
               // Stavke ulaze jedna za drugom, ali SAMO kad je meni otvoren —
               // inače bi se animacija vrtjela i dok je niko ne gleda.
-              className={`block py-4 text-2xl text-pine-900 transition-colors hover:text-pine-600 ${
+              className={`block py-4 text-2xl plus-ink transition-colors hover:plus-accent ${
                 open ? 'animate-menu-item' : ''
               }`}
               style={{
@@ -257,7 +260,7 @@ function PlusMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
       </a>
 
       <div className="mt-auto flex justify-center pt-10">
-        <LanguageSwitcher />
+        <LanguageSwitcher tone="pro" />
       </div>
     </div>
   );

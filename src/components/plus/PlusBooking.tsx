@@ -117,14 +117,7 @@ export function PlusBooking({ context }: { context: BookingContext }) {
         : 1;
 
   return (
-    <section
-      id="rezervacija"
-      // `plus-onyx` daje odjeljku vlastite promjenljive za boje; `data-skin`
-      // bira KOJE su to vrijednosti. Presvlačenje je time jedna riječ, a ne
-      // prolazak kroz komponentu.
-      data-skin="onyx"
-      className="plus-onyx plus-rule border-y"
-    >
+    <section id="rezervacija" className="plus-surface-alt plus-rule border-y">
       <div className="plus-section">
         <Reveal>
           <p className="plus-eyebrow">{t.nav.book}</p>
