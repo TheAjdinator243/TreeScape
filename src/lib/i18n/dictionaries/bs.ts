@@ -108,8 +108,37 @@ export const bs: Dictionary = {
     next: 'Sljedeća slika',
     close: 'Zatvori galeriju',
     counter: (index, total) => `${index} / ${total}`,
-    itemAlt: (n) => `Slika ${n}`,
-    itemCaption: (n) => `Slika ${n}`,
+    /**
+     * Opis svake fotografije, po njenom rednom broju (vidi `lib/gallery.ts`).
+     * `alt` čita čitač ekrana i Google; natpis se vidi pri prelasku mišem i
+     * ispod uvećane slike.
+     */
+    itemAlt: (n) =>
+      (
+        ({
+          2: 'Bazen i terasa u ljetno popodne',
+          3: 'Natkrivena terasa s pogledom na dolinu',
+          4: 'Bazen i ležaljke pod noćnim svjetlima',
+          5: 'Zalazak sunca iznad bazena',
+          6: 'Jacuzzi na terasi, okrenut prema šumi',
+          7: 'Zidani roštilj i kamin pod drvenom nadstrešnicom',
+          8: 'Spavaća soba u potkrovlju s drvenim gredama',
+          9: 'Proslava postavljena u dvorištu',
+        }) as Record<number, string>
+      )[n] ?? 'Fotografija kuće',
+    itemCaption: (n) =>
+      (
+        ({
+          2: 'Bazen i terasa',
+          3: 'Terasa s pogledom',
+          4: 'Bazen noću',
+          5: 'Zalazak nad bazenom',
+          6: 'Jacuzzi',
+          7: 'Roštilj i kamin',
+          8: 'Soba u potkrovlju',
+          9: 'Proslave u dvorištu',
+        }) as Record<number, string>
+      )[n] ?? 'Fotografija kuće',
   },
 
   amenities: {
@@ -238,8 +267,7 @@ export const bs: Dictionary = {
     submitting: 'Trenutak…',
 
     selectDatesFirst: 'Prvo odaberite datum u kalendaru.',
-    singleDayHint:
-      'Kliknite jedan datum za boravak bez noćenja, ili još jedan za duži boravak.',
+    singleDayHint: 'Kliknite jedan datum za boravak bez noćenja, ili još jedan za duži boravak.',
     unavailableRange:
       'U odabranom rasponu ima već rezervisanih dana. Odaberite termin bez zauzetih datuma.',
   },
@@ -318,7 +346,8 @@ export const bs: Dictionary = {
     ALREADY_RESOLVED: 'Ovaj zahtjev je već riješen. Osvježite stranicu.',
     DATABASE_MISSING:
       'Baza nije podešena. Dodaj Supabase ključeve u .env.local (ili u Vercel → Environment Variables) i pokreni migracije iz supabase/migrations.',
-    TOO_MANY_REQUESTS: 'Previše pokušaja u kratkom vremenu. Sačekajte koji minut pa probajte ponovo.',
+    TOO_MANY_REQUESTS:
+      'Previše pokušaja u kratkom vremenu. Sačekajte koji minut pa probajte ponovo.',
     ADMIN_CODE_WEAK: (min) =>
       `ADMIN_ACCESS_CODE je prekratak — mora imati najmanje ${min} znakova. ` +
       'Prijava je onemogućena dok se ne produži. Novi kod: openssl rand -base64 24',
@@ -396,7 +425,8 @@ export const bs: Dictionary = {
     pricingLead: 'Vrijede za svaki datum koji ne pripada nijednoj sezoni.',
     defaultNightly: 'Osnovna cijena po danu',
     weekendPrice: 'Cijena za subotu i nedjelju',
-    weekendPriceHint: 'Upiši 0 da vikend ide po osnovnoj cijeni. Sezona, ako je postavljena, i dalje ima prednost.',
+    weekendPriceHint:
+      'Upiši 0 da vikend ide po osnovnoj cijeni. Sezona, ako je postavljena, i dalje ima prednost.',
     maxNights: 'Maksimalan broj dana',
     maxGuests: 'Maksimalan broj gostiju',
     holdMinutes: 'Trajanje rezervacije termina tokom plaćanja (min)',
