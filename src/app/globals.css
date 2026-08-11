@@ -1159,10 +1159,16 @@ html[lang='ar'] body * {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* Staza: dva i po ekrana skrola za jedan ekran scene. Duže od ovoga i
-     posjetilac počne misliti da se stranica zaglavila. */
+  /*
+   * Staza: jedan ekran scene po jednom ekranu skrola.
+   *
+   * Bilo je dva i po. Zadnjih pola ekrana te staze nije pokazivalo NIŠTA —
+   * prednji plan je već bio narastao preko cijelog kadra, a ispiranje ga je
+   * dovršilo, pa je posjetilac skrolao kroz ravnu crnu plohu. Ovo je skraćeno
+   * točno za taj mrtvi dio.
+   */
   .plus-scene[data-scene='on'] {
-    height: 250svh;
+    height: 200svh;
   }
 }
 
@@ -1201,23 +1207,23 @@ html[lang='ar'] body * {
    * istovremeno raste i IZLAZI iz kadra, oko to čita kao da ga je kamera
    * prošla. To je cijela razlika između "zumiranja" i "kretanja".
    */
-  transform: translate3d(0, calc(var(--p, 0) * 48vh), 0) scale(calc(1 + var(--p, 0) * 2.4));
+  transform: translate3d(0, calc(var(--p, 0) * 74vh), 0) scale(calc(1 + var(--p, 0) * 2.4));
 }
 
 .scene-canopy-top {
   transform-origin: 50% 0%;
-  transform: translate3d(0, calc(var(--p, 0) * -36vh), 0) scale(calc(1 + var(--p, 0) * 2.2));
+  transform: translate3d(0, calc(var(--p, 0) * -58vh), 0) scale(calc(1 + var(--p, 0) * 2.2));
 }
 
 /*
  * Naslov i dugmad.
  *
- * Nestaju rano (`* 3.4` znači da su na nuli već na trećini scene) — dok se
+ * Nestaju rano (`* 2.6` znači da su na nuli oko 40% scene) — dok se
  * kamera kreće, tekst preko nje se ne može čitati, pa nema razloga da smeta.
  * `visibility` se gasi na kraju da nevidljiva dugmad ne hvataju klikove.
  */
 .scene-copy {
-  opacity: calc(1 - var(--p, 0) * 3.4);
+  opacity: calc(1 - var(--p, 0) * 2.6);
   transform: translate3d(0, calc(var(--p, 0) * -10vh), 0);
 }
 
@@ -1237,11 +1243,11 @@ html[lang='ar'] body * {
 /*
  * Ime kuće razmaknutim slovima, usred scene.
  *
- * Pojavi se tek kad naslov ode (`--p` oko 0.32) i raste zajedno s kamerom, pa
+ * Pojavi se tek kad naslov ode (`--p` oko 0.26) i raste zajedno s kamerom, pa
  * djeluje kao da stoji U prostoru, a ne na staklu preko njega.
  */
 .scene-ghost {
-  opacity: calc((var(--p, 0) - 0.32) * 3.6);
+  opacity: calc((var(--p, 0) - 0.26) * 3.6);
   letter-spacing: calc(0.18em + var(--p, 0) * 0.42em);
   transform: scale(calc(0.92 + var(--p, 0) * 0.3));
 }
@@ -1253,7 +1259,7 @@ html[lang='ar'] body * {
  * scena ne prestaje nego prelazi u njega.
  */
 .scene-wash {
-  opacity: calc((var(--p, 0) - 0.74) * 4.2);
+  opacity: calc((var(--p, 0) - 0.86) * 7.2);
 }
 
 /* ── Otkrivanje naslova red po red ───────────────────────────────────────
