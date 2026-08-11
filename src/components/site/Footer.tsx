@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { getServerStrings } from '@/lib/i18n/server';
 
 /**
@@ -80,9 +82,19 @@ export async function Footer() {
       </div>
 
       <div className="border-t border-forest-800">
-        <div className="mx-auto max-w-6xl px-5 py-6 text-xs text-moss-300/70 sm:px-8">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-moss-300/70 sm:px-8">
           <p>
             © {year} {t.site.name}. {t.footer.rights}
+          </p>
+
+          {/* Pravni tekstovi stoje u dnu, gdje ih gost i traži. */}
+          <p className="flex gap-5">
+            <Link href="/privatnost" className="transition-colors hover:text-sand-50">
+              {t.footer.privacy}
+            </Link>
+            <Link href="/uslovi" className="transition-colors hover:text-sand-50">
+              {t.footer.terms}
+            </Link>
           </p>
         </div>
       </div>
