@@ -19,20 +19,11 @@ export function Lightbox({
   onClose,
   onPrev,
   onNext,
-  onSelect,
 }: {
   index: number;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
-  /**
-   * Skok pravo na sliku iz trake sličica pri dnu.
-   *
-   * Neobavezno, i to namjerno: traku ima samo "plus" izgled. Osnovna verzija i
-   * Osnovni sajt ovaj prikaz koristi bez nje i izgleda tačno kao prije — dodatak
-   * se ne pojavljuje dok ga neko izričito ne zatraži.
-   */
-  onSelect?: (index: number) => void;
 }) {
   const { t, dir } = useI18n();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -130,68 +121,7 @@ export function Lightbox({
 
       <p className="px-5 pb-6 text-center text-sm text-sand-200">{t.gallery.itemCaption(item.n)}</p>
 
-      {/*
-        Traka sličica.
-
-        Skrola se vodoravno i sama dovodi trenutnu sličicu u vidno polje (vidi
-        `Thumb`), pa se pri listanju strelicama traka kreće zajedno sa slikom.
-        Na uskim ekranima se krije: tamo je prst na samoj slici brži od trake,
-        a ona bi uzela trećinu visine.
-      */}
-      {onSelect && (
-        <ul
-          className="hidden shrink-0 gap-2 overflow-x-auto px-5 pb-5 sm:flex"
-          onClick={(e) => e.stopPropagation()}
-        >
-          {GALLERY.map((thumb, i) => (
-            <Thumb
-              key={thumb.n}
-              image={thumb.image}
-              active={i === index}
-              label={t.gallery.itemCaption(thumb.n)}
-              onClick={() => onSelect(i)}
-            />
-          ))}
-        </ul>
-      )}
     </div>
-  );
-}
-
-function Thumb({
-  image,
-  active,
-  label,
-  onClick,
-}: {
-  image: (typeof GALLERY)[number]['image'];
-  active: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  const ref = useRef<HTMLLIElement>(null);
-
-  useEffect(() => {
-    if (!active) return;
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-  }, [active]);
-
-  return (
-    <li ref={ref} className="shrink-0">
-      <button
-        type="button"
-        onClick={onClick}
-        aria-current={active ? 'true' : undefined}
-        className={`relative block h-14 w-20 overflow-hidden rounded-lg transition-opacity duration-300 ${
-          active ? 'opacity-100 ring-2 ring-sand-100' : 'opacity-45 hover:opacity-80'
-        }`}
-        aria-label={label}
-      >
-        {/* `alt=""` jer dugme već nosi opis u `aria-label` — inače bi čitač
-            ekrana istu sliku najavio dvaput. */}
-        <Image src={image} alt="" fill sizes="80px" className="object-cover" />
-      </button>
-    </li>
   );
 }
 

@@ -47,37 +47,8 @@ export const en: Dictionary = {
     title: 'TreeScape',
     subtitle: 'Wake up to the sound of the forest, not the sound of the city.',
     cta: 'Check availability',
-    secondaryCta: 'See the house',
     scroll: 'Find out more',
     imageAlt: 'TreeScape villa',
-    freeFrom: (date) => `First free date: ${date}`,
-    freeToday: 'Free from today',
-  },
-
-  steps: {
-    eyebrow: 'How it works',
-    heading: 'From dates to keys, in three steps',
-    lead: 'No phone calls, and no waiting for a reply just to see what is free.',
-    items: [
-      {
-        title: 'Pick your dates',
-        body: 'The calendar shows what is free as it happens, and the price is worked out while you choose — base, weekend and seasonal, with nothing hidden.',
-      },
-      {
-        title: 'Send the request',
-        body: 'The dates are held for you straight away and other guests already see them as taken. Nobody can take them from you in the meantime.',
-      },
-      {
-        title: 'The host confirms',
-        body: 'The decision arrives by email and your booking page refreshes itself.',
-      },
-    ],
-  },
-
-  finalCta: {
-    heading: 'The forest is just as good on a Tuesday',
-    lead: 'Check the free dates and book in a couple of minutes. If anything is unclear, get in touch — we answer the same day.',
-    contact: 'Ask us anything',
   },
 
   about: {
@@ -163,51 +134,6 @@ export const en: Dictionary = {
     },
   },
 
-
-  showcase: {
-    eyebrow: 'What is waiting for you',
-    heading: 'The house, part by part',
-    lead: 'What the photo at the top does not show — from the pool to the attic.',
-    item: (n) =>
-      (
-        {
-          2: {
-            title: 'The pool',
-            body: 'Heated by a heat pump, 7.5 × 3 m — big enough to swim in, gentle enough for children. Around it a paved terrace with loungers and garden seating.',
-          },
-          3: {
-            title: 'Covered terrace',
-            body: 'Long benches and tables under a timber roof, facing the valley. Breakfast happens here, and so does everything up until dark.',
-          },
-          4: {
-            title: 'Evenings by the pool',
-            body: 'When it gets dark the yard lights up. Lights along the fence, loungers by the water, and a quiet broken only by the forest.',
-          },
-          5: {
-            title: 'Sunset over the valley',
-            body: 'Early evening by the pool, looking out over the treetops. This is the part of the day that makes guests stay longer than they planned.',
-          },
-          6: {
-            title: 'Hot tub',
-            body: 'On the terrace, facing the forest. Warm even when it is cold outside — it gets used in spring and autumn too.',
-          },
-          7: {
-            title: 'Barbecue and fireplace',
-            body: 'A brick barbecue under the timber roof, with an open hearth and stacked firewood. The wood is provided, and the seating is right by the fire.',
-          },
-          8: {
-            title: 'Bedrooms',
-            body: 'An attic under exposed timber beams. The house has two bedrooms and room for eight guests, with bed linen and towels included in the price.',
-          },
-          9: {
-            title: 'Celebrations',
-            body: 'The yard turns into a place for a celebration easily — a birthday, a gathering, a small party. For a larger group, get in touch before booking.',
-          },
-        } as Record<number, { title: string; body: string }>
-      )[n] ?? { title: '', body: '' },
-    extraTitle: 'Also included',
-    extraLead: 'The things you take for granted, and miss the moment they are not there.',
-  },
   location: {
     heading: 'Where we are',
     lead: 'Close enough to reach easily, far enough to hear nothing but the forest.',
@@ -317,15 +243,6 @@ export const en: Dictionary = {
     unavailableRange:
       'The selected range contains dates that are already booked. Please pick a range without them.',
 
-    wizard: {
-      dates: 'Dates',
-      details: 'Your details',
-      review: 'Review',
-      next: 'Next',
-      back: 'Back',
-      stepOf: (step, total) => `Step ${step} of ${total}`,
-      reviewLead: 'Check everything before you send it.',
-    },
   },
 
   confirmation: {

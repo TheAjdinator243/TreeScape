@@ -52,37 +52,8 @@ export const bs: Dictionary = {
     title: 'TreeScape',
     subtitle: 'Probudite se uz zvuk šume, a ne uz zvuk grada.',
     cta: 'Provjeri dostupnost',
-    secondaryCta: 'Pogledaj kuću',
     scroll: 'Saznaj više',
     imageAlt: 'Vila TreeScape',
-    freeFrom: (date) => `Prvi slobodan termin: ${date}`,
-    freeToday: 'Slobodno već danas',
-  },
-
-  steps: {
-    eyebrow: 'Kako to ide',
-    heading: 'Od datuma do ključa, u tri koraka',
-    lead: 'Bez poziva, bez čekanja na odgovor da biste uopće vidjeli šta je slobodno.',
-    items: [
-      {
-        title: 'Odaberite datume',
-        body: 'Kalendar uživo pokazuje šta je slobodno, a cijena se računa dok birate — osnovna, vikend i sezonska, bez skrivenih stavki.',
-      },
-      {
-        title: 'Pošaljite zahtjev',
-        body: 'Termin se odmah zaključava za vas i ostalim gostima se prikazuje kao zauzet. Niko vam ga u međuvremenu ne može uzeti.',
-      },
-      {
-        title: 'Domaćin potvrdi',
-        body: 'Odluka stiže na vaš mail, a stranica s potvrdom se osvježi sama.',
-      },
-    ],
-  },
-
-  finalCta: {
-    heading: 'Šuma je ista i u utorak',
-    lead: 'Provjerite slobodne termine i rezervišite za koji minut. Ako vam nešto nije jasno, javite se — odgovaramo isti dan.',
-    contact: 'Pitajte nas',
   },
 
   about: {
@@ -162,51 +133,6 @@ export const bs: Dictionary = {
     },
   },
 
-
-  showcase: {
-    eyebrow: 'Šta vas čeka',
-    heading: 'Kuća, dio po dio',
-    lead: 'Ono što se ne vidi s fotografije na vrhu — od bazena do potkrovlja.',
-    item: (n) =>
-      (
-        {
-          2: {
-            title: 'Bazen',
-            body: 'Grijan toplotnom pumpom, veličine 7,5 × 3 m — dovoljno velik za plivanje, a ugodan i djeci. Oko njega popločana terasa s ležaljkama i sjedećom garniturom.',
-          },
-          3: {
-            title: 'Natkrivena terasa',
-            body: 'Duge klupe i stolovi pod drvenom nadstrešnicom, okrenuti prema dolini. Ovdje se doručkuje, i ovdje se obično ostane do mraka.',
-          },
-          4: {
-            title: 'Večeri uz bazen',
-            body: 'Kad padne mrak, dvorište se upali. Svjetla uz ogradu, ležaljke uz vodu i tišina koju prekida samo šuma.',
-          },
-          5: {
-            title: 'Zalazak nad dolinom',
-            body: 'Predvečerje uz bazen, s pogledom preko krošanja. Ovo je onaj dio dana zbog kojeg gosti ostanu duže nego što su planirali.',
-          },
-          6: {
-            title: 'Jacuzzi',
-            body: 'Na terasi, okrenut prema šumi. Topao i onda kad je vani hladno — koristi se i u proljeće i u jesen.',
-          },
-          7: {
-            title: 'Roštilj i kamin',
-            body: 'Zidani roštilj pod drvenom nadstrešnicom, s ognjištem i složenim drvima. Drva su obezbijeđena, sjedi se odmah uz vatru.',
-          },
-          8: {
-            title: 'Spavaće sobe',
-            body: 'Potkrovlje pod drvenim gredama. U kući su dvije spavaće sobe i mjesta za osam gostiju, s posteljinom i peškirima uključenim u cijenu.',
-          },
-          9: {
-            title: 'Proslave',
-            body: 'Dvorište se lako pretvori u prostor za proslavu — rođendan, okupljanje, manje slavlje. Za veće društvo javite se prije rezervacije.',
-          },
-        } as Record<number, { title: string; body: string }>
-      )[n] ?? { title: '', body: '' },
-    extraTitle: 'Dodatno',
-    extraLead: 'Sitnice koje se podrazumijevaju, a bez kojih boravak nije isti.',
-  },
   location: {
     heading: 'Gdje se nalazimo',
     lead: 'Dovoljno blizu da se lako stigne, dovoljno daleko da se čuje samo šuma.',
@@ -316,15 +242,6 @@ export const bs: Dictionary = {
     unavailableRange:
       'U odabranom rasponu ima već rezervisanih dana. Odaberite termin bez zauzetih datuma.',
 
-    wizard: {
-      dates: 'Datumi',
-      details: 'Vaši podaci',
-      review: 'Potvrda',
-      next: 'Dalje',
-      back: 'Nazad',
-      stepOf: (step, total) => `Korak ${step} od ${total}`,
-      reviewLead: 'Provjerite podatke prije slanja.',
-    },
   },
 
   confirmation: {

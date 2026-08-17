@@ -29,5 +29,4 @@ export type {
   PlaceKey,
   PluralForms,
   QuestionAnswer,
-  Step,
 } from './dictionary';
