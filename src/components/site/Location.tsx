@@ -1,47 +1,60 @@
+import { Reveal } from '@/components/motion/Reveal';
 import { getServerStrings } from '@/lib/i18n/server';
 import { GOOGLE_MAPS_URL, MAP_SRC, TRAVEL } from '@/lib/location';
 
-import { Reveal } from './Reveal';
+import { SectionHead } from './SectionHead';
 
 export async function Location() {
   const { t } = await getServerStrings();
 
   return (
     <section id="lokacija" className="section">
-      <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-        <Reveal>
-          <p className="section-eyebrow">{t.nav.location}</p>
-          <h2 className="section-title">{t.location.heading}</h2>
-          <p className="section-lead">{t.location.lead}</p>
+      <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
+        <div>
+          <SectionHead
+            index={5}
+            label={t.nav.location}
+            title={t.location.heading}
+            lead={t.location.lead}
+          />
 
-          <dl className="mt-10 divide-y divide-sand-200 border-y border-sand-200">
-            {TRAVEL.map((row) => (
-              <div key={row.key} className="flex items-center justify-between py-4">
-                <dt className="text-base text-ink-700">{t.location.places[row.key]}</dt>
-                <dd className="text-sm font-medium text-forest-700">
-                  {t.location.driveTime(row.minutes)}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <Reveal delay={140}>
+            {/*
+              Vremena vožnje kao spisak s vlas-crtama, a ne kao kartice: ovo su
+              tri broja, a tri kartice bi im dale težinu koju nemaju.
+            */}
+            <dl className="mt-12 border-t border-sand-200">
+              {TRAVEL.map((row) => (
+                <div
+                  key={row.key}
+                  className="flex items-baseline justify-between gap-6 border-b border-sand-200 py-5"
+                >
+                  <dt className="text-base text-ink-700">{t.location.places[row.key]}</dt>
+                  <dd className="font-display text-lg text-forest-700 tabular-nums">
+                    {t.location.driveTime(row.minutes)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
 
-          <a
-            href={GOOGLE_MAPS_URL}
-            target="_blank"
-            // `noreferrer` uz `noopener`: bez prvog Google vidi s koje je
-            // stranice gost došao, bez drugog otvorena kartica može mijenjati
-            // našu preko `window.opener`.
-            rel="noopener noreferrer"
-            className="btn-ghost mt-4 px-5 py-2.5 text-sm"
-          >
-            <PinIcon />
-            {t.location.openInMaps}
-            <span className="sr-only"> ({t.location.opensInNewTab})</span>
-          </a>
-        </Reveal>
+            <a
+              href={GOOGLE_MAPS_URL}
+              target="_blank"
+              // `noreferrer` uz `noopener`: bez prvog Google vidi s koje je
+              // stranice gost došao, bez drugog otvorena kartica može mijenjati
+              // našu preko `window.opener`.
+              rel="noopener noreferrer"
+              className="btn-ghost mt-8"
+            >
+              <PinIcon />
+              {t.location.openInMaps}
+              <span className="sr-only"> ({t.location.opensInNewTab})</span>
+            </a>
+          </Reveal>
+        </div>
 
-        <Reveal delay={120}>
-          <div className="h-[380px] overflow-hidden rounded-2xl border border-sand-200 shadow-soft lg:h-full lg:min-h-[460px]">
+        <Reveal variant="mask" delay={100}>
+          <div className="h-[420px] overflow-hidden rounded-frame border border-sand-200 shadow-soft lg:h-full lg:min-h-[520px]">
             <iframe
               title={t.location.mapTitle}
               src={MAP_SRC}

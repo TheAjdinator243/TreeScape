@@ -16,6 +16,7 @@ dobija.
 - [Šta sve radi](#šta-sve-radi)
 - [Brzi start](#brzi-start)
 - [Jezici](#jezici)
+- [Izgled i pokret](#izgled-i-pokret)
 - [Kako se računa cijena](#kako-se-računa-cijena)
 - [Podešavanje Supabase baze](#podešavanje-supabase-baze)
 - [Načini plaćanja](#načini-plaćanja)
@@ -199,6 +200,44 @@ Tabela `bookings` (imena, mailovi, telefoni) je zaključana pravilima pristupa �
 `anon` ključ iz preglednika iz nje **ne može pročitati nijedan red**. Kalendar
 umjesto toga čita tabelu `availability_slots`, u kojoj su samo datumi i ništa
 drugo. `npm run doctor` to provjerava svaki put.
+
+---
+
+## Izgled i pokret
+
+Sajt je uređen kao stranica u časopisu, a ne kao red kartica: svaki odjeljak
+počinje rednim brojem i crtom koja se izvuče, naslovi su krupni i pisani
+serifom, a razdvaja ih vlas-crta umjesto okvira.
+
+Sve što se kreće kreće se uz skrol, i sve je pisano ovdje — **nema nijedne
+animacijske biblioteke**, ni jednog kilobajta preuzetog zbog pokreta.
+
+| Šta se vidi | Gdje živi |
+|---|---|
+| Pojavljivanje pri skrolanju | `motion/Reveal.tsx` + `.reveal` u globals.css |
+| Naslovi koji se otkrivaju red po red | `motion/Lines.tsx` + `.lines-*` |
+| Fotografije koje klize kroz svoj okvir | `motion/Parallax.tsx` + `.par` |
+| Galerija kao traka koja ide postrance | `motion/Track.tsx` + `.track-*` |
+| Brojevi koji se odbroje ("8 gostiju") | `motion/Counter.tsx` |
+| Traka napretka i oznaka odjeljka u meniju | `site/Nav.tsx` + `.nav-*` |
+| Zaglavlje odjeljka (broj, crta, naslov) | `site/SectionHead.tsx` + `.head-*` |
+
+**Jedan kadar za sve.** Svaki sloj koji prati skrol mogao bi imati svoj
+osluškivač i svoj `requestAnimationFrame`. Umjesto toga svi se prijavljuju na
+jedan (`motion/ticker.ts`): kad kadar dođe, svi se pomjere u istom trenutku, a
+dok stranica mirno stoji ne troši se ništa.
+
+**Galerija.** Odjeljak je visok tačno onoliko koliko traka viri izvan ekrana, a
+njegov sadržaj je `position: sticky` — stranica naizgled stane dok slike prolaze
+postrance, pa se otpusti. Skrol nije otet: prst i točkić rade tačno ono što
+inače rade. Na telefonu, bez JavaScripta, i kod onih koji u sistemu imaju
+„smanji animacije", ista traka se prevlači prstom i hvata se na svaku sliku.
+
+**Šta dobija onaj ko pokret ne želi.** Ko u sistemu ima „smanji animacije",
+dobija cijeli sadržaj bez ijednog pomjeranja — CSS blok na dnu `globals.css`
+gasi prijelaze, a `calmMotion()` u `ticker.ts` gasi ono što ide kroz
+JavaScript. Ko je isključio JavaScript, dobija sve odmah, jer `<noscript>` stil
+u `layout.tsx` vrati sadržaj koji čeka na pojavljivanje.
 
 ---
 
@@ -592,6 +631,7 @@ src/
 │       └── cron/expire-holds     oslobađanje termina s isteklim rokom
 ├── components/
 │   ├── site/                     naslovna, galerija, sadržaji, lokacija, pitanja
+│   ├── motion/                   pokret uz skrol — bez ijedne biblioteke
 │   ├── booking/                  kalendar, cijena, forma, podaci za uplatu
 │   ├── i18n/                     birač jezika i rječnik za klijentske komponente
 │   └── admin/                    ulaz i nadzorna ploča

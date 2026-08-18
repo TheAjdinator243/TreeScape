@@ -49,7 +49,21 @@
   --shadow-soft: 0 1px 2px rgb(34 29 24 / 0.04), 0 8px 24px -8px rgb(34 29 24 / 0.12);
   --shadow-lift: 0 2px 4px rgb(34 29 24 / 0.06), 0 20px 40px -12px rgb(34 29 24 / 0.22);
 
+  /*
+   * Zaobljenje ploha.
+   *
+   * Jedna vrijednost za cijeli sajt, i namjerno umjerena: dovoljno da ništa ne
+   * bode oko, premalo da izgleda kao dugme na telefonu. Fotografije dobijaju
+   * isto zaobljenje kao kartice, pa slika i ploha na koju je spuštena djeluju
+   * kao dvije stvari iz istog pribora.
+   */
+  --radius-card: 0.875rem;
+  --radius-frame: 1.25rem;
+
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Oštrije usporavanje na kraju — za pokrete koji moraju djelovati odlučno
+     (otkrivanje naslova, otvaranje pitanja), a ne mekano kao pojavljivanje. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Osnovni stilovi ─────────────────────────────────────────────────────── */
@@ -60,6 +74,21 @@
     /* Da sidra (#rezervacija) ne završe ispod fiksne navigacije. */
     scroll-padding-top: 5rem;
     -webkit-text-size-adjust: 100%;
+
+    /*
+     * Odakle sadržaj ulazi i na koju se stranu crtaju crte.
+     *
+     * Moraju biti promjenljive, a ne brojevi u komponentama: u arapskom red
+     * teče zdesna nalijevo, pa bi isti pomak sadržaj gurao PREKO ivice umjesto
+     * ka njoj, a crta bi se izvlačila iz pogrešnog kraja.
+     */
+    --reveal-slide: -28px;
+    --rule-origin: left;
+  }
+
+  [dir='rtl'] {
+    --reveal-slide: 28px;
+    --rule-origin: right;
   }
 
   body {
@@ -131,59 +160,425 @@ html[lang='ar'] body * {
  * odbio s greškom "unknown utility class".
  */
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3
-         text-sm font-semibold tracking-wide transition-all duration-200
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5
+         text-sm font-semibold tracking-[0.01em]
+         transition-[background-color,border-color,color,box-shadow,transform] duration-300
+         ease-[var(--ease-out-soft)]
          disabled:cursor-not-allowed disabled:opacity-50;
 }
 
 @layer components {
+  /*
+   * Dugmad se pri prelasku mišem odignu za jedan piksel i slegnu pri pritisku.
+   * Jedan piksel je namjerno malo — dugme koje skoči izgleda kao igračka.
+   * `active:` je pritom bitniji od `hover:`: on je jedino što na dodirnom
+   * ekranu uopće postoji.
+   */
   .btn-primary {
-    @apply btn bg-forest-700 text-sand-50 shadow-soft
-           hover:bg-forest-800 hover:shadow-lift active:scale-[0.98]
-           disabled:hover:bg-forest-700 disabled:hover:shadow-soft;
+    @apply btn bg-forest-800 text-sand-50 shadow-soft
+           hover:-translate-y-px hover:bg-forest-700 hover:shadow-lift
+           active:translate-y-0 active:scale-[0.98]
+           disabled:hover:translate-y-0 disabled:hover:bg-forest-800 disabled:hover:shadow-soft;
   }
 
   .btn-accent {
     @apply btn bg-ember-500 text-white shadow-soft
-           hover:bg-ember-600 hover:shadow-lift active:scale-[0.98]
-           disabled:hover:bg-ember-500;
+           hover:-translate-y-px hover:bg-ember-600 hover:shadow-lift
+           active:translate-y-0 active:scale-[0.98]
+           disabled:hover:translate-y-0 disabled:hover:bg-ember-500 disabled:hover:shadow-soft;
   }
 
   .btn-ghost {
-    @apply btn border border-forest-700/25 bg-transparent text-forest-800
-           hover:border-forest-700/50 hover:bg-forest-700/5 active:scale-[0.98];
+    @apply btn border border-forest-800/20 bg-transparent text-forest-800
+           hover:border-forest-800/45 hover:bg-forest-800/5 active:scale-[0.98];
+  }
+
+  /** Isto dugme, ali preko fotografije ili na tamnoj plohi. */
+  .btn-onlight {
+    @apply btn border border-sand-50/30 bg-sand-50/10 text-sand-50 backdrop-blur-sm
+           hover:border-sand-50/70 hover:bg-sand-50/20 active:scale-[0.98];
   }
 
   .card {
-    @apply rounded-2xl border border-sand-200 bg-white shadow-soft;
+    @apply rounded-card border border-sand-200 bg-white shadow-soft;
   }
 
   .field-label {
-    @apply mb-1.5 block text-sm font-medium text-ink-700;
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-ink-500;
   }
 
   .field-input {
-    @apply w-full rounded-xl border border-sand-300 bg-white px-4 py-2.5 text-ink-900
-           transition-colors placeholder:text-ink-400
+    @apply w-full rounded-lg border border-sand-300 bg-white px-4 py-3 text-ink-900
+           transition-[border-color,box-shadow] duration-300 placeholder:text-ink-400
            focus:border-forest-600 focus:outline-none
-           focus:ring-2 focus:ring-forest-600/20
+           focus:ring-4 focus:ring-forest-600/12
            disabled:bg-sand-100 disabled:text-ink-400;
   }
 
   .section {
-    @apply mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28;
+    @apply mx-auto w-full max-w-6xl px-5 py-24 sm:px-8 md:py-32;
   }
 
+  /* Zadržano zbog pravnih stranica, koje su čist tekst i ništa drugo. */
   .section-eyebrow {
-    @apply mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-forest-600;
+    @apply mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-forest-600;
   }
 
   .section-title {
-    @apply text-3xl leading-tight md:text-4xl lg:text-[2.75rem];
+    @apply text-3xl leading-[1.06] md:text-4xl lg:text-[2.75rem];
   }
 
   .section-lead {
     @apply mt-4 max-w-2xl text-lg leading-relaxed text-ink-500;
+  }
+}
+
+/*
+ * Sve ispod stoji u sloju `components`, ispod Tailwindovih utility klasa.
+ *
+ * Zbog toga `absolute` na `.par` nadjača `position: relative` odavde, a
+ * `text-white` na `.head-title` nadjača boju iz `.head-dark` — bez ijednog
+ * `!important`. U Tailwindu v4 sloj odlučuje prije specifičnosti, pa se
+ * ovdje piše ono što je ZADANO, a u komponenti ono što je izuzetak.
+ */
+@layer components {
+  /* ── Zaglavlje odjeljka ───────────────────────────────────────────────────
+     Svaki odjeljak počinje isto: redni broj, crta koja se izvuče, ime odjeljka,
+     pa naslov koji se otkrije red po red. Brojevi nisu ukras — oni čitaocu
+     kažu koliko je stranice ostalo, a stranici daju ritam koji sam razmak
+     između odjeljaka ne može dati.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .head-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-forest-600);
+  }
+
+  .head-num {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.55;
+  }
+
+  /*
+   * Crta se izvlači iz onog kraja s kojeg tekst i počinje. `transform` a ne
+   * `width`: mijenjanje širine bi pri svakom kadru gurnulo ime odjeljka udesno
+   * i natjeralo preglednik da iznova računa raspored cijelog reda.
+   */
+  .head-rule {
+    height: 1px;
+    width: 3.25rem;
+    flex: none;
+    background-color: currentColor;
+    opacity: 0.4;
+    transform: scaleX(0);
+    transform-origin: var(--rule-origin);
+    transition: transform 0.9s var(--ease-out-expo) calc(var(--reveal-delay, 0ms) + 120ms);
+  }
+
+  .reveal[data-shown='true'] .head-rule {
+    transform: scaleX(1);
+  }
+
+  .head-title {
+    margin-top: 1.25rem;
+    font-size: clamp(2.125rem, 1.15rem + 4vw, 3.75rem);
+    line-height: 1.08;
+    letter-spacing: -0.028em;
+  }
+
+  .head-lead {
+    margin-top: 1.5rem;
+    max-width: 34rem;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--color-ink-500);
+  }
+
+  /* Isto zaglavlje na tamnoj plohi. */
+  .head-dark .head-tag {
+    color: var(--color-moss-400);
+  }
+  .head-dark .head-title {
+    color: var(--color-sand-50);
+  }
+  .head-dark .head-lead {
+    color: var(--color-moss-300);
+  }
+
+  /* ── Pojavljivanje pri skrolanju (vidi `motion/Reveal.tsx`) ──────────────
+     JavaScript postavlja SAMO `data-shown`. Šta to znači — koliko se pomjeri,
+     koliko traje, koliko čeka — piše ovdje.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .reveal {
+    opacity: 0;
+    transition-property: opacity, transform, clip-path;
+    transition-duration: 0.85s;
+    transition-timing-function: var(--ease-out-soft);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  .reveal[data-reveal='up'] {
+    transform: translateY(24px);
+  }
+
+  .reveal[data-reveal='slide'] {
+    transform: translateX(var(--reveal-slide));
+  }
+
+  .reveal[data-reveal='settle'] {
+    transform: scale(1.035);
+  }
+
+  /* Zavjesa: sadržaj se otkriva odozdo, umjesto da samo doklizi. Za fotografije
+     je ovo bolje od pomjeranja — slika se pojavi na svom mjestu, a ne doleti. */
+  .reveal[data-reveal='mask'] {
+    clip-path: inset(18% 0 0 0);
+    transform: translateY(14px);
+  }
+
+  .reveal[data-shown='true'] {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+
+  /* ── Naslov koji se otkriva red po red (vidi `motion/Lines.tsx`) ────────── */
+
+  .lines-mask {
+    display: inline-flex;
+    overflow: hidden;
+    vertical-align: bottom;
+    /*
+     * Prostor za repove slova koja se spuštaju ispod osnovne linije (j, g, p,
+     * ć) — bez njega bi ih maska odsjekla, a u bosanskom i arapskom ih ima u
+     * svakom naslovu.
+     *
+     * Negativna margina poništava taj prostor u RAČUNU visine reda, a ne na
+     * ekranu. `inline-flex` je nedjeljiva kutija: njena margina, za razliku od
+     * margine običnog teksta, diže visinu reda. Bez ovog poništenja bi svaki
+     * red naslova bio 0.14em viši nego što piše u `line-height`, pa bi naslov
+     * u dva reda gurnuo tekst ispod sebe — ili, kod tijesnog proreda, sjeo na
+     * njega.
+     */
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+
+  .lines-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(1.05em);
+    transition:
+      opacity 0.95s var(--ease-out-expo),
+      transform 0.95s var(--ease-out-expo);
+    /*
+     * Kašnjenje po REDU, ne po riječi.
+     *
+     * `--line` upisuje JavaScript nakon mjerenja; dok ga nema, `var(..., 0)`
+     * znači da cijeli naslov krene odjednom — ružnije, ali nikad zaglavljeno.
+     */
+    transition-delay: calc(var(--line-delay, 0ms) + var(--line, 0) * var(--line-step, 90ms));
+  }
+
+  .lines[data-shown='true'] .lines-word {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ── Fotografija koja klizi kroz svoj okvir (vidi `motion/Parallax.tsx`) ── */
+
+  .par {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .par-in {
+    position: absolute;
+    inset: 0;
+  }
+
+  /*
+   * Slika mora viriti izvan okvira tačno onoliko koliko će skliznuti, inače bi
+   * se pri kraju puta ispod nje ukazala praznina. Put je najviše "brzina × pola
+   * ekrana + pola okvira"; `55vh` umjesto `50vh` je zaliha za promjenu visine
+   * ekrana dok se na telefonu skriva adresna traka.
+   */
+  .par[data-moving='true'] .par-in {
+    top: calc(-1 * var(--par-speed, 0.14) * (55vh + 55%));
+    bottom: calc(-1 * var(--par-speed, 0.14) * (55vh + 55%));
+    will-change: transform;
+  }
+
+  /* ── Traka koja ide postrance (vidi `motion/Track.tsx`) ────────────────── */
+
+  .track {
+    position: relative;
+  }
+
+  .track-pin {
+    position: relative;
+  }
+
+  .track-rail {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    gap: 1rem;
+    /*
+     * Prva slika počinje tačno ispod naslova odjeljka, a ne uz sam rub ekrana.
+     * `max()` čuva razmak i na telefonu, gdje je pola razlike do 72rem
+     * negativno. Isto vrijedi i kad se traka lijepi i kad se prevlači prstom —
+     * inače bi se poravnanje mijenjalo ovisno o tome radi li skripta.
+     */
+    padding-inline: max(1.25rem, calc((100vw - 72rem) / 2));
+  }
+
+  .track-rail > * {
+    flex: none;
+  }
+
+  /* Bez skripte, na uskom ekranu ili uz "smanji animacije": obična traka koja
+     se prevlači prstom i hvata se na svaku sliku. */
+  .track:not([data-pinned]) .track-pin {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .track:not([data-pinned]) .track-pin::-webkit-scrollbar {
+    display: none;
+  }
+
+  .track:not([data-pinned]) .track-rail > * {
+    scroll-snap-align: center;
+  }
+
+  .track[data-pinned='true'] .track-pin {
+    position: sticky;
+    top: 0;
+    display: flex;
+    height: 100svh;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .track[data-pinned='true'] .track-rail {
+    will-change: transform;
+    gap: 1.5rem;
+  }
+
+  /* Traka napretka kroz galeriju — puni se onako kako se traka kreće. */
+  .track-bar {
+    height: 2px;
+    background-color: var(--color-moss-400);
+    transform: scaleX(var(--track-progress, 0));
+    transform-origin: var(--rule-origin);
+    transition: transform 0.1s linear;
+  }
+
+  /* ── Spisak sadržaja kuće ─────────────────────────────────────────────────
+     Ne kartice nego red po red, s vlas-crtom između — kao spisak u katalogu.
+     Kartica svakom sadržaju daje jednaku težinu i pravougaonik oko njega; red
+     ne daje ništa osim samog sadržaja, pa ih četrnaest ne izgleda kao zid.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .index-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.125rem;
+    border-top: 1px solid color-mix(in oklab, var(--color-moss-400) 22%, transparent);
+    padding-block: 1.25rem;
+    transition: border-color 0.4s var(--ease-out-soft);
+  }
+
+  .index-row:hover {
+    border-color: color-mix(in oklab, var(--color-moss-400) 55%, transparent);
+  }
+
+  .index-icon {
+    display: flex;
+    height: 2.25rem;
+    width: 2.25rem;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-moss-300);
+    transition:
+      color 0.4s var(--ease-out-soft),
+      transform 0.5s var(--ease-out-expo);
+  }
+
+  .index-row:hover .index-icon {
+    color: var(--color-moss-100);
+    transform: translateY(-2px);
+  }
+
+  /* ── Pitanja i odgovori ─────────────────────────────────────────────────── */
+
+  /*
+   * Odgovor se otvara sam, bez ijednog reda JavaScripta: `<details>` preglednik
+   * već zna otvoriti, zatvoriti i pročitati čitačem ekrana. Ovdje se dodaje samo
+   * pokret pri otvaranju — zatvaranje ostaje trenutno, jer CSS animaciju na
+   * sadržaju koji nestaje preglednici ne mogu odglumiti bez skripte.
+   */
+  @keyframes qa-open {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .qa[open] .qa-body {
+    animation: qa-open 0.45s var(--ease-out-soft) both;
+  }
+
+  /* ── Navigacija ─────────────────────────────────────────────────────────── */
+
+  /* Koliko je stranice pročitano. Puni se od onog kraja s kojeg se i čita. */
+  .nav-progress {
+    height: 2px;
+    background-color: var(--color-forest-600);
+    transform: scaleX(var(--read, 0));
+    transform-origin: var(--rule-origin);
+  }
+
+  /*
+   * Crtica ispod odjeljka u kojem se gost trenutno nalazi.
+   *
+   * Crta stoji u `::after` a ne kao okvir: okvir bi pomjerio tekst za piksel čim
+   * se pojavi, pa bi cijeli meni poskakivao dok se skrola.
+   */
+  .nav-link {
+    position: relative;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -0.45rem;
+    height: 1px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: var(--rule-origin);
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .nav-link[data-active='true']::after,
+  .nav-link:hover::after {
+    transform: scaleX(1);
   }
 }
 
@@ -218,6 +613,12 @@ html[lang='ar'] body * {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-ink-400);
+}
+
+.rdp-day_button {
+  transition:
+    background-color 0.25s var(--ease-out-soft),
+    color 0.25s var(--ease-out-soft);
 }
 
 .rdp-day_button:hover:not([disabled]) {
@@ -264,6 +665,52 @@ html[lang='ar'] body * {
 }
 
 /*
+ * Odabrani raspon se prelije preko kalendara, s početka reda ka kraju.
+ *
+ * Kašnjenje ide po KOLONI (danu u sedmici), ne po rednom broju ćelije. Da ide
+ * po rednom broju, raspon u posljednjoj sedmici mjeseca bi čekao pola sekunde
+ * prije nego što uopće krene — a gost je dotle već otišao dalje. Ovako svaka
+ * sedmica krene odmah, a unutar nje se dani pale redom.
+ */
+@keyframes day-fill {
+  from {
+    opacity: 0.35;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rdp-day:nth-child(1) {
+  --d: 0;
+}
+.rdp-day:nth-child(2) {
+  --d: 1;
+}
+.rdp-day:nth-child(3) {
+  --d: 2;
+}
+.rdp-day:nth-child(4) {
+  --d: 3;
+}
+.rdp-day:nth-child(5) {
+  --d: 4;
+}
+.rdp-day:nth-child(6) {
+  --d: 5;
+}
+.rdp-day:nth-child(7) {
+  --d: 6;
+}
+
+.rdp-selected .rdp-day_button {
+  animation: day-fill 0.4s var(--ease-out-expo) both;
+  animation-delay: calc(var(--d, 0) * 35ms);
+}
+
+/*
  * Odabrani raspon zdesna nalijevo.
  *
  * react-day-picker sam okreće raspored kad dobije `dir="rtl"`, ali ne i
@@ -295,6 +742,83 @@ html[lang='ar'] body * {
 
 .animate-fade-rise {
   animation: fade-rise 0.7s var(--ease-out-soft) both;
+}
+
+/* Naslovna fotografija se nakon učitavanja jednom, polako, vrati iz uvećanja —
+   slika "diše" umjesto da samo stoji. Traje dugo, pa se osjeti a ne primijeti. */
+@keyframes slow-zoom {
+  from {
+    transform: scale(1.09);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 3s var(--ease-out-expo) both;
+}
+
+/* Mobilni meni: stavke ulaze jedna za drugom, s početka reda. */
+@keyframes menu-item {
+  from {
+    opacity: 0;
+    transform: translateX(var(--reveal-slide));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-menu-item {
+  animation: menu-item 0.45s var(--ease-out-expo) both;
+}
+
+/*
+ * Nagovještaj za skrol na naslovnom ekranu: svijetla crtica klizne niz tanku
+ * liniju i nestane. Zamjena za strelicu koja poskakuje — isti nagovještaj,
+ * upola manje pokreta na ekranu.
+ */
+@keyframes scroll-hint {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  40%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(250%);
+    opacity: 0;
+  }
+}
+
+.animate-scroll-hint {
+  animation: scroll-hint 2.4s var(--ease-out-soft) infinite;
+}
+
+/*
+ * Iznos koji se promijeni kratko trepne umjesto da se tiho zamijeni.
+ *
+ * Gost gleda kalendar, a cijena je na drugoj strani ekrana; bez ovoga bi
+ * promjena datuma promijenila broj koji niko ne gleda. Traje kratko i ne
+ * pomjera ništa oko sebe.
+ */
+@keyframes value-swap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-value-swap {
+  animation: value-swap 0.4s var(--ease-out-expo) both;
 }
 
 /* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */

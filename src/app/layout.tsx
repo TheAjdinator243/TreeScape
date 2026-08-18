@@ -101,9 +101,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head>
         {/* Bez JavaScripta nema ni animacije pojavljivanja — sadržaj se
-            mora vidjeti odmah, a ne ostati na opacity: 0. */}
+            mora vidjeti odmah, a ne ostati na opacity: 0. Isto vrijedi za
+            naslove koji se otkrivaju red po red: bez skripte nema ni mjerenja
+            redova, pa riječi moraju stajati na svom mjestu od prvog trenutka. */}
         <noscript>
-          <style>{`.reveal { opacity: 1 !important; transform: none !important; }`}</style>
+          <style>{`.reveal { opacity: 1 !important; transform: none !important; clip-path: none !important; }`}</style>
+          <style>{`.lines-word { opacity: 1 !important; transform: none !important; }`}</style>
           {/* Bez JavaScripta se jezik ne može ni odabrati ni zapamtiti, pa bi
               ulazni ekran zauvijek stajao preko sajta. Tada se preskače, a
               posjetilac dobija jezik svog preglednika. */}

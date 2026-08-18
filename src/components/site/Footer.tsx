@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { Lines } from '@/components/motion/Lines';
+import { Reveal } from '@/components/motion/Reveal';
 import { getServerStrings } from '@/lib/i18n/server';
 
 /**
@@ -11,84 +13,87 @@ export const CONTACT = {
   email: 'info@treescape.ba',
 };
 
+const QUICK = [
+  { href: '#o-kuci', key: 'about' },
+  { href: '#galerija', key: 'gallery' },
+  { href: '#pitanja', key: 'faq' },
+  { href: '#rezervacija', key: 'book' },
+] as const;
+
 export async function Footer() {
   const { t } = await getServerStrings();
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-forest-900 text-sand-200">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-8 md:grid-cols-3">
-        <div>
-          <p className="font-display text-2xl text-sand-50">{t.site.name}</p>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-moss-300/80">
+    <footer className="bg-bark-950 text-sand-200">
+      <div className="mx-auto max-w-6xl px-5 pb-10 pt-24 sm:px-8 md:pt-28">
+        {/*
+          Ime kuće u dnu, veliko, i posljednje što se otkriva na stranici. Nije
+          logotip nego potpis — isto pismo i isti pokret kao naslovi iznad, pa
+          se stranica zatvara onim čim je i počela.
+        */}
+        <Reveal>
+          <p className="font-display text-[clamp(2.75rem,1.5rem+6vw,6rem)] leading-none tracking-[-0.035em] text-sand-50">
+            <Lines text={t.site.name} step={110} />
+          </p>
+          <p className="mt-5 max-w-md text-sm leading-relaxed text-moss-300/75">
             {t.site.description}
           </p>
-        </div>
+        </Reveal>
 
-        <div>
-          <h2 className="font-sans text-sm font-semibold uppercase tracking-widest text-moss-400">
-            {t.footer.contact}
-          </h2>
-          <ul className="mt-4 space-y-2 text-sm">
-            <li>
-              <a
-                href={CONTACT.phoneHref}
-                dir="ltr"
-                className="inline-block transition-colors hover:text-sand-50"
-              >
-                {CONTACT.phone}
-              </a>
-            </li>
-            <li>
-              <a
-                href={`mailto:${CONTACT.email}`}
-                dir="ltr"
-                className="inline-block transition-colors hover:text-sand-50"
-              >
-                {CONTACT.email}
-              </a>
-            </li>
-            <li className="text-moss-300/80">{t.footer.address}</li>
-          </ul>
-        </div>
+        <div className="mt-16 grid gap-10 border-t border-white/10 pt-10 sm:grid-cols-2">
+          <Reveal delay={80}>
+            <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-moss-400">
+              {t.footer.contact}
+            </h2>
+            <ul className="mt-5 space-y-2.5 text-sm">
+              <li>
+                <a
+                  href={CONTACT.phoneHref}
+                  dir="ltr"
+                  className="inline-block transition-colors hover:text-sand-50"
+                >
+                  {CONTACT.phone}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${CONTACT.email}`}
+                  dir="ltr"
+                  className="inline-block transition-colors hover:text-sand-50"
+                >
+                  {CONTACT.email}
+                </a>
+              </li>
+              <li className="text-moss-300/70">{t.footer.address}</li>
+            </ul>
+          </Reveal>
 
-        <div>
-          <h2 className="font-sans text-sm font-semibold uppercase tracking-widest text-moss-400">
-            {t.footer.quickLinks}
-          </h2>
-          <ul className="mt-4 space-y-2 text-sm">
-            <li>
-              <a href="#o-kuci" className="transition-colors hover:text-sand-50">
-                {t.nav.about}
-              </a>
-            </li>
-            <li>
-              <a href="#galerija" className="transition-colors hover:text-sand-50">
-                {t.nav.gallery}
-              </a>
-            </li>
-            <li>
-              <a href="#pitanja" className="transition-colors hover:text-sand-50">
-                {t.nav.faq}
-              </a>
-            </li>
-            <li>
-              <a href="#rezervacija" className="transition-colors hover:text-sand-50">
-                {t.nav.book}
-              </a>
-            </li>
-          </ul>
+          <Reveal delay={160}>
+            <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-moss-400">
+              {t.footer.quickLinks}
+            </h2>
+            <ul className="mt-5 space-y-2.5 text-sm">
+              {QUICK.map((link) => (
+                <li key={link.href}>
+                  <a href={link.href} className="transition-colors hover:text-sand-50">
+                    {t.nav[link.key]}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
         </div>
       </div>
 
-      <div className="border-t border-forest-800">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-moss-300/70 sm:px-8">
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-moss-300/60 sm:px-8">
           <p>
             © {year} {t.site.name}. {t.footer.rights}
           </p>
 
           {/* Pravni tekstovi stoje u dnu, gdje ih gost i traži. */}
-          <p className="flex gap-5">
+          <p className="flex gap-6">
             <Link href="/privatnost" className="transition-colors hover:text-sand-50">
               {t.footer.privacy}
             </Link>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useI18n } from '@/components/i18n/LocaleProvider';
-import { Reveal } from '@/components/site/Reveal';
+import { Reveal } from '@/components/motion/Reveal';
+import { SectionHead } from '@/components/site/SectionHead';
 import { daysBetween, formatLong } from '@/lib/dates';
 import { count } from '@/lib/i18n';
 import { WEEKEND_PERIOD, formatMoney } from '@/lib/pricing';
@@ -20,8 +21,8 @@ export function BookingSection({ context }: { context: BookingContext }) {
     test: { label: t.booking.payTest, hint: t.booking.payTestHint },
   };
 
-  // Stanje, cijena i provjere žive u `useStayForm` — dijeli ih i `pro` izgled,
-  // pa se rezervacija ne može razići između dva izgleda istog sajta.
+  // Stanje, cijena i provjere žive u `useStayForm`, a ne ovdje: ista pravila
+  // vrijede i na stranici s potvrdom i na serveru, pa se ne smiju prepisivati.
   const form = useStayForm(context);
   const {
     slots,
@@ -44,16 +45,13 @@ export function BookingSection({ context }: { context: BookingContext }) {
   return (
     <section id="rezervacija" className="bg-sand-100">
       <div className="section">
-        <Reveal>
-          <p className="section-eyebrow">{t.nav.book}</p>
-          <h2 className="section-title">{t.booking.heading}</h2>
-          <p className="section-lead">{t.booking.lead}</p>
-        </Reveal>
+        <SectionHead index={4} label={t.nav.book} title={t.booking.heading} lead={t.booking.lead} />
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
+        <div className="mt-14 grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:gap-8">
           {/* ── Kalendar ── */}
-          <Reveal className="card p-4 sm:p-6">
-            <h3 className="mb-4 text-center font-display text-xl text-forest-900">
+          <Reveal className="card p-4 sm:p-7 lg:self-start">
+            <h3 className="mb-5 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">
+              <span className="h-px w-8 bg-sand-300" aria-hidden="true" />
               {t.booking.pickDates}
             </h3>
             <StayCalendar
@@ -72,8 +70,11 @@ export function BookingSection({ context }: { context: BookingContext }) {
             {/* Bez `scroll-mt-*`: globalni `scroll-padding-top: 5rem` u
                 globals.css već sklanja fiksnu navigaciju. Da su oba, razmak
                 bi se udvostručio i pregled bi pao predaleko od vrha. */}
-            <div id="pregled" className="card p-6">
-              <h3 className="font-display text-xl text-forest-900">{t.booking.summaryTitle}</h3>
+            <div id="pregled" className="card p-6 sm:p-7">
+              <h3 className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">
+                <span className="h-px w-8 bg-sand-300" aria-hidden="true" />
+                {t.booking.summaryTitle}
+              </h3>
 
               <dl className="mt-5 space-y-3 text-sm">
                 <div className="flex items-baseline justify-between gap-4">
@@ -140,8 +141,19 @@ export function BookingSection({ context }: { context: BookingContext }) {
                   </div>
 
                   <div className="mt-4 flex items-baseline justify-between border-t border-sand-200 pt-4">
-                    <span className="font-medium text-ink-900">{t.booking.total}</span>
-                    <span className="font-display text-2xl text-forest-800">
+                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-500">
+                      {t.booking.total}
+                    </span>
+                    {/*
+                      `key` je ovdje cijeli posao: kad se iznos promijeni, React
+                      pravi NOVI element umjesto da promijeni tekst u starom, pa
+                      animacija krene ispočetka. Bez njega bi se broj tiho
+                      zamijenio, a gost gleda kalendar na drugoj strani ekrana.
+                    */}
+                    <span
+                      key={quote.totalCents}
+                      className="animate-value-swap font-display text-3xl leading-none text-forest-800"
+                    >
                       {formatMoney(quote.totalCents, quote.currencySymbol, locale)}
                     </span>
                   </div>
@@ -241,10 +253,10 @@ export function BookingSection({ context }: { context: BookingContext }) {
                     return (
                       <label
                         key={id}
-                        className={`flex cursor-pointer gap-3 rounded-xl border p-4 transition-colors ${
+                        className={`flex cursor-pointer gap-3 rounded-lg border p-4 transition-[border-color,background-color,box-shadow] duration-300 ${
                           selected
-                            ? 'border-forest-600 bg-forest-700/5 ring-2 ring-forest-600/20'
-                            : 'border-sand-300 hover:border-forest-600/40'
+                            ? 'border-forest-600 bg-forest-700/5 shadow-[0_0_0_4px_rgb(55_115_91/0.10)]'
+                            : 'border-sand-300 hover:border-forest-600/45'
                         } ${busy ? 'cursor-not-allowed opacity-60' : ''}`}
                       >
                         <input
@@ -298,13 +310,13 @@ export function BookingSection({ context }: { context: BookingContext }) {
 
       {/* Na mobitelu sažetak cijene prati gosta dok bira datume. */}
       {quote && !stayError && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-sand-200 bg-white/95 px-5 py-3 shadow-lift backdrop-blur lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-sand-200 bg-white/95 px-5 py-3 shadow-lift backdrop-blur-xl lg:hidden">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="truncate text-xs text-ink-500">
+              <p className="truncate text-[0.7rem] uppercase tracking-[0.14em] text-ink-400">
                 {start && end ? count(locale, daysBetween(start, end), t.common.days) : ''}
               </p>
-              <p className="font-display text-lg text-forest-800">
+              <p key={quote.totalCents} className="animate-value-swap font-display text-xl text-forest-800">
                 {formatMoney(quote.totalCents, quote.currencySymbol, locale)}
               </p>
             </div>
