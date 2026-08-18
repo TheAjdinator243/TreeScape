@@ -6,6 +6,7 @@ import { Footer } from '@/components/site/Footer';
 import { Gallery } from '@/components/site/Gallery';
 import { Hero } from '@/components/site/Hero';
 import { Location } from '@/components/site/Location';
+import { Marquee } from '@/components/site/Marquee';
 import { Nav } from '@/components/site/Nav';
 import { getBookingContext } from '@/lib/data';
 import { lowestNightlyCents } from '@/lib/pricing';
@@ -27,6 +28,7 @@ export default async function HomePage() {
         <Hero fromCents={fromCents} symbol={context.settings.currency_symbol} />
         <About />
         <Gallery />
+        <Marquee />
         <Amenities />
         <BookingSection context={context} />
         <Location />

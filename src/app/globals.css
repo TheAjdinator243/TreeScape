@@ -57,8 +57,12 @@
    * isto zaobljenje kao kartice, pa slika i ploha na koju je spuštena djeluju
    * kao dvije stvari iz istog pribora.
    */
-  --radius-card: 0.875rem;
-  --radius-frame: 1.25rem;
+  --radius-card: 1.25rem;
+  --radius-frame: 1.75rem;
+  /* Zaobljenje ploha koje plutaju iznad sadržaja — navigacija, sažetak preko
+     fotografije, mobilni meni. Veće od kartice, jer se te plohe i ne oslanjaju
+     ni na šta ispod sebe. */
+  --radius-float: 1.5rem;
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
   /* Oštrije usporavanje na kraju — za pokrete koji moraju djelovati odlučno
@@ -84,11 +88,13 @@
      */
     --reveal-slide: -28px;
     --rule-origin: left;
+    --marquee-dir: 1;
   }
 
   [dir='rtl'] {
     --reveal-slide: 28px;
     --rule-origin: right;
+    --marquee-dir: -1;
   }
 
   body {
@@ -176,16 +182,60 @@ html[lang='ar'] body * {
    */
   .btn-primary {
     @apply btn bg-forest-800 text-sand-50 shadow-soft
-           hover:-translate-y-px hover:bg-forest-700 hover:shadow-lift
+           hover:-translate-y-px hover:shadow-lift
            active:translate-y-0 active:scale-[0.98]
-           disabled:hover:translate-y-0 disabled:hover:bg-forest-800 disabled:hover:shadow-soft;
+           disabled:hover:translate-y-0 disabled:hover:shadow-soft;
   }
 
   .btn-accent {
     @apply btn bg-ember-500 text-white shadow-soft
-           hover:-translate-y-px hover:bg-ember-600 hover:shadow-lift
+           hover:-translate-y-px hover:shadow-lift
            active:translate-y-0 active:scale-[0.98]
-           disabled:hover:translate-y-0 disabled:hover:bg-ember-500 disabled:hover:shadow-soft;
+           disabled:hover:translate-y-0 disabled:hover:shadow-soft;
+  }
+
+  /*
+   * Boja koja pri prelasku mišem PREĐE preko dugmeta, umjesto da trepne.
+   *
+   * Pravila su pisana na sama dugmad, a ne na neku zajedničku klasu koja bi im
+   * se uvukla kroz `@apply` — i to je važno. `@apply nesto` u Tailwindu v4
+   * PREPIŠE sadržaj te klase u dugme, ali `nesto` nikad ne stigne u DOM; pravilo
+   * `.nesto::before` onda nema šta pogoditi i sloja jednostavno nema.
+   *
+   * Sloj raste iz onog kraja s kojeg tekst i počinje, pa u arapskom ide na drugu
+   * stranu. `isolation: isolate` na dugmetu je jedini razlog zašto `z-index: -1`
+   * ne progura sloj iza samog dugmeta i time ga sakrije: bez njega bi se sloj
+   * poredio s pozadinom stranice, a ne s dugmetom.
+   */
+  .btn-primary,
+  .btn-accent {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .btn-primary::before,
+  .btn-accent::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transform: scaleX(0);
+    transform-origin: var(--rule-origin);
+    transition: transform 0.55s var(--ease-out-expo);
+  }
+
+  .btn-primary::before {
+    background-color: var(--color-forest-600);
+  }
+
+  .btn-accent::before {
+    background-color: var(--color-ember-600);
+  }
+
+  .btn-primary:hover:not(:disabled)::before,
+  .btn-accent:hover:not(:disabled)::before {
+    transform: scaleX(1);
   }
 
   .btn-ghost {
@@ -484,6 +534,143 @@ html[lang='ar'] body * {
     transition: transform 0.1s linear;
   }
 
+
+  /* ── Zrno ────────────────────────────────────────────────────────────────
+     Vrlo sitan šum preko tamnih ploha i preko naslovne fotografije.
+
+     Ravna boja na velikoj površini na modernim ekranima izgleda kao plastika,
+     a i pokaže trake tamo gdje se gradijent presvlači. Zrno oboje razbije: daje
+     plohi opip štampanog papira i sakrije prelaze, a košta ništa — jedna SVG
+     šara od dvjestotinjak bajta, upisana u sam CSS, bez ijednog zahtjeva prema
+     mreži.
+
+     `soft-light` a ne `overlay`: overlay na tamnoj podlozi pravi sive mrlje,
+     soft-light samo blago razbije ton.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.32;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ── Staklo ──────────────────────────────────────────────────────────────
+     Ploha koja pluta iznad fotografije ili iznad sadržaja: propušta boju ispod
+     sebe, ali je zamuti dovoljno da tekst na njoj ostane čitljiv.
+
+     Dvije verzije, jer ista ne može oboje: `glass-dark` stoji nad fotografijom
+     i mora biti tamna da bijeli tekst na njoj radi, `glass-light` stoji nad
+     stranicom i mora biti svijetla iz istog razloga.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .glass-dark {
+    background-color: color-mix(in oklab, var(--color-bark-950) 42%, transparent);
+    border: 1px solid color-mix(in oklab, #fff 16%, transparent);
+    backdrop-filter: blur(20px) saturate(130%);
+    -webkit-backdrop-filter: blur(20px) saturate(130%);
+  }
+
+  .glass-light {
+    background-color: color-mix(in oklab, var(--color-sand-50) 78%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-sand-300) 55%, transparent);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+  }
+
+  /* ── Navigacija koja pluta ───────────────────────────────────────────────
+     Traka preko cijele širine dijeli stranicu na dva dijela i uvijek izgleda
+     kao okvir programa. Ploča koja pluta, s razmakom sa svih strana, ostavlja
+     fotografiju cijelom — a to je jedina razlika koja se odmah vidi.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .nav-shell {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 50;
+    padding: 0.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .nav-shell {
+      padding: 1rem 1.25rem;
+    }
+  }
+
+  .nav-pill {
+    margin-inline: auto;
+    display: flex;
+    height: 3.5rem;
+    max-width: 72rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-radius: 9999px;
+    padding-inline: 0.5rem 0.5rem;
+    padding-inline-start: 1.375rem;
+    transition:
+      background-color 0.5s var(--ease-out-soft),
+      border-color 0.5s var(--ease-out-soft),
+      box-shadow 0.5s var(--ease-out-soft);
+  }
+
+  .nav-pill[data-solid='true'] {
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Koliko je stranice pročitano — vlas-crta uz sam vrh ekrana, iznad ploče.
+     Puni se od onog kraja s kojeg se i čita. */
+  .nav-read {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 51;
+    height: 2px;
+    pointer-events: none;
+  }
+
+  .nav-progress {
+    height: 100%;
+    background-color: var(--color-forest-600);
+    transform: scaleX(var(--read, 0));
+    transform-origin: var(--rule-origin);
+  }
+
+  /* ── Traka s imenima sadržaja ────────────────────────────────────────────
+     Spisak koji polako klizi između galerije i odjeljka o sadržajima.
+
+     Sadržaj je udvostručen u komponenti, a pomak ide tačno do polovine — zato
+     se šav nikad ne vidi i traka nema kraj. Kad miš stane na nju, stane i ona:
+     ime koje se htjelo pročitati ne smije pobjeći ispod pokazivača.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+
+  .marquee-row {
+    display: flex;
+    width: max-content;
+    animation: marquee 42s linear infinite;
+  }
+
+  .marquee:hover .marquee-row {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee {
+    to {
+      /* U arapskom traka teče na drugu stranu, kao i sve ostalo. */
+      transform: translateX(calc(-50% * var(--marquee-dir, 1)));
+    }
+  }
+
   /* ── Spisak sadržaja kuće ─────────────────────────────────────────────────
      Ne kartice nego red po red, s vlas-crtom između — kao spisak u katalogu.
      Kartica svakom sadržaju daje jednaku težinu i pravougaonik oko njega; red
@@ -491,6 +678,7 @@ html[lang='ar'] body * {
      ─────────────────────────────────────────────────────────────────────── */
 
   .index-row {
+    position: relative;
     display: flex;
     align-items: flex-start;
     gap: 1.125rem;
@@ -501,6 +689,28 @@ html[lang='ar'] body * {
 
   .index-row:hover {
     border-color: color-mix(in oklab, var(--color-moss-400) 55%, transparent);
+  }
+
+  /*
+   * Blago svjetlo ispod reda na koji je gost naišao.
+   *
+   * Stoji u `::before` i viri izvan reda, pa svjetlo obuhvati i prazninu lijevo
+   * i desno od teksta — inače bi izgledalo kao da je odabran samo tekst, a ne
+   * cijeli red. `z-index: -1` ga drži ispod slova bez ijedne dodatne plohe.
+   */
+  .index-row::before {
+    content: '';
+    position: absolute;
+    inset: 1px -1rem 0;
+    z-index: -1;
+    border-radius: 0.875rem;
+    background-color: color-mix(in oklab, var(--color-moss-400) 10%, transparent);
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-out-soft);
+  }
+
+  .index-row:hover::before {
+    opacity: 1;
   }
 
   .index-icon {
@@ -542,16 +752,6 @@ html[lang='ar'] body * {
 
   .qa[open] .qa-body {
     animation: qa-open 0.45s var(--ease-out-soft) both;
-  }
-
-  /* ── Navigacija ─────────────────────────────────────────────────────────── */
-
-  /* Koliko je stranice pročitano. Puni se od onog kraja s kojeg se i čita. */
-  .nav-progress {
-    height: 2px;
-    background-color: var(--color-forest-600);
-    transform: scaleX(var(--read, 0));
-    transform-origin: var(--rule-origin);
   }
 
   /*
@@ -825,6 +1025,19 @@ html[lang='ar'] body * {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  /*
+   * Traka s imenima sadržaja se GASI, a ne ubrzava.
+   *
+   * Pravilo ispod svim animacijama skraćuje trajanje na ništa. Za animaciju
+   * koja se odigra jednom to znači "pokaži odmah gotovo stanje", i to je tačno
+   * ono što treba. Za ovu, koja se vrti u krug, gotovo stanje je traka
+   * pomjerena za pola svoje dužine — pa bi umjesto mirne trake gost dobio
+   * trajno razmaknut spisak. Zato joj se animacija ovdje uklanja u cijelosti.
+   */
+  .marquee-row {
+    animation: none !important;
   }
 
   *,

@@ -15,10 +15,21 @@ const LINKS = [
   { href: '#pitanja', id: 'pitanja', key: 'faq' },
 ] as const;
 
+/**
+ * Navigacija koja pluta iznad stranice.
+ *
+ * Nije traka preko cijele širine nego ploča sa razmakom sa svih strana: traka
+ * dijeli ekran na dva dijela i uvijek izgleda kao okvir programa, a ploča
+ * ostavlja fotografiju ispod sebe cijelom.
+ *
+ * Ploča ima dva stanja. Preko naslovne fotografije je tamno staklo — providna
+ * je taman toliko da se vidi šta je ispod, a mutna taman toliko da bijela slova
+ * na njoj ostanu čitljiva bez obzira na to kakva je fotografija. Čim se skrola,
+ * postaje svijetlo staklo, jer je ispod nje odjednom papir a ne šuma.
+ */
 export function Nav() {
   const { t } = useI18n();
 
-  // Preko heroja je navigacija providna i bijela; čim se skrola, dobija podlogu.
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string | null>(null);
@@ -26,7 +37,7 @@ export function Nav() {
   const bar = useRef<HTMLDivElement>(null);
 
   /*
-   * Koliko je stranice pročitano, u tanku crtu ispod navigacije.
+   * Koliko je stranice pročitano, u vlas-crtu uz sam vrh ekrana.
    *
    * Napredak se upisuje kao CSS promjenljiva, a ne kroz React stanje: to je
    * broj koji se mijenja pri svakom kadru skrola, pa bi kroz stanje pokrenuo
@@ -43,10 +54,9 @@ export function Nav() {
     });
   }, []);
 
-  // Podloga navigacije se, za razliku od crte, mijenja samo dva puta na cijeloj
-  // stranici — jednom kad se krene i jednom kad se vrati na vrh. Zato ovdje
-  // stanje jeste na mjestu: promjena je rijetka, a od nje zavise boje u pet
-  // različitih elemenata.
+  // Staklo se, za razliku od crte, mijenja samo dva puta na cijeloj stranici —
+  // jednom kad se krene i jednom kad se vrati na vrh. Zato ovdje stanje jeste
+  // na mjestu: promjena je rijetka, a od nje zavise boje u pet elemenata.
   useEffect(() => {
     const onWindowScroll = () => setScrolled(window.scrollY > 40);
     onWindowScroll();
@@ -108,19 +118,20 @@ export function Nav() {
         {t.nav.skipToBooking}
       </a>
 
-      <header
-        className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500 ease-[var(--ease-out-soft)] ${
-          solid ? 'border-b border-sand-200 bg-sand-50/85 backdrop-blur-xl' : 'border-b border-transparent'
-        }`}
-      >
+      <div className="nav-read" aria-hidden="true">
+        <div ref={bar} className="nav-progress" />
+      </div>
+
+      <header className="nav-shell">
         <nav
-          className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8"
+          data-solid={solid}
+          className={`nav-pill ${solid ? 'glass-light' : 'glass-dark'}`}
           aria-label={t.nav.mainNav}
         >
           <a
             href="#vrh"
             className={`font-display text-lg tracking-tight transition-colors duration-500 ${
-              solid ? 'text-forest-900' : 'text-white drop-shadow-sm'
+              solid ? 'text-forest-900' : 'text-white'
             }`}
           >
             {t.site.name}
@@ -133,9 +144,7 @@ export function Nav() {
                   href={link.href}
                   data-active={active === link.id}
                   className={`nav-link text-[0.8125rem] font-medium tracking-wide transition-colors duration-500 ${
-                    solid
-                      ? 'text-ink-700 hover:text-forest-800'
-                      : 'text-white/85 drop-shadow-sm hover:text-white'
+                    solid ? 'text-ink-700 hover:text-forest-800' : 'text-white/85 hover:text-white'
                   }`}
                 >
                   {t.nav[link.key]}
@@ -161,7 +170,7 @@ export function Nav() {
             <button
               type="button"
               onClick={() => setOpen((v) => !v)}
-              className={`-me-2 inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors md:hidden ${
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors md:hidden ${
                 solid ? 'text-forest-900 hover:bg-sand-200' : 'text-white hover:bg-white/15'
               }`}
               aria-expanded={open}
@@ -172,25 +181,22 @@ export function Nav() {
             </button>
           </div>
         </nav>
-
-        {/* Crta se vidi tek kad navigacija dobije podlogu — preko fotografije
-            bi bila samo šara koja ničemu ne služi. */}
-        <div
-          ref={bar}
-          className={`nav-progress transition-opacity duration-500 ${solid ? 'opacity-100' : 'opacity-0'}`}
-          aria-hidden="true"
-        />
       </header>
 
-      {/* Mobilni meni */}
+      {/*
+        Mobilni meni je ploča koja pluta ispod navigacije, s razmakom sa svih
+        strana — ista stvar kao i sama navigacija, samo veća. Puni ekran od ruba
+        do ruba izgleda kao da je otvorena druga stranica; ovo izgleda kao da se
+        ista stranica samo razmakla.
+      */}
       <div
         id="mobilni-meni"
         hidden={!open}
-        className="fixed inset-0 top-16 z-40 bg-sand-50 px-5 py-10 md:hidden"
+        className="glass-light fixed inset-x-3 bottom-3 top-[4.75rem] z-40 flex flex-col overflow-y-auto rounded-float px-5 py-6 md:hidden"
       >
         <ul className="flex flex-col">
           {LINKS.map((link, i) => (
-            <li key={link.href} className="border-b border-sand-200">
+            <li key={link.href} className="border-b border-sand-200/70">
               <a
                 href={link.href}
                 onClick={() => setOpen(false)}
@@ -210,7 +216,7 @@ export function Nav() {
           {t.nav.book}
         </a>
 
-        <div className="mt-8 flex justify-center">
+        <div className="mt-6 flex justify-center">
           <LanguageSwitcher />
         </div>
       </div>

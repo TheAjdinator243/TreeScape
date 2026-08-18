@@ -20,8 +20,8 @@ export async function Amenities() {
   const { t } = await getServerStrings();
 
   return (
-    <section id="sadrzaji" className="bg-forest-900">
-      <div className="section">
+    <section id="sadrzaji" className="grain relative bg-forest-900">
+      <div className="section relative z-[2]">
         <SectionHead
           index={3}
           label={t.site.name}

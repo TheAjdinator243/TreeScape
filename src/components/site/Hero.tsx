@@ -21,7 +21,10 @@ export async function Hero({ fromCents, symbol }: { fromCents: number; symbol: s
   const { locale, t } = await getServerStrings();
 
   return (
-    <section id="vrh" className="relative flex min-h-[94svh] flex-col justify-end overflow-hidden">
+    <section
+      id="vrh"
+      className="grain relative flex min-h-[96svh] flex-col justify-end overflow-hidden"
+    >
       <Parallax className="absolute inset-0" speed={0.18}>
         <Image
           src={HERO_IMAGE}
@@ -45,75 +48,88 @@ export async function Hero({ fromCents, symbol }: { fromCents: number; symbol: s
       */}
       <div className="absolute inset-0 bg-bark-950/25" aria-hidden="true" />
       <div
-        className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-bark-950 via-bark-950/70 to-transparent"
+        className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-bark-950 via-bark-950/65 to-transparent"
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto w-full max-w-6xl px-5 pb-10 pt-32 sm:px-8">
-        <p className="head-tag animate-fade-rise text-moss-300">
-          <span className="head-rule" style={{ transform: 'scaleX(1)' }} aria-hidden="true" />
-          {t.hero.eyebrow}
-        </p>
+      <div className="relative z-[2] mx-auto w-full max-w-6xl px-5 pb-12 pt-32 sm:px-8 md:pb-16">
+        <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,1fr)_auto]">
+          <div>
+            <p className="head-tag animate-fade-rise text-moss-300">
+              <span className="head-rule" style={{ transform: 'scaleX(1)' }} aria-hidden="true" />
+              {t.hero.eyebrow}
+            </p>
 
-        <h1 className="mt-6 text-[clamp(3rem,1.5rem+7.5vw,7rem)] leading-[0.94] tracking-[-0.035em] text-white">
-          <Lines text={t.hero.title} delay={260} step={110} />
-        </h1>
+            <h1 className="mt-6 text-[clamp(3.25rem,1.5rem+8vw,7.5rem)] leading-[0.92] tracking-[-0.04em] text-white">
+              <Lines text={t.hero.title} delay={260} step={110} />
+            </h1>
 
-        <p
-          className="animate-fade-rise mt-6 max-w-lg text-lg leading-relaxed text-sand-100 sm:text-xl"
-          style={{ animationDelay: '520ms' }}
-        >
-          {t.hero.subtitle}
-        </p>
+            <p
+              className="animate-fade-rise mt-7 max-w-md text-lg leading-relaxed text-sand-100"
+              style={{ animationDelay: '520ms' }}
+            >
+              {t.hero.subtitle}
+            </p>
+          </div>
 
-        <div
-          className="animate-fade-rise mt-10 flex flex-wrap items-center gap-x-6 gap-y-4"
-          style={{ animationDelay: '640ms' }}
-        >
-          <a href="#rezervacija" className="btn-accent px-8 py-4 text-base">
-            {t.hero.cta}
-          </a>
+          {/*
+            Ploča od stakla s cijenom i mjerom kuće.
 
-          <p className="flex items-baseline gap-2 text-sm text-sand-200">
-            <span className="uppercase tracking-[0.18em] text-sand-300/80">{t.common.from}</span>
-            <span className="font-display text-2xl text-white">
-              {formatMoney(fromCents, symbol, locale)}
-            </span>
-            <span className="text-sand-200/80">/ {t.common.day}</span>
-          </p>
+            Cijena je jedini podatak zbog kojeg se gost i zaustavio, pa ne smije
+            biti red teksta ispod dugmeta nego zasebna stvar koja pluta nad
+            fotografijom. Staklo je ovdje jedini način da ta ploča bude i
+            čitljiva i da se kroz nju i dalje vidi slika — puna boja bi na
+            fotografiji izgledala kao nalijepljena naljepnica.
+          */}
+          <div
+            className="glass-dark animate-fade-rise w-full rounded-float p-6 shadow-lift lg:w-[19rem]"
+            style={{ animationDelay: '640ms' }}
+          >
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-sand-300/80">
+              {t.common.from}
+            </p>
+            <p className="mt-2 flex items-baseline gap-2">
+              <span className="font-display text-4xl leading-none text-white">
+                {formatMoney(fromCents, symbol, locale)}
+              </span>
+              <span className="text-sm text-sand-200/80">/ {t.common.day}</span>
+            </p>
+
+            <dl className="mt-5 flex gap-6 border-t border-white/15 pt-4 text-xs text-sand-200/80">
+              <div>
+                <dt className="sr-only">{t.about.stats.guests}</dt>
+                <dd>
+                  <span className="font-display text-lg text-white">8</span>{' '}
+                  {t.about.stats.guests}
+                </dd>
+              </div>
+              <div>
+                <dt className="sr-only">{t.about.stats.bedrooms}</dt>
+                <dd>
+                  <span className="font-display text-lg text-white">2</span>{' '}
+                  {t.about.stats.bedrooms}
+                </dd>
+              </div>
+            </dl>
+
+            <a href="#rezervacija" className="btn-accent mt-6 w-full">
+              {t.hero.cta}
+            </a>
+          </div>
         </div>
       </div>
 
-      {/*
-        Vlas-crta preko cijelog dna, s nagovještajem za skrol na početku reda i
-        veličinom kuće na kraju. Bez nje bi naslovni ekran bio samo fotografija
-        s tekstom; s njom ima dno, pa i mjeru — a gost odmah zna prima li kuća
-        njegovo društvo, prije nego što otvori i jedan odjeljak.
-      */}
-      <div className="relative mx-auto w-full max-w-6xl px-5 sm:px-8">
-        <div
-          className="animate-fade-rise flex items-center justify-between gap-6 border-t border-white/20 py-5 text-xs uppercase tracking-[0.18em] text-white/70"
+      <div className="relative z-[2] mx-auto w-full max-w-6xl px-5 sm:px-8">
+        <a
+          href="#o-kuci"
+          className="animate-fade-rise group mb-8 flex w-fit items-center gap-3 whitespace-nowrap text-xs uppercase tracking-[0.18em] text-white/70 transition-colors hover:text-white"
           style={{ animationDelay: '760ms' }}
         >
-          <a
-            href="#o-kuci"
-            className="group flex shrink-0 items-center gap-3 whitespace-nowrap transition-colors hover:text-white"
-          >
-            <span className="relative hidden h-6 w-px overflow-hidden bg-white/25 sm:block">
-              <span className="animate-scroll-hint absolute inset-x-0 top-0 h-2 bg-white" />
-            </span>
-            {t.hero.scroll}
-          </a>
-
-          {/* Na telefonu ovoga nema: uz razmaknuta velika slova dva podatka ne
-              stanu u red pored nagovještaja za skrol, a skraćena rečenica je
-              gora od nikakve. Isti podaci stoje odmah ispod, u "O kući". */}
-          <p className="hidden whitespace-nowrap text-end sm:block">
-            <span className="text-white">8</span> {t.about.stats.guests}
-            <span className="mx-2 text-white/30">·</span>
-            <span className="text-white">2</span> {t.about.stats.bedrooms}
-          </p>
-        </div>
+          <span className="relative h-6 w-px overflow-hidden bg-white/25">
+            <span className="animate-scroll-hint absolute inset-x-0 top-0 h-2 bg-white" />
+          </span>
+          {t.hero.scroll}
+        </a>
       </div>
     </section>
   );

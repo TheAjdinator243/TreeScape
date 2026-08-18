@@ -25,8 +25,8 @@ export async function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-bark-950 text-sand-200">
-      <div className="mx-auto max-w-6xl px-5 pb-10 pt-24 sm:px-8 md:pt-28">
+    <footer className="grain relative bg-bark-950 text-sand-200">
+      <div className="relative z-[2] mx-auto max-w-6xl px-5 pb-10 pt-24 sm:px-8 md:pt-28">
         {/*
           Ime kuće u dnu, veliko, i posljednje što se otkriva na stranici. Nije
           logotip nego potpis — isto pismo i isti pokret kao naslovi iznad, pa
@@ -86,7 +86,7 @@ export async function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10">
+      <div className="relative z-[2] border-t border-white/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-moss-300/60 sm:px-8">
           <p>
             © {year} {t.site.name}. {t.footer.rights}

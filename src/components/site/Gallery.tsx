@@ -47,7 +47,7 @@ export function Gallery() {
     // pretku pretvara taj element u okvir za `position: sticky`, pa se traka ne
     // bi zalijepila nego bi samo prošla. Ono što treba odsjeći odsijeca sama
     // traka, na elementu koji se lijepi (vidi `.track-pin` u globals.css).
-    <section id="galerija" className="bg-sand-100 py-24 md:py-32">
+    <section id="galerija" className="bg-sand-100 pb-12 pt-24 md:pb-16 md:pt-32">
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
         <SectionHead index={2} label={t.site.name} title={t.gallery.heading} lead={t.gallery.lead} />
       </div>
@@ -83,14 +83,21 @@ export function Gallery() {
                 className="absolute inset-0 bg-bark-950/0 transition-colors duration-500 group-hover:bg-bark-950/15"
                 aria-hidden="true"
               />
+
+              {/* Redni broj stoji NA slici, a ne u redu ispod nje: dok traka
+                  klizi, ispod je vidi samo onaj ko gleda dolje, a gost gleda
+                  fotografiju. Staklo ga drži čitljivim i nad nebom i nad noći. */}
+              <span
+                className="glass-dark absolute end-4 top-4 rounded-full px-3 py-1 font-display text-xs text-white tabular-nums"
+                aria-hidden="true"
+              >
+                {String(i + 1).padStart(2, '0')}
+                <span className="text-white/50">/{String(GALLERY.length).padStart(2, '0')}</span>
+              </span>
             </button>
 
-            <figcaption className="mt-4 flex items-baseline justify-between gap-4 border-t border-sand-300 pt-3 text-sm text-ink-500">
-              <span className="truncate">{t.gallery.itemCaption(item.n)}</span>
-              <span className="shrink-0 font-display text-base text-forest-700 tabular-nums">
-                {String(i + 1).padStart(2, '0')}
-                <span className="text-ink-400">/{String(GALLERY.length).padStart(2, '0')}</span>
-              </span>
+            <figcaption className="mt-4 truncate text-sm text-ink-500">
+              {t.gallery.itemCaption(item.n)}
             </figcaption>
           </figure>
         ))}

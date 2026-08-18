@@ -221,6 +221,9 @@ animacijske biblioteke**, ni jednog kilobajta preuzetog zbog pokreta.
 | Brojevi koji se odbroje ("8 gostiju") | `motion/Counter.tsx` |
 | Traka napretka i oznaka odjeljka u meniju | `site/Nav.tsx` + `.nav-*` |
 | Zaglavlje odjeljka (broj, crta, naslov) | `site/SectionHead.tsx` + `.head-*` |
+| Traka s imenima sadržaja koja klizi | `site/Marquee.tsx` + `.marquee-*` |
+| Navigacija koja pluta, od stakla | `site/Nav.tsx` + `.nav-pill`, `.glass-*` |
+| Zrno preko tamnih ploha | `.grain` u globals.css |
 
 **Jedan kadar za sve.** Svaki sloj koji prati skrol mogao bi imati svoj
 osluškivač i svoj `requestAnimationFrame`. Umjesto toga svi se prijavljuju na
