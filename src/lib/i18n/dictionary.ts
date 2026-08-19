@@ -206,6 +206,28 @@ export interface Dictionary {
     singleDayHint: string;
     unavailableRange: string;
 
+    /**
+     * Rezervacija u tri koraka: datumi → podaci → pregled.
+     *
+     * Nazivi koraka stoje ovdje, a ne u komponenti, jer se ispisuju na dva
+     * mjesta — u traci na vrhu i u naslovu iznad samog koraka — pa bi ih inače
+     * trebalo prepisati dvaput.
+     */
+    steps: {
+      dates: string;
+      details: string;
+      review: string;
+      /** Šta se u tom koraku traži od gosta — stoji ispod naziva. */
+      datesLead: string;
+      detailsLead: string;
+      reviewLead: string;
+      next: string;
+      back: string;
+      /** Vraća gosta na raniji korak, iz pregleda. */
+      edit: string;
+      /** Za čitače ekrana: "Korak 2 od 3". */
+      counter: (current: number, total: number) => string;
+    };
   };
 
   confirmation: {

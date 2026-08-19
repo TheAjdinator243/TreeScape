@@ -281,14 +281,14 @@ function layout(locale: Locale, title: string, body: string): string {
   const align = dir === 'rtl' ? 'right' : 'left';
 
   return `<!doctype html>
-<html lang="${locale}" dir="${dir}"><body style="margin:0;background:#faf7f1;font-family:system-ui,-apple-system,sans-serif;color:#221d18;text-align:${align}">
+<html lang="${locale}" dir="${dir}"><body style="margin:0;background:#f7f5f0;font-family:system-ui,-apple-system,sans-serif;color:#1a1917;text-align:${align}">
   <div style="max-width:560px;margin:0 auto;padding:32px 24px">
-    <p style="font-size:22px;font-weight:600;color:#1f4436;margin:0 0 24px">${t.site.name}</p>
-    <div style="background:#fff;border:1px solid #e9dcc7;border-radius:16px;padding:28px">
-      <h1 style="font-size:20px;margin:0 0 16px;color:#1f4436">${title}</h1>
+    <p style="font-size:22px;font-weight:600;color:#171714;margin:0 0 24px">${t.site.name}</p>
+    <div style="background:#fff;border:1px solid #e4dfd3;border-radius:16px;padding:28px">
+      <h1 style="font-size:20px;margin:0 0 16px;color:#171714">${title}</h1>
       ${body}
     </div>
-    <p style="font-size:12px;color:#8d8377;margin:24px 0 0;text-align:center">
+    <p style="font-size:12px;color:#8f8b80;margin:24px 0 0;text-align:center">
       ${t.site.name} · ${t.site.tagline}
     </p>
   </div>
@@ -315,7 +315,7 @@ function detailRows(booking: Booking, locale: Locale): string {
 
   const row = (label: string, value: string, mono = false) =>
     `<tr>
-       <td style="padding:8px 0;color:#6b6157;text-align:${start}">${label}</td>
+       <td style="padding:8px 0;color:#6d6a61;text-align:${start}">${label}</td>
        <td style="padding:8px 0;text-align:${end};font-weight:600${mono ? ';font-family:monospace' : ''}">${value}</td>
      </tr>`;
 
@@ -332,7 +332,7 @@ function detailRows(booking: Booking, locale: Locale): string {
 function intro(booking: Booking, locale: Locale, message: string): string {
   const t = getStrings(locale);
 
-  return `<p style="font-size:15px;line-height:1.6;color:#453d35;margin:0 0 20px">
+  return `<p style="font-size:15px;line-height:1.6;color:#3d3b36;margin:0 0 20px">
             ${t.email.greeting(booking.guest_name ?? '')} ${message}
           </p>`;
 }
@@ -351,7 +351,7 @@ function mapsButton(locale: Locale): string {
   const t = getStrings(locale);
 
   return `<p style="margin:24px 0 0">
-            <a href="${GOOGLE_MAPS_URL}" style="display:inline-block;background:#2a5a47;color:#faf7f1;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
+            <a href="${GOOGLE_MAPS_URL}" style="display:inline-block;background:#6e7f52;color:#f7f5f0;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
               ${t.location.openInMaps}
             </a>
           </p>`;
@@ -374,7 +374,7 @@ function reasonBlock(locale: Locale, reason: string | null | undefined): string 
   const t = getStrings(locale);
   const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-  return `<p style="font-size:14px;line-height:1.6;color:#453d35;background:#f4ede0;padding:14px 16px;border-radius:10px;margin:20px 0 0">
+  return `<p style="font-size:14px;line-height:1.6;color:#3d3b36;background:#efece4;padding:14px 16px;border-radius:10px;margin:20px 0 0">
             <strong>${t.email.reasonLabel}:</strong><br>${escaped}
           </p>`;
 }
@@ -412,14 +412,14 @@ function bookingButton(locale: Locale, booking: Booking): string {
   const url = `${env.siteUrl}/rezervacija/${booking.booking_public_link}`;
 
   return `<p style="margin:24px 0 0">
-            <a href="${url}" style="display:inline-block;background:#2a5a47;color:#faf7f1;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
+            <a href="${url}" style="display:inline-block;background:#6e7f52;color:#f7f5f0;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
               ${t.email.openBooking}
             </a>
           </p>`;
 }
 
 function footNote(text: string): string {
-  return `<p style="font-size:14px;line-height:1.6;color:#6b6157;margin:20px 0 0">${text}</p>`;
+  return `<p style="font-size:14px;line-height:1.6;color:#6d6a61;margin:20px 0 0">${text}</p>`;
 }
 
 /**
@@ -572,10 +572,10 @@ export async function sendOwnerGuestCancelled(
       locale,
       t.email.ownerGuestCancelledTitle,
       `${detailRows(booking, locale)}
-       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:16px;border-top:1px solid #e9dcc7">
-         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowGuest}</td><td style="padding:8px 0;text-align:right">${booking.guest_name ?? '—'}</td></tr>
-         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowEmail}</td><td style="padding:8px 0;text-align:right">${booking.guest_email ?? '—'}</td></tr>
-         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowPhone}</td><td style="padding:8px 0;text-align:right">${booking.guest_phone ?? '—'}</td></tr>
+       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:16px;border-top:1px solid #e4dfd3">
+         <tr><td style="padding:8px 0;color:#6d6a61">${t.email.rowGuest}</td><td style="padding:8px 0;text-align:right">${booking.guest_name ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6d6a61">${t.email.rowEmail}</td><td style="padding:8px 0;text-align:right">${booking.guest_email ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6d6a61">${t.email.rowPhone}</td><td style="padding:8px 0;text-align:right">${booking.guest_phone ?? '—'}</td></tr>
        </table>
        ${reasonBlock(locale, reason)}`
     )
@@ -659,11 +659,11 @@ export async function sendOwnerNotification(
     kind === 'card'
       ? ''
       : `<p style="margin:20px 0 0">
-           <a href="${env.siteUrl}/admin" style="display:inline-block;background:#2a5a47;color:#faf7f1;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
+           <a href="${env.siteUrl}/admin" style="display:inline-block;background:#6e7f52;color:#f7f5f0;text-decoration:none;padding:12px 24px;border-radius:999px;font-size:14px;font-weight:600">
              ${t.email.ownerOpenAdmin}
            </a>
          </p>
-         <p style="font-size:13px;color:#b7791f;margin:16px 0 0">${hint}</p>`;
+         <p style="font-size:13px;color:#9a7526;margin:16px 0 0">${hint}</p>`;
 
   const guestLocale = bookingLocale(booking);
   const languageName = getStrings(locale).language.names[guestLocale];
@@ -675,13 +675,13 @@ export async function sendOwnerNotification(
       locale,
       title,
       `${detailRows(booking, locale)}
-       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:16px;border-top:1px solid #e9dcc7">
-         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowGuest}</td><td style="padding:8px 0;text-align:right">${booking.guest_name ?? '—'}</td></tr>
-         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowEmail}</td><td style="padding:8px 0;text-align:right">${booking.guest_email ?? '—'}</td></tr>
-         <tr><td style="padding:8px 0;color:#6b6157">${t.email.rowPhone}</td><td style="padding:8px 0;text-align:right">${booking.guest_phone ?? '—'}</td></tr>
-         <tr><td style="padding:8px 0;color:#6b6157">${t.language.label}</td><td style="padding:8px 0;text-align:right">${languageName}</td></tr>
+       <table style="width:100%;border-collapse:collapse;font-size:14px;margin-top:16px;border-top:1px solid #e4dfd3">
+         <tr><td style="padding:8px 0;color:#6d6a61">${t.email.rowGuest}</td><td style="padding:8px 0;text-align:right">${booking.guest_name ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6d6a61">${t.email.rowEmail}</td><td style="padding:8px 0;text-align:right">${booking.guest_email ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6d6a61">${t.email.rowPhone}</td><td style="padding:8px 0;text-align:right">${booking.guest_phone ?? '—'}</td></tr>
+         <tr><td style="padding:8px 0;color:#6d6a61">${t.language.label}</td><td style="padding:8px 0;text-align:right">${languageName}</td></tr>
        </table>
-       ${booking.note ? `<p style="font-size:14px;color:#453d35;background:#f4ede0;padding:12px 16px;border-radius:10px;margin:16px 0 0"><strong>${t.email.rowNote}:</strong><br>${booking.note}</p>` : ''}
+       ${booking.note ? `<p style="font-size:14px;color:#3d3b36;background:#efece4;padding:12px 16px;border-radius:10px;margin:16px 0 0"><strong>${t.email.rowNote}:</strong><br>${booking.note}</p>` : ''}
        ${action}`
     )
   );

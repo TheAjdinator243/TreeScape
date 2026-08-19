@@ -245,6 +245,18 @@ export const ar: Dictionary = {
     unavailableRange:
       'المدة المختارة تتضمّن أيامًا محجوزة مسبقًا. اختر مدة خالية من التواريخ المحجوزة.',
 
+    steps: {
+      dates: 'التواريخ',
+      details: 'بياناتك',
+      review: 'المراجعة',
+      datesLead: 'اختر أيام إقامتك في التقويم.',
+      detailsLead: 'أخبرنا من سيأتي وكيف تودّ الدفع.',
+      reviewLead: 'راجع كل شيء قبل الإرسال — بعد ذلك لا يتغيّر شيء إلا بالاتفاق مع المضيف.',
+      next: 'التالي',
+      back: 'رجوع',
+      edit: 'تعديل',
+      counter: (current, total) => `الخطوة ${current} من ${total}`,
+    },
   },
 
   confirmation: {

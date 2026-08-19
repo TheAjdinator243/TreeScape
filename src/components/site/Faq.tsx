@@ -22,28 +22,28 @@ export async function Faq({ settings }: { settings: Settings }) {
   });
 
   return (
-    <section id="pitanja" className="bg-sand-100">
+    <section id="pitanja" className="bg-cream-100">
       <div className="section">
         <div className="grid gap-14 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <SectionHead index={6} label={t.nav.faq} title={t.faq.heading} lead={t.faq.lead} />
           </div>
 
-          <div className="border-t border-sand-300">
+          <div className="border-t border-cream-300">
             {items.map((item, i) => (
               <Reveal key={item.q} delay={Math.min(i, 5) * 60}>
-                <details className="qa group border-b border-sand-300">
+                <details className="qa group border-b border-cream-300">
                   <summary className="flex cursor-pointer list-none items-baseline gap-5 py-6 text-start transition-colors [&::-webkit-details-marker]:hidden">
                     <span className="shrink-0 text-xs text-ink-400 tabular-nums">
                       {String(i + 1).padStart(2, '0')}
                     </span>
 
-                    <span className="flex-1 font-display text-xl leading-snug text-forest-900 transition-colors group-hover:text-forest-600 md:text-2xl">
+                    <span className="flex-1 font-display text-xl leading-snug text-coal-900 transition-colors group-hover:text-olive-600 md:text-2xl">
                       {item.q}
                     </span>
 
                     <span
-                      className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-sand-300 text-forest-700 transition-[transform,background-color,border-color] duration-500 ease-[var(--ease-out-expo)] group-hover:border-forest-600/40 group-open:rotate-45 group-open:border-forest-700 group-open:bg-forest-700 group-open:text-sand-50"
+                      className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-cream-300 text-coal-900 transition-[transform,background-color,border-color] duration-500 ease-[var(--ease-out-expo)] group-hover:border-olive-600/40 group-open:rotate-45 group-open:border-coal-900 group-open:bg-coal-900 group-open:text-cream-50"
                       aria-hidden="true"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">

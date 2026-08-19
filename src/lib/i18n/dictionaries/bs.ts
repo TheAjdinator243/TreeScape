@@ -242,6 +242,18 @@ export const bs: Dictionary = {
     unavailableRange:
       'U odabranom rasponu ima već rezervisanih dana. Odaberite termin bez zauzetih datuma.',
 
+    steps: {
+      dates: 'Datumi',
+      details: 'Vaši podaci',
+      review: 'Pregled',
+      datesLead: 'Odaberite dane boravka u kalendaru.',
+      detailsLead: 'Recite nam ko dolazi i kako želite platiti.',
+      reviewLead: 'Provjerite sve prije nego pošaljete — poslije se mijenja samo dogovorom.',
+      next: 'Dalje',
+      back: 'Nazad',
+      edit: 'Izmijeni',
+      counter: (current, total) => `Korak ${current} od ${total}`,
+    },
   },
 
   confirmation: {

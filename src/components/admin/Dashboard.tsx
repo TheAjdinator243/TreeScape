@@ -135,7 +135,7 @@ function Contact({
           {phone}
         </a>
       )}
-      {phone && email && <span className="text-ink-300"> · </span>}
+      {phone && email && <span className="text-ink-400"> · </span>}
       {email && (
         <a href={`mailto:${email}`} className="break-all underline underline-offset-2">
           {email}
@@ -291,11 +291,11 @@ export function Dashboard({
   ];
 
   return (
-    <main className="min-h-dvh bg-sand-50">
-      <header className="border-b border-sand-200 bg-white">
+    <main className="min-h-dvh bg-cream-50">
+      <header className="border-b border-cream-200 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 sm:px-8">
           <div>
-            <p className="font-display text-lg text-forest-900">{t.site.name}</p>
+            <p className="font-display text-lg text-coal-900">{t.site.name}</p>
             <p className="text-xs text-ink-400">{t.admin.title}</p>
           </div>
           <button
@@ -315,13 +315,13 @@ export function Dashboard({
               onClick={() => setTab(item.id)}
               className={`-mb-px shrink-0 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${
                 tab === item.id
-                  ? 'border-forest-700 text-forest-800'
+                  ? 'border-olive-600 text-coal-900'
                   : 'border-transparent text-ink-500 hover:text-ink-900'
               }`}
             >
               {item.label}
               {item.badge ? (
-                <span className="ms-2 rounded-full bg-ember-500 px-2 py-0.5 text-xs font-semibold text-white">
+                <span className="ms-2 rounded-full bg-olive-600 px-2 py-0.5 text-xs font-semibold text-white">
                   {item.badge}
                 </span>
               ) : null}
@@ -377,7 +377,7 @@ export function Dashboard({
                       <li key={booking.id} className="card p-5">
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="min-w-0">
-                            <p className="font-display text-lg text-forest-900">
+                            <p className="font-display text-lg text-coal-900">
                               {formatRange(booking.start_date, booking.end_date, locale)}
                             </p>
                             <p className="mt-1 text-sm text-ink-700">
@@ -396,21 +396,21 @@ export function Dashboard({
                               <Reference token={booking.booking_public_link} />
                             </p>
                             {booking.note && (
-                              <p className="mt-3 rounded-lg bg-sand-100 px-3 py-2 text-sm text-ink-700">
+                              <p className="mt-3 rounded-lg bg-cream-100 px-3 py-2 text-sm text-ink-700">
                                 {booking.note}
                               </p>
                             )}
                           </div>
 
                           <div className="text-end">
-                            <p className="font-display text-2xl text-forest-800">
+                            <p className="font-display text-2xl text-olive-700">
                               {formatMoney(booking.total_cents, settings.currency_symbol, locale)}
                             </p>
                             <p className="text-xs text-ink-400">{t.admin.byCash}</p>
                           </div>
                         </div>
 
-                        <div className="mt-5 flex gap-3 border-t border-sand-200 pt-4">
+                        <div className="mt-5 flex gap-3 border-t border-cream-200 pt-4">
                           <button
                             type="button"
                             onClick={() => void decide(booking.id, 'approve')}
@@ -481,7 +481,7 @@ export function Dashboard({
                           className="text-sm"
                         />
 
-                        <div className="mt-3 flex items-center justify-between border-t border-sand-200 pt-3 text-sm">
+                        <div className="mt-3 flex items-center justify-between border-t border-cream-200 pt-3 text-sm">
                           <span className="text-ink-500">
                             {t.admin.methodLabels[booking.payment_method]}
                           </span>
@@ -511,7 +511,7 @@ export function Dashboard({
                     }
                   >
                     <table className="w-full min-w-[720px] text-start text-sm">
-                      <thead className="border-b border-sand-200 text-xs uppercase tracking-wider text-ink-400">
+                      <thead className="border-b border-cream-200 text-xs uppercase tracking-wider text-ink-400">
                         <tr>
                           <th className="px-5 py-3 font-medium">{t.admin.colStay}</th>
                           <th className="px-5 py-3 font-medium">{t.admin.colGuest}</th>
@@ -521,7 +521,7 @@ export function Dashboard({
                           <th className="px-5 py-3" />
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-sand-200">
+                      <tbody className="divide-y divide-cream-200">
                         {vidljive.map((booking) => (
                           <tr key={booking.id}>
                             <td className="px-5 py-3.5 text-ink-900">
@@ -665,7 +665,7 @@ function BlockTab({
         </div>
       </form>
 
-      <h3 className="mt-10 font-display text-lg text-forest-900">{t.admin.blockedHeading}</h3>
+      <h3 className="mt-10 font-display text-lg text-coal-900">{t.admin.blockedHeading}</h3>
       {blocked.length === 0 ? (
         <Empty>{t.admin.blockedEmpty}</Empty>
       ) : (
@@ -708,7 +708,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
-        tone[status] ?? 'bg-sand-200 text-ink-700'
+        tone[status] ?? 'bg-cream-200 text-ink-700'
       }`}
     >
       {t.admin.statusLabels[status] ?? status}
@@ -719,7 +719,7 @@ function StatusBadge({ status }: { status: string }) {
 function Section({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="mb-6 font-display text-2xl text-forest-900">{heading}</h2>
+      <h2 className="mb-6 font-display text-2xl text-coal-900">{heading}</h2>
       {children}
     </section>
   );
@@ -727,7 +727,7 @@ function Section({ heading, children }: { heading: string; children: React.React
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <p className="rounded-2xl border border-dashed border-sand-300 px-6 py-12 text-center text-sm text-ink-400">
+    <p className="rounded-2xl border border-dashed border-cream-300 px-6 py-12 text-center text-sm text-ink-400">
       {children}
     </p>
   );

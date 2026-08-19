@@ -9,7 +9,7 @@ import { GALLERY } from '@/lib/gallery';
 /**
  * Uvećana slika preko cijelog ekrana.
  *
- * Stoji zasebno jer je dijele oba izgleda sajta. Sam prikaz je ionako crn i
+ * Stoji zasebno od galerije. Sam prikaz je ionako crn i
  * bez ukrasa u obje verzije — ono što se razlikuje je mreža sličica ispod, a
  * ne način na koji se slika gleda. Da je prepisan dvaput, ispravka u tastaturi
  * ili u prevlačenju prstom popravila bi samo jednu verziju.
@@ -60,7 +60,7 @@ export function Lightbox({
       role="dialog"
       aria-modal="true"
       aria-label={t.gallery.heading}
-      className="fixed inset-0 z-[70] flex flex-col bg-bark-950/95 backdrop-blur-sm"
+      className="fixed inset-0 z-[70] flex flex-col bg-coal-950/95 backdrop-blur-sm"
       onClick={onClose}
       onTouchStart={(e) => {
         touchStartX.current = e.touches[0]?.clientX ?? null;
@@ -77,7 +77,7 @@ export function Lightbox({
         touchStartX.current = null;
       }}
     >
-      <div className="flex items-center justify-between px-5 py-4 text-sand-200">
+      <div className="flex items-center justify-between px-5 py-4 text-cream-200">
         <span className="text-sm tabular-nums">{t.gallery.counter(index + 1, GALLERY.length)}</span>
         <button
           ref={closeRef}
@@ -119,7 +119,7 @@ export function Lightbox({
         <LightboxArrow side="end" onClick={onNext} label={t.gallery.next} />
       </div>
 
-      <p className="px-5 pb-6 text-center text-sm text-sand-200">{t.gallery.itemCaption(item.n)}</p>
+      <p className="px-5 pb-6 text-center text-sm text-cream-200">{t.gallery.itemCaption(item.n)}</p>
 
     </div>
   );

@@ -1,7 +1,7 @@
 /**
  * Ikone sadržaja — ručno pisani SVG-ovi umjesto biblioteke.
  *
- * Stoje zasebno jer ih koriste oba izgleda sajta. Crtaju se `currentColor`-om
+ * Stoje zasebno od spiska sadržaja. Crtaju se `currentColor`-om
  * i bez ispune, pa se boje same po tekstu oko sebe — ista datoteka radi i na
  * tamnoj i na svijetloj podlozi.
  */

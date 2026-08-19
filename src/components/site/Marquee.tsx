@@ -25,7 +25,7 @@ export async function Marquee() {
 
   return (
     <div
-      className="marquee grain relative border-y border-sand-200 bg-sand-100 py-5"
+      className="marquee grain relative border-y border-cream-200 bg-cream-100 py-5"
       // Traka se sama vrti i ništa ne saopštava što već ne piše u spisku ispod,
       // pa je za čitač ekrana samo šum.
       aria-hidden="true"
@@ -35,10 +35,10 @@ export async function Marquee() {
           <div key={copy} className="flex shrink-0 items-center">
             {words.map((word) => (
               <span key={word} className="flex items-center">
-                <span className="whitespace-nowrap px-8 font-display text-xl text-forest-800 md:text-2xl">
+                <span className="whitespace-nowrap px-8 font-display text-xl text-coal-900 md:text-2xl">
                   {word}
                 </span>
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-ember-500/70" />
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-olive-600/70" />
               </span>
             ))}
           </div>

@@ -19,7 +19,7 @@ import { operatorNijePopunjen } from '@/lib/legal';
 export function LegalPage({ doc, backLabel }: { doc: LegalDoc; backLabel: string }) {
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-16 sm:px-8 sm:py-24">
-      <h1 className="font-display text-3xl leading-tight text-forest-900 sm:text-4xl">
+      <h1 className="font-display text-3xl leading-tight text-coal-900 sm:text-4xl">
         {doc.title}
       </h1>
 
@@ -38,7 +38,7 @@ export function LegalPage({ doc, backLabel }: { doc: LegalDoc; backLabel: string
       <div className="mt-12 space-y-10">
         {doc.sections.map((section) => (
           <section key={section.heading}>
-            <h2 className="font-display text-xl text-forest-900">{section.heading}</h2>
+            <h2 className="font-display text-xl text-coal-900">{section.heading}</h2>
             {section.body.map((paragraph) => (
               <p key={paragraph.slice(0, 40)} className="mt-3 leading-relaxed text-ink-700">
                 {paragraph}

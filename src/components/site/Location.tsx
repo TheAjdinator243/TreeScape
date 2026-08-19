@@ -23,14 +23,14 @@ export async function Location() {
               Vremena vožnje kao spisak s vlas-crtama, a ne kao kartice: ovo su
               tri broja, a tri kartice bi im dale težinu koju nemaju.
             */}
-            <dl className="mt-12 border-t border-sand-200">
+            <dl className="mt-12 border-t border-cream-200">
               {TRAVEL.map((row) => (
                 <div
                   key={row.key}
-                  className="flex items-baseline justify-between gap-6 border-b border-sand-200 py-5"
+                  className="flex items-baseline justify-between gap-6 border-b border-cream-200 py-5"
                 >
                   <dt className="text-base text-ink-700">{t.location.places[row.key]}</dt>
-                  <dd className="font-display text-lg text-forest-700 tabular-nums">
+                  <dd className="font-display text-lg text-olive-700 tabular-nums">
                     {t.location.driveTime(row.minutes)}
                   </dd>
                 </div>
@@ -54,7 +54,7 @@ export async function Location() {
         </div>
 
         <Reveal variant="mask" delay={100}>
-          <div className="h-[420px] overflow-hidden rounded-frame border border-sand-200 shadow-soft lg:h-full lg:min-h-[520px]">
+          <div className="h-[420px] overflow-hidden rounded-frame border border-cream-200 shadow-soft lg:h-full lg:min-h-[520px]">
             <iframe
               title={t.location.mapTitle}
               src={MAP_SRC}

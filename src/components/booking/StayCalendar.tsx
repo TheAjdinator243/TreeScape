@@ -76,23 +76,23 @@ export function StayCalendar({
       />
 
       {/*
-        `stay-legend` i `data-tone` nisu ukras nego rukohvat: druga koža je
-        taman, pa ove tri boje tamo moraju biti druge. Preko imena i oznake se
-        prebojaju iz CSS-a (vidi globals.css), bez ijedne nove zastavice u
-        komponenti koju oba izgleda dijele.
+        `stay-legend` i `data-tone` nisu ukras nego rukohvat: tri boje u
+        legendi moraju odgovarati bojama u samom kalendaru, a te se biraju u
+        `globals.css`. Preko imena i oznake se prebojaju odande, bez ijedne
+        nove zastavice u komponenti.
       */}
       <ul className="stay-legend mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ink-500">
         <Legend
           tone="free"
-          className="border border-sand-300 bg-white"
+          className="border border-cream-300 bg-white"
           label={t.booking.legendFree}
         />
         <Legend
           tone="taken"
-          className="bg-sand-200 line-through"
+          className="bg-cream-200 line-through"
           label={t.booking.legendTaken}
         />
-        <Legend tone="selected" className="bg-forest-700" label={t.booking.legendSelected} />
+        <Legend tone="selected" className="bg-olive-600" label={t.booking.legendSelected} />
       </ul>
     </div>
   );

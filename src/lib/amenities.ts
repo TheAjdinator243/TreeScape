@@ -1,7 +1,7 @@
 import type { AmenityKey } from './i18n';
 
 /**
- * Redoslijed sadržaja kuće — isti u oba izgleda sajta.
+ * Redoslijed sadržaja kuće.
  *
  * Ovdje stoji SAMO redoslijed. Nazivi i opisi žive u rječnicima, pod
  * `amenities.items`, vezani za isti ključ — jer ih treba na sva tri jezika.

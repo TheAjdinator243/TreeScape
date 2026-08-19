@@ -65,10 +65,10 @@ export function AdminGate({
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-forest-900 px-5">
+    <main className="flex min-h-dvh items-center justify-center bg-coal-900 px-5">
       <div className="w-full max-w-sm">
-        <h1 className="font-display text-2xl text-sand-50">{t.admin.gateTitle}</h1>
-        <p className="mt-2 text-sm text-moss-300/80">{t.admin.gateLead}</p>
+        <h1 className="font-display text-2xl text-cream-50">{t.admin.gateTitle}</h1>
+        <p className="mt-2 text-sm text-taupe-300/80">{t.admin.gateLead}</p>
 
         {!configured ? (
           <p className="mt-6 rounded-xl border border-warn-600/30 bg-warn-600/10 px-4 py-3 text-sm leading-relaxed text-warn-600">
@@ -88,7 +88,7 @@ export function AdminGate({
               autoFocus
               disabled={busy}
               placeholder="••••••••••••"
-              className="w-full rounded-xl border border-forest-700 bg-forest-800 px-4 py-3 text-center font-mono tracking-widest text-sand-50 placeholder:text-forest-600 focus:border-moss-400 focus:outline-none focus:ring-2 focus:ring-moss-400/30"
+              className="w-full rounded-xl border border-coal-700 bg-coal-800 px-4 py-3 text-center font-mono tracking-widest text-cream-50 placeholder:text-taupe-500 focus:border-olive-400 focus:outline-none focus:ring-2 focus:ring-olive-400/30"
             />
 
             {twoFactor && (
@@ -111,16 +111,16 @@ export function AdminGate({
                   disabled={busy}
                   placeholder="000000"
                   dir="ltr"
-                  className="w-full rounded-xl border border-forest-700 bg-forest-800 px-4 py-3 text-center font-mono text-lg tracking-[0.4em] text-sand-50 placeholder:text-forest-600 focus:border-moss-400 focus:outline-none focus:ring-2 focus:ring-moss-400/30"
+                  className="w-full rounded-xl border border-coal-700 bg-coal-800 px-4 py-3 text-center font-mono text-lg tracking-[0.4em] text-cream-50 placeholder:text-taupe-500 focus:border-olive-400 focus:outline-none focus:ring-2 focus:ring-olive-400/30"
                 />
-                <p className="mt-2 text-center text-xs text-moss-300/70">
+                <p className="mt-2 text-center text-xs text-taupe-300/70">
                   {t.admin.gateTotpHint}
                 </p>
               </div>
             )}
 
             {error && (
-              <p role="alert" className="mt-3 text-center text-sm text-ember-400">
+              <p role="alert" className="mt-3 text-center text-sm text-olive-500">
                 {error}
               </p>
             )}
@@ -128,7 +128,7 @@ export function AdminGate({
             <button
               type="submit"
               disabled={busy || code.length === 0 || (twoFactor && totp.replace(/\D/g, '').length !== 6)}
-              className="btn mt-4 w-full bg-moss-400 text-forest-900 hover:bg-moss-300"
+              className="btn mt-4 w-full bg-olive-400 text-coal-900 hover:bg-taupe-300"
             >
               {busy ? t.common.loading : t.admin.gateSubmit}
             </button>

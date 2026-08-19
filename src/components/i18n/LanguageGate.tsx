@@ -94,9 +94,9 @@ export function LanguageGate({ suggested }: { suggested: Locale }) {
       role="dialog"
       aria-modal="true"
       aria-label={copy.gateAria}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-forest-900 px-5 py-12"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-coal-900 px-5 py-12"
     >
-      <p className="font-display text-3xl text-sand-50 sm:text-4xl">TreeScape</p>
+      <p className="font-display text-3xl text-cream-50 sm:text-4xl">TreeScape</p>
 
       {/* Naslov se smjenjuje, pa ga čitač ekrana ne prati — on već ima
           `aria-label` na dijalogu, koji miruje. */}
@@ -106,8 +106,8 @@ export function LanguageGate({ suggested }: { suggested: Locale }) {
         aria-hidden="true"
         className="animate-fade-rise mt-10 text-center"
       >
-        <h1 className="font-display text-2xl text-sand-50 sm:text-3xl">{copy.gateTitle}</h1>
-        <p className="mt-3 text-sm text-moss-300/90 sm:text-base">{copy.gateLead}</p>
+        <h1 className="font-display text-2xl text-cream-50 sm:text-3xl">{copy.gateTitle}</h1>
+        <p className="mt-3 text-sm text-taupe-300/90 sm:text-base">{copy.gateLead}</p>
       </div>
 
       <ul className="mt-10 flex w-full max-w-xs flex-col gap-3">
@@ -119,7 +119,7 @@ export function LanguageGate({ suggested }: { suggested: Locale }) {
               lang={locale}
               dir={directionOf(locale)}
               onClick={() => setPicked(locale)}
-              className="w-full rounded-2xl border border-forest-700 bg-forest-800 px-6 py-4 text-lg font-medium text-sand-50 transition-colors hover:border-moss-400 hover:bg-forest-700 focus-visible:border-moss-400"
+              className="w-full rounded-2xl border border-coal-700 bg-coal-800 px-6 py-4 text-lg font-medium text-cream-50 transition-colors hover:border-olive-400 hover:bg-coal-700 focus-visible:border-olive-400"
             >
               {getStrings(locale).language.names[locale]}
             </button>
@@ -133,7 +133,7 @@ export function LanguageGate({ suggested }: { suggested: Locale }) {
           <li
             key={locale}
             className={`h-1.5 rounded-full transition-all duration-500 ${
-              i === active ? 'w-6 bg-moss-400' : 'w-1.5 bg-forest-700'
+              i === active ? 'w-6 bg-olive-400' : 'w-1.5 bg-coal-700'
             }`}
           />
         ))}

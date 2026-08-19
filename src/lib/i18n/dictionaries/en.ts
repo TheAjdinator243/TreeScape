@@ -243,6 +243,18 @@ export const en: Dictionary = {
     unavailableRange:
       'The selected range contains dates that are already booked. Please pick a range without them.',
 
+    steps: {
+      dates: 'Dates',
+      details: 'Your details',
+      review: 'Review',
+      datesLead: 'Pick the days of your stay in the calendar.',
+      detailsLead: 'Tell us who is coming and how you would like to pay.',
+      reviewLead: 'Check everything before you send it — after that, changes need a word with the host.',
+      next: 'Next',
+      back: 'Back',
+      edit: 'Edit',
+      counter: (current, total) => `Step ${current} of ${total}`,
+    },
   },
 
   confirmation: {

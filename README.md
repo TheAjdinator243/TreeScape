@@ -209,6 +209,18 @@ Sajt je uređen kao stranica u časopisu, a ne kao red kartica: svaki odjeljak
 počinje rednim brojem i crtom koja se izvuče, naslovi su krupni i pisani
 serifom, a razdvaja ih vlas-crta umjesto okvira.
 
+**Paleta je ugalj, krema i maslinasta**, i namjerno je skoro bez boje. Tamne
+plohe su ugalj, pozadina krema, a maslinasta je JEDINA boja na cijelom sajtu —
+pa gdje god se pojavi, tu je nešto na šta gost treba obratiti pažnju: cijena,
+odabrani datum, dugme kojim se rezerviše. Sve boje stoje na jednom mjestu, u
+`@theme` bloku na vrhu `src/app/globals.css`; mijenja se tamo i nigdje drugdje.
+(Izuzetak su mailovi i ikona sajta — mail klijenti ne poznaju CSS promjenljive,
+pa su boje tamo upisane rukom u `src/lib/email.ts` i `src/app/icon.svg`.)
+
+Kontrast je provjeren brojkama, ne na oko: slova na kremi drže najmanje 4.4:1,
+a maslinasta 5.0:1 — i kao slovo na kremi i kao ploha ispod nje, jer radi oba
+posla.
+
 Sve što se kreće kreće se uz skrol, i sve je pisano ovdje — **nema nijedne
 animacijske biblioteke**, ni jednog kilobajta preuzetog zbog pokreta.
 
@@ -221,6 +233,7 @@ animacijske biblioteke**, ni jednog kilobajta preuzetog zbog pokreta.
 | Brojevi koji se odbroje ("8 gostiju") | `motion/Counter.tsx` |
 | Traka napretka i oznaka odjeljka u meniju | `site/Nav.tsx` + `.nav-*` |
 | Zaglavlje odjeljka (broj, crta, naslov) | `site/SectionHead.tsx` + `.head-*` |
+| Koraci u rezervaciji i traka napretka | `booking/BookingSection.tsx` + `.rail-*` |
 | Traka s imenima sadržaja koja klizi | `site/Marquee.tsx` + `.marquee-*` |
 | Navigacija koja pluta, od stakla | `site/Nav.tsx` + `.nav-pill`, `.glass-*` |
 | Zrno preko tamnih ploha | `.grain` u globals.css |
@@ -241,6 +254,22 @@ dobija cijeli sadržaj bez ijednog pomjeranja — CSS blok na dnu `globals.css`
 gasi prijelaze, a `calmMotion()` u `ticker.ts` gasi ono što ide kroz
 JavaScript. Ko je isključio JavaScript, dobija sve odmah, jer `<noscript>` stil
 u `layout.tsx` vrati sadržaj koji čeka na pojavljivanje.
+
+### Rezervacija u tri koraka
+
+Rezervacija se popunjava kao razgovor, a ne kao formular: **datumi → vaši podaci
+→ pregled**. U svakom trenutku se traži jedna stvar, a cijena se pojavi čim su
+datumi odabrani i ostaje vidljiva do kraja.
+
+Naprijed se ne može preskočiti — iz datuma se izlazi tek kad je termin stvarno
+slobodan, a iz podataka tek kad su popunjeni. Nazad se može uvijek, i klikom na
+već pređeni korak u traci. Zadnji korak pokaže sve unešeno, s dugmetom
+„Izmijeni" uz svaku grupu.
+
+Provjere pritom **nisu prepisane u komponentu**: i traka, i dugme „Dalje", i
+samo slanje pitaju istu funkciju (`guestDetailsError` u
+`booking/useStayForm.ts`). Zato korak ne može pustiti dalje nešto što bi server
+odbio.
 
 ---
 

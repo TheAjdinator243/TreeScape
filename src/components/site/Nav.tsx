@@ -113,7 +113,7 @@ export function Nav() {
     <>
       <a
         href="#rezervacija"
-        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-forest-800 focus:px-5 focus:py-3 focus:text-sm focus:text-sand-50"
+        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-coal-900 focus:px-5 focus:py-3 focus:text-sm focus:text-cream-50"
       >
         {t.nav.skipToBooking}
       </a>
@@ -131,7 +131,7 @@ export function Nav() {
           <a
             href="#vrh"
             className={`font-display text-lg tracking-tight transition-colors duration-500 ${
-              solid ? 'text-forest-900' : 'text-white'
+              solid ? 'text-coal-900' : 'text-white'
             }`}
           >
             {t.site.name}
@@ -144,7 +144,7 @@ export function Nav() {
                   href={link.href}
                   data-active={active === link.id}
                   className={`nav-link text-[0.8125rem] font-medium tracking-wide transition-colors duration-500 ${
-                    solid ? 'text-ink-700 hover:text-forest-800' : 'text-white/85 hover:text-white'
+                    solid ? 'text-ink-700 hover:text-coal-900' : 'text-white/85 hover:text-white'
                   }`}
                 >
                   {t.nav[link.key]}
@@ -171,7 +171,7 @@ export function Nav() {
               type="button"
               onClick={() => setOpen((v) => !v)}
               className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors md:hidden ${
-                solid ? 'text-forest-900 hover:bg-sand-200' : 'text-white hover:bg-white/15'
+                solid ? 'text-coal-900 hover:bg-cream-200' : 'text-white hover:bg-white/15'
               }`}
               aria-expanded={open}
               aria-controls="mobilni-meni"
@@ -196,11 +196,11 @@ export function Nav() {
       >
         <ul className="flex flex-col">
           {LINKS.map((link, i) => (
-            <li key={link.href} className="border-b border-sand-200/70">
+            <li key={link.href} className="border-b border-cream-200/70">
               <a
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="animate-menu-item flex items-baseline gap-4 py-4 font-display text-3xl text-forest-900"
+                className="animate-menu-item flex items-baseline gap-4 py-4 font-display text-3xl text-coal-900"
                 style={{ animationDelay: `${i * 55}ms` }}
               >
                 <span className="text-xs text-ink-400 tabular-nums">

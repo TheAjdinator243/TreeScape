@@ -33,7 +33,7 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }
   }
 
   const styles = {
-    light: 'rounded-full border-sand-300 bg-white text-ink-700 hover:border-forest-600',
+    light: 'rounded-full border-cream-300 bg-white text-ink-700 hover:border-olive-600',
     dark: 'rounded-full border-white/30 bg-white/10 text-white hover:bg-white/20',
   }[tone];
 
@@ -47,7 +47,7 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }
         value={locale}
         disabled={pending}
         onChange={(e) => choose(e.target.value)}
-        className={`cursor-pointer appearance-none border py-1.5 pe-7 ps-8 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-forest-600/30 disabled:opacity-60 ${styles}`}
+        className={`cursor-pointer appearance-none border py-1.5 pe-7 ps-8 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-olive-600/30 disabled:opacity-60 ${styles}`}
       >
         {LOCALES.map((option) => (
           // Nazivi jezika su uvijek na svom jeziku — "العربية", a ne "arapski".

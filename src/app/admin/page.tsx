@@ -37,7 +37,7 @@ export default async function AdminPage() {
   if (!isDatabaseConfigured) {
     return (
       <main className="mx-auto max-w-2xl px-5 py-24">
-        <h1 className="font-display text-3xl text-forest-900">{t.admin.title}</h1>
+        <h1 className="font-display text-3xl text-coal-900">{t.admin.title}</h1>
         <p className="mt-4 rounded-xl border border-warn-600/25 bg-warn-600/5 px-5 py-4 text-sm leading-relaxed text-warn-600">
           {t.admin.databaseNotConfigured}
         </p>

@@ -59,11 +59,11 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ t
           Nakon odluke nema šta više da se mijenja, pa se ni ne sluša. */}
       {isPending && <LiveStatus bookingId={booking.id} token={token} status={booking.status} />}
 
-      <main className="flex min-h-dvh flex-col items-center justify-center bg-sand-100 px-5 py-16">
+      <main className="flex min-h-dvh flex-col items-center justify-center bg-cream-100 px-5 py-16">
         <div className="card w-full max-w-lg p-8 sm:p-10">
           <Link
             href="/"
-            className="font-display text-lg font-semibold text-forest-800 hover:text-forest-600"
+            className="font-display text-lg font-semibold text-coal-900 hover:text-olive-600"
           >
             {t.site.name}
           </Link>
@@ -83,7 +83,7 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ t
             )}
           </div>
 
-          <h1 className="mt-6 font-display text-3xl leading-tight text-forest-900">
+          <h1 className="mt-6 font-display text-3xl leading-tight text-coal-900">
             {isDead
               ? t.confirmation.inactiveTitle
               : isConfirmed
@@ -109,11 +109,11 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ t
             </>
           )}
 
-          <dl className="mt-8 space-y-4 border-t border-sand-200 pt-8 text-sm">
+          <dl className="mt-8 space-y-4 border-t border-cream-200 pt-8 text-sm">
             <Row label={t.confirmation.reference}>
               {/* Broj rezervacije je latinični niz — čita se slijeva nadesno
                   i na arapskoj stranici. */}
-              <span dir="ltr" className="font-mono text-base tracking-wider text-forest-800">
+              <span dir="ltr" className="font-mono text-base tracking-wider text-coal-900">
                 {bookingReference(booking.booking_public_link)}
               </span>
             </Row>
@@ -129,9 +129,9 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ t
             <Row label={t.booking.checkOut}>{formatLong(booking.end_date, locale)}</Row>
             <Row label={t.confirmation.guestsLabel}>{booking.guests ?? '—'}</Row>
 
-            <div className="flex items-baseline justify-between gap-4 border-t border-sand-200 pt-4">
+            <div className="flex items-baseline justify-between gap-4 border-t border-cream-200 pt-4">
               <dt className="font-medium text-ink-900">{t.confirmation.totalLabel}</dt>
-              <dd className="font-display text-2xl text-forest-800">
+              <dd className="font-display text-2xl text-olive-700">
                 {formatMoney(booking.total_cents, symbol, locale)}
               </dd>
             </div>
@@ -148,8 +148,8 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ t
           )}
 
           {!isDead && (
-            <div className="mt-8 rounded-xl bg-sand-100 px-5 py-4">
-              <h2 className="font-sans text-sm font-semibold text-forest-900">
+            <div className="mt-8 rounded-xl bg-cream-100 px-5 py-4">
+              <h2 className="font-sans text-sm font-semibold text-coal-900">
                 {t.confirmation.whatNext}
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-ink-500">

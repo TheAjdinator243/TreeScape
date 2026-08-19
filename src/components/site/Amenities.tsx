@@ -20,7 +20,7 @@ export async function Amenities() {
   const { t } = await getServerStrings();
 
   return (
-    <section id="sadrzaji" className="grain relative bg-forest-900">
+    <section id="sadrzaji" className="grain relative bg-coal-900">
       <div className="section relative z-[2]">
         <SectionHead
           index={3}
@@ -48,10 +48,10 @@ export async function Amenities() {
                 </span>
 
                 <span className="min-w-0">
-                  <span className="block font-sans text-[0.95rem] font-semibold text-sand-50">
+                  <span className="block font-sans text-[0.95rem] font-semibold text-cream-50">
                     {t.amenities.items[key].label}
                   </span>
-                  <span className="mt-1 block text-sm leading-relaxed text-moss-300/75">
+                  <span className="mt-1 block text-sm leading-relaxed text-taupe-300/75">
                     {t.amenities.items[key].note}
                   </span>
                 </span>

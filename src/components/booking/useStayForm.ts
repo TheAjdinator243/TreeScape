@@ -15,10 +15,10 @@ import { useAvailability } from './useAvailability';
 /**
  * Cijela pamet rezervacije na jednom mjestu — bez ijednog piksela izgleda.
  *
- * Sajt ima dva izgleda (osnovni i `pro`), a rezervacija u oba mora raditi
- * ISTO. Da je forma prepisana dvaput, prva razlika bi se pojavila tiho: neko
- * bi popravio provjeru na jednoj strani, druga bi ostala kakva je bila, i tek
- * bi gost otkrio da jedna verzija prima ono što druga odbija.
+ * Ista pravila vrijede na tri mjesta: u formi na sajtu, na stranici s potvrdom
+ * i na serveru koji rezervaciju upisuje. Da su prepisana, prva ispravka bi
+ * zahvatila samo jedno od njih — i tek bi gost otkrio da forma prima ono što
+ * server odbija.
  *
  * Zato ovdje stoje stanje, računanje cijene i provjere, a komponente odlučuju
  * samo kako to izgleda.
@@ -64,11 +64,10 @@ export interface StayForm {
 /**
  * Šta fali u podacima gosta — ime, mail, telefon, način plaćanja.
  *
- * Izdvojeno iz `formError` jer treba na DVA mjesta: ovdje, pri slanju, i u
- * "plus" izgledu, gdje se forma popunjava u koracima pa se mora znati smije
- * li se s podataka preći na potvrdu. Da su pravila prepisana na oba mjesta,
- * prva ispravka bi se desila samo na jednom — a to je tačno ono što ovaj
- * fajl inače sprečava.
+ * Izdvojeno iz `formError` jer treba na DVA mjesta: ovdje, pri samom slanju, i
+ * u koraku "Vaši podaci", gdje se mora znati smije li se uopće preći na
+ * pregled. Da su pravila prepisana na oba mjesta, prva ispravka bi se desila
+ * samo na jednom — a to je tačno ono što ovaj fajl inače sprečava.
  *
  * Redoslijed provjera je i redoslijed polja u formi, pa gost uvijek dobije
  * prigovor na prvo polje koje treba popraviti, a ne na neko pri dnu.
@@ -88,11 +87,8 @@ export function guestDetailsError(
  * Pravilo po polju — jedno po jedno.
  *
  * `guestDetailsError` javlja SAMO prvu grešku, jer je to sve što treba onome
- * ko šalje formu. Ali "plus" izgled pali kvačicu na svakom polju čim ono
- * postane ispravno, dok se još kuca, pa mu treba odgovor za svako posebno.
- *
- * Zato su pravila ovdje, a `guestDetailsError` ih zove — inače bi ista
- * provjera postojala na dva mjesta i prvi ispravak bi zahvatio samo jedno.
+ * ko šalje formu. Pojedinačna pravila stoje izdvojeno da se svako polje može
+ * provjeriti i zasebno, bez prolaska kroz cijeli spisak.
  */
 export const isName = (value: string): boolean => value.trim().length >= 2;
 export const isEmail = (value: string): boolean => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.trim());
@@ -238,12 +234,12 @@ export function useStayForm(context: BookingContext): StayForm {
 }
 
 /**
- * Skrol do pregleda BEZ diranja adrese.
+ * Skrol do kartice s rezervacijom, BEZ diranja adrese.
  *
  * Ranije je ovo bio `<a href="#pregled">`, pa je nakon klika u adresi ostajao
  * `#pregled`. Preglednik onda pri svakom sljedećem otvaranju ili osvježavanju
- * skoči pravo na pregled umjesto na vrh stranice — a to je gost primijetio.
+ * skoči pravo tamo umjesto na vrh stranice — a to je gost primijetio.
  */
-export function scrollToSummary(): void {
-  document.getElementById('pregled')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+export function scrollToCard(): void {
+  document.getElementById('rezervacija')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }

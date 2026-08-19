@@ -114,7 +114,7 @@ export function PricingTab({
     <div className="space-y-14">
       {/* ── Osnovne cijene ── */}
       <section>
-        <h2 className="font-display text-2xl text-forest-900">{t.admin.pricingHeading}</h2>
+        <h2 className="font-display text-2xl text-coal-900">{t.admin.pricingHeading}</h2>
         <p className="mt-2 max-w-2xl text-sm text-ink-500">{t.admin.pricingLead}</p>
 
         <form onSubmit={saveSettings} className="card mt-6 grid gap-5 p-6 sm:grid-cols-2">
@@ -208,19 +208,19 @@ export function PricingTab({
 
       {/* ── Sezone ── */}
       <section>
-        <h2 className="font-display text-2xl text-forest-900">{t.admin.seasonsHeading}</h2>
+        <h2 className="font-display text-2xl text-coal-900">{t.admin.seasonsHeading}</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500">
           {t.admin.seasonsLead}
         </p>
 
         {periods.length === 0 ? (
-          <p className="mt-6 rounded-2xl border border-dashed border-sand-300 px-6 py-10 text-center text-sm text-ink-400">
+          <p className="mt-6 rounded-2xl border border-dashed border-cream-300 px-6 py-10 text-center text-sm text-ink-400">
             {t.admin.seasonsEmpty}
           </p>
         ) : (
           <div className="card mt-6 overflow-x-auto">
             <table className="w-full min-w-[640px] text-start text-sm">
-              <thead className="border-b border-sand-200 text-xs uppercase tracking-wider text-ink-400">
+              <thead className="border-b border-cream-200 text-xs uppercase tracking-wider text-ink-400">
                 <tr>
                   <th className="px-5 py-3 font-medium">{t.admin.seasonName}</th>
                   <th className="px-5 py-3 font-medium">{t.admin.seasonPeriod}</th>
@@ -229,7 +229,7 @@ export function PricingTab({
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-sand-200">
+              <tbody className="divide-y divide-cream-200">
                 {periods.map((period) => (
                   <tr key={period.id}>
                     <td className="px-5 py-3.5 font-medium text-ink-900">{period.name}</td>

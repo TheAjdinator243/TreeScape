@@ -3,42 +3,65 @@
 /* ══════════════════════════════════════════════════════════════════════════
    Dizajn sistem — Tailwind v4 se konfiguriše ovdje, u CSS-u.
    Nema tailwind.config.js; sve što je u @theme postaje Tailwind klasa
-   (npr. --color-forest-700 → `bg-forest-700`, `text-forest-700`).
+   (npr. --color-olive-600 → `bg-olive-600`, `text-olive-600`).
    ══════════════════════════════════════════════════════════════════════════ */
 
 @theme {
-  /* Šuma — glavna boja brenda */
-  --color-bark-950: #101a15;
-  --color-forest-900: #172f26;
-  --color-forest-800: #1f4436;
-  --color-forest-700: #2a5a47;
-  --color-forest-600: #37735b;
-  --color-forest-500: #4a8f72;
-  --color-moss-400: #6fae8f;
-  --color-moss-300: #9ccbb2;
-  --color-moss-100: #dcece3;
+  /*
+   * Ugalj, krema i maslinasta.
+   *
+   * Stranica je namjerno skoro bez boje: tamne plohe su ugalj, pozadina krema,
+   * a maslinasta je JEDINA boja na cijelom sajtu. Zato ona i znači nešto — gdje
+   * god se pojavi, tu je nešto na šta gost treba da obrati pažnju: cijena,
+   * odabrani datum, dugme kojim se rezerviše.
+   *
+   * Druga akcentna boja je ono što premium izgled najbrže pretvori u šablon,
+   * pa je nema. Sve ostalo nose razmak, veličina slova i vlas-crte.
+   */
 
-  /* Pijesak i krem — pozadine i topli tonovi */
-  --color-sand-50: #faf7f1;
-  --color-sand-100: #f4ede0;
-  --color-sand-200: #e9dcc7;
-  --color-sand-300: #d9c6a6;
+  /* Ugalj — tamne plohe i krupna slova */
+  --color-coal-950: #0f0f0d;
+  --color-coal-900: #171714;
+  --color-coal-800: #232320;
+  --color-coal-700: #34332e;
 
-  /* Žar — akcent za dugmad i naglaske */
-  --color-ember-400: #d99a6c;
-  --color-ember-500: #c47a45;
-  --color-ember-600: #a86232;
+  /* Krema — pozadine i vlas-okviri */
+  --color-cream-50: #f7f5f0;
+  --color-cream-100: #efece4;
+  --color-cream-200: #e4dfd3;
+  --color-cream-300: #d3ccbc;
+
+  /*
+   * Maslinasta — jedina boja.
+   *
+   * `olive-600` je namjerno tamnija nego što bi "maslinasta" na prvi pogled
+   * trebala biti, i to iz jednog razloga: ona radi DVA posla. Stoji kao slovo
+   * NA kremi (oznake odjeljka, linkovi) i kao ploha ISPOD kreme (dugme
+   * "Rezerviši"). Svjetlija maslinasta zadovolji jedno, ali onda drugo padne
+   * ispod čitljivog — na 5.0:1 prolaze oba smjera.
+   */
+  --color-olive-700: #4b5837;
+  --color-olive-600: #5f6f47;
+  --color-olive-500: #83936a;
+  --color-olive-400: #a9b795;
+  --color-olive-200: #dde3d1;
+
+  /* Taupe — prigušena slova na tamnoj plohi, gdje bi maslinasta bila previše */
+  --color-taupe-500: #a89f8c;
+  --color-taupe-300: #c5bdad;
 
   /* Tekst */
-  --color-ink-900: #221d18;
-  --color-ink-700: #453d35;
-  --color-ink-500: #6b6157;
-  --color-ink-400: #8d8377;
+  --color-ink-900: #1a1917;
+  --color-ink-700: #3d3b36;
+  --color-ink-500: #6d6a61;
+  /* Sitne oznake i tekst u praznom polju. Bila je svjetlija, pa je na kremi
+     davala 3.1:1 — ispod praga za tekst. Ovo je najsvjetlije što prolazi. */
+  --color-ink-400: #767268;
 
-  /* Statusi */
-  --color-success-600: #2f7d54;
-  --color-warn-600: #b7791f;
-  --color-danger-600: #b3402f;
+  /* Statusi — prigušeni taman toliko da se ne otmu paleti, ali se i dalje čitaju */
+  --color-success-600: #4a7a4e;
+  --color-warn-600: #9a7526;
+  --color-danger-600: #a8463a;
 
   /* Tipografija — varijable dolaze iz next/font (vidi layout.tsx) */
   --font-display: var(--font-fraunces), Georgia, 'Times New Roman', serif;
@@ -46,8 +69,8 @@
   --font-arabic-stack: var(--font-arabic), 'Noto Sans Arabic', 'Segoe UI', system-ui, sans-serif;
 
   /* Mekane sjene — topli ton umjesto sivog */
-  --shadow-soft: 0 1px 2px rgb(34 29 24 / 0.04), 0 8px 24px -8px rgb(34 29 24 / 0.12);
-  --shadow-lift: 0 2px 4px rgb(34 29 24 / 0.06), 0 20px 40px -12px rgb(34 29 24 / 0.22);
+  --shadow-soft: 0 1px 2px rgb(23 23 20 / 0.04), 0 8px 24px -8px rgb(23 23 20 / 0.10);
+  --shadow-lift: 0 2px 4px rgb(23 23 20 / 0.05), 0 20px 40px -12px rgb(23 23 20 / 0.18);
 
   /*
    * Zaobljenje ploha.
@@ -89,16 +112,36 @@
     --reveal-slide: -28px;
     --rule-origin: left;
     --marquee-dir: 1;
+
+    /*
+     * S koje strane ulazi novi korak u rezervaciji.
+     *
+     * Pozitivno znači "s one strane na koju se ide". Predznak se okreće dvaput:
+     * u arapskom, gdje "naprijed" znači ulijevo, i još jednom pri povratku
+     * unazad — to drugo okretanje radi `data-dir` ispod. Bez toga bi i "Dalje"
+     * i "Nazad" gurali sadržaj na istu stranu, pa bi gost izgubio osjećaj gdje
+     * se u nizu nalazi.
+     */
+    --step-in: 28px;
   }
 
   [dir='rtl'] {
     --reveal-slide: 28px;
     --rule-origin: right;
     --marquee-dir: -1;
+    --step-in: -28px;
+  }
+
+  [data-dir='back'] {
+    --step-in: -28px;
+  }
+
+  [dir='rtl'] [data-dir='back'] {
+    --step-in: 28px;
   }
 
   body {
-    background-color: var(--color-sand-50);
+    background-color: var(--color-cream-50);
     color: var(--color-ink-900);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -120,14 +163,14 @@
 
   /* Vidljiv fokus za tastaturu — bez ovoga sajt nije upotrebljiv bez miša. */
   :focus-visible {
-    outline: 2px solid var(--color-forest-600);
+    outline: 2px solid var(--color-olive-600);
     outline-offset: 3px;
     border-radius: 4px;
   }
 
   ::selection {
-    background-color: var(--color-moss-300);
-    color: var(--color-forest-900);
+    background-color: var(--color-taupe-300);
+    color: var(--color-coal-900);
   }
 }
 
@@ -181,14 +224,14 @@ html[lang='ar'] body * {
    * ekranu uopće postoji.
    */
   .btn-primary {
-    @apply btn bg-forest-800 text-sand-50 shadow-soft
+    @apply btn bg-coal-900 text-cream-50 shadow-soft
            hover:-translate-y-px hover:shadow-lift
            active:translate-y-0 active:scale-[0.98]
            disabled:hover:translate-y-0 disabled:hover:shadow-soft;
   }
 
   .btn-accent {
-    @apply btn bg-ember-500 text-white shadow-soft
+    @apply btn bg-olive-600 text-white shadow-soft
            hover:-translate-y-px hover:shadow-lift
            active:translate-y-0 active:scale-[0.98]
            disabled:hover:translate-y-0 disabled:hover:shadow-soft;
@@ -226,11 +269,11 @@ html[lang='ar'] body * {
   }
 
   .btn-primary::before {
-    background-color: var(--color-forest-600);
+    background-color: var(--color-coal-700);
   }
 
   .btn-accent::before {
-    background-color: var(--color-ember-600);
+    background-color: var(--color-olive-700);
   }
 
   .btn-primary:hover:not(:disabled)::before,
@@ -239,18 +282,18 @@ html[lang='ar'] body * {
   }
 
   .btn-ghost {
-    @apply btn border border-forest-800/20 bg-transparent text-forest-800
-           hover:border-forest-800/45 hover:bg-forest-800/5 active:scale-[0.98];
+    @apply btn border border-coal-900/20 bg-transparent text-coal-900
+           hover:border-coal-900/45 hover:bg-coal-900/5 active:scale-[0.98];
   }
 
   /** Isto dugme, ali preko fotografije ili na tamnoj plohi. */
   .btn-onlight {
-    @apply btn border border-sand-50/30 bg-sand-50/10 text-sand-50 backdrop-blur-sm
-           hover:border-sand-50/70 hover:bg-sand-50/20 active:scale-[0.98];
+    @apply btn border border-cream-50/30 bg-cream-50/10 text-cream-50 backdrop-blur-sm
+           hover:border-cream-50/70 hover:bg-cream-50/20 active:scale-[0.98];
   }
 
   .card {
-    @apply rounded-card border border-sand-200 bg-white shadow-soft;
+    @apply rounded-card border border-cream-200 bg-white shadow-soft;
   }
 
   .field-label {
@@ -258,11 +301,11 @@ html[lang='ar'] body * {
   }
 
   .field-input {
-    @apply w-full rounded-lg border border-sand-300 bg-white px-4 py-3 text-ink-900
+    @apply w-full rounded-lg border border-cream-300 bg-white px-4 py-3 text-ink-900
            transition-[border-color,box-shadow] duration-300 placeholder:text-ink-400
-           focus:border-forest-600 focus:outline-none
-           focus:ring-4 focus:ring-forest-600/12
-           disabled:bg-sand-100 disabled:text-ink-400;
+           focus:border-olive-600 focus:outline-none
+           focus:ring-4 focus:ring-olive-600/12
+           disabled:bg-cream-100 disabled:text-ink-400;
   }
 
   .section {
@@ -271,7 +314,7 @@ html[lang='ar'] body * {
 
   /* Zadržano zbog pravnih stranica, koje su čist tekst i ništa drugo. */
   .section-eyebrow {
-    @apply mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-forest-600;
+    @apply mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-olive-600;
   }
 
   .section-title {
@@ -307,7 +350,7 @@ html[lang='ar'] body * {
     font-weight: 600;
     letter-spacing: 0.24em;
     text-transform: uppercase;
-    color: var(--color-forest-600);
+    color: var(--color-olive-600);
   }
 
   .head-num {
@@ -352,13 +395,13 @@ html[lang='ar'] body * {
 
   /* Isto zaglavlje na tamnoj plohi. */
   .head-dark .head-tag {
-    color: var(--color-moss-400);
+    color: var(--color-olive-400);
   }
   .head-dark .head-title {
-    color: var(--color-sand-50);
+    color: var(--color-cream-50);
   }
   .head-dark .head-lead {
-    color: var(--color-moss-300);
+    color: var(--color-taupe-300);
   }
 
   /* ── Pojavljivanje pri skrolanju (vidi `motion/Reveal.tsx`) ──────────────
@@ -528,7 +571,7 @@ html[lang='ar'] body * {
   /* Traka napretka kroz galeriju — puni se onako kako se traka kreće. */
   .track-bar {
     height: 2px;
-    background-color: var(--color-moss-400);
+    background-color: var(--color-olive-400);
     transform: scaleX(var(--track-progress, 0));
     transform-origin: var(--rule-origin);
     transition: transform 0.1s linear;
@@ -569,15 +612,15 @@ html[lang='ar'] body * {
      ─────────────────────────────────────────────────────────────────────── */
 
   .glass-dark {
-    background-color: color-mix(in oklab, var(--color-bark-950) 42%, transparent);
+    background-color: color-mix(in oklab, var(--color-coal-950) 42%, transparent);
     border: 1px solid color-mix(in oklab, #fff 16%, transparent);
     backdrop-filter: blur(20px) saturate(130%);
     -webkit-backdrop-filter: blur(20px) saturate(130%);
   }
 
   .glass-light {
-    background-color: color-mix(in oklab, var(--color-sand-50) 78%, transparent);
-    border: 1px solid color-mix(in oklab, var(--color-sand-300) 55%, transparent);
+    background-color: color-mix(in oklab, var(--color-cream-50) 78%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-cream-300) 55%, transparent);
     backdrop-filter: blur(24px) saturate(140%);
     -webkit-backdrop-filter: blur(24px) saturate(140%);
   }
@@ -636,7 +679,7 @@ html[lang='ar'] body * {
 
   .nav-progress {
     height: 100%;
-    background-color: var(--color-forest-600);
+    background-color: var(--color-olive-600);
     transform: scaleX(var(--read, 0));
     transform-origin: var(--rule-origin);
   }
@@ -682,13 +725,13 @@ html[lang='ar'] body * {
     display: flex;
     align-items: flex-start;
     gap: 1.125rem;
-    border-top: 1px solid color-mix(in oklab, var(--color-moss-400) 22%, transparent);
+    border-top: 1px solid color-mix(in oklab, var(--color-olive-400) 22%, transparent);
     padding-block: 1.25rem;
     transition: border-color 0.4s var(--ease-out-soft);
   }
 
   .index-row:hover {
-    border-color: color-mix(in oklab, var(--color-moss-400) 55%, transparent);
+    border-color: color-mix(in oklab, var(--color-olive-400) 55%, transparent);
   }
 
   /*
@@ -704,7 +747,7 @@ html[lang='ar'] body * {
     inset: 1px -1rem 0;
     z-index: -1;
     border-radius: 0.875rem;
-    background-color: color-mix(in oklab, var(--color-moss-400) 10%, transparent);
+    background-color: color-mix(in oklab, var(--color-olive-400) 10%, transparent);
     opacity: 0;
     transition: opacity 0.45s var(--ease-out-soft);
   }
@@ -720,14 +763,14 @@ html[lang='ar'] body * {
     flex: none;
     align-items: center;
     justify-content: center;
-    color: var(--color-moss-300);
+    color: var(--color-taupe-300);
     transition:
       color 0.4s var(--ease-out-soft),
       transform 0.5s var(--ease-out-expo);
   }
 
   .index-row:hover .index-icon {
-    color: var(--color-moss-100);
+    color: var(--color-olive-200);
     transform: translateY(-2px);
   }
 
@@ -780,13 +823,128 @@ html[lang='ar'] body * {
   .nav-link:hover::after {
     transform: scaleX(1);
   }
+
+  /* ── Rezervacija u tri koraka ────────────────────────────────────────────
+     Traka na vrhu kartice: gdje je gost, šta je prošao i koliko je ostalo.
+     Pređeni koraci se mogu kliknuti — gost se vraća da nešto ispravi, a to je
+     češće nego što se čini.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .rail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rail-step {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    border: 0;
+    background: none;
+    padding: 0;
+    text-align: start;
+  }
+
+  .rail-dot {
+    display: grid;
+    height: 1.875rem;
+    width: 1.875rem;
+    flex: none;
+    place-items: center;
+    border-radius: 9999px;
+    border: 1px solid var(--color-cream-300);
+    font-size: 0.6875rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink-400);
+    transition:
+      background-color 0.45s var(--ease-out-soft),
+      border-color 0.45s var(--ease-out-soft),
+      color 0.45s var(--ease-out-soft);
+  }
+
+  .rail-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-ink-400);
+    transition: color 0.45s var(--ease-out-soft);
+  }
+
+  .rail-step[data-state='active'] .rail-dot {
+    border-color: var(--color-olive-600);
+    background-color: var(--color-olive-200);
+    color: var(--color-olive-700);
+  }
+
+  .rail-step[data-state='done'] .rail-dot {
+    border-color: var(--color-olive-600);
+    background-color: var(--color-olive-600);
+    color: var(--color-cream-50);
+  }
+
+  .rail-step[data-state='active'] .rail-name,
+  .rail-step[data-state='done'] .rail-name {
+    color: var(--color-coal-900);
+  }
+
+  .rail-step[data-state='done']:hover .rail-dot {
+    border-color: var(--color-olive-700);
+    background-color: var(--color-olive-700);
+  }
+
+  /*
+   * Crta između dva koraka. Puni se tek kad se korak PRIJE nje završi, pa je
+   * ona jedini dio trake koji se stvarno kreće — i jedini znak da se napredovalo
+   * čak i kad se naziv koraka ne vidi (na telefonu naziva nema).
+   */
+  .rail-line {
+    position: relative;
+    height: 1px;
+    flex: 1;
+    min-width: 0.75rem;
+    background-color: var(--color-cream-300);
+  }
+
+  .rail-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-olive-600);
+    transform: scaleX(var(--done, 0));
+    transform-origin: var(--rule-origin);
+    transition: transform 0.55s var(--ease-out-expo);
+  }
+
+  /* Red u pregledu: naziv na početku, vrijednost na kraju, crta između redova. */
+  .review-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--color-cream-200);
+    padding-block: 0.75rem;
+  }
 }
 
 /* ── Kalendar (react-day-picker) ─────────────────────────────────────────── */
 
-.rdp-root {
-  --rdp-accent-color: var(--color-forest-700);
-  --rdp-accent-background-color: var(--color-moss-100);
+/*
+ * Ime klase je NAMJERNO napisano dvaput.
+ *
+ * `react-day-picker` svoj `style.css` uvozi sama komponenta, a Next takav CSS
+ * stavlja IZA globalnog. Oba pravila su neslojevita i iste specifičnosti, pa
+ * odlučuje redoslijed — i pobjeđivalo je njihovo. Zbog toga je
+ * `--rdp-accent-color` ostajao na njihovoj zadanoj vrijednosti (`blue`), pa je
+ * odabrani datum dobijao PLAVI prsten usred maslinaste stranice.
+ *
+ * Dvostruko ime diže specifičnost za jedan razred i time rješava spor bez
+ * ijednog `!important` i bez diranja redoslijeda uvoza.
+ */
+.rdp-root.rdp-root {
+  --rdp-accent-color: var(--color-olive-600);
+  --rdp-accent-background-color: var(--color-olive-200);
   --rdp-day-height: 2.75rem;
   --rdp-day-width: 2.75rem;
   --rdp-day_button-height: 2.5rem;
@@ -803,7 +961,7 @@ html[lang='ar'] body * {
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 500;
-  color: var(--color-forest-900);
+  color: var(--color-coal-900);
   text-transform: capitalize;
 }
 
@@ -822,7 +980,7 @@ html[lang='ar'] body * {
 }
 
 .rdp-day_button:hover:not([disabled]) {
-  background-color: var(--color-moss-100);
+  background-color: var(--color-olive-200);
 }
 
 /* Zauzeti datumi — prekriženi i vizuelno "mrtvi". */
@@ -831,7 +989,7 @@ html[lang='ar'] body * {
   text-decoration: line-through;
   text-decoration-thickness: 1.5px;
   cursor: not-allowed;
-  background-color: var(--color-sand-100);
+  background-color: var(--color-cream-100);
 }
 
 .rdp-day.day-taken-pending .rdp-day_button {
@@ -848,20 +1006,20 @@ html[lang='ar'] body * {
 /* Odabrani raspon */
 .rdp-range_start .rdp-day_button,
 .rdp-range_end .rdp-day_button {
-  background-color: var(--color-forest-700) !important;
-  color: var(--color-sand-50) !important;
+  background-color: var(--color-olive-600) !important;
+  color: var(--color-cream-50) !important;
   font-weight: 600;
 }
 
 .rdp-range_middle .rdp-day_button {
-  background-color: var(--color-moss-100) !important;
-  color: var(--color-forest-900) !important;
+  background-color: var(--color-olive-200) !important;
+  color: var(--color-coal-900) !important;
   border-radius: 0 !important;
 }
 
 .rdp-today:not(.rdp-selected) .rdp-day_button {
   font-weight: 700;
-  color: var(--color-ember-600);
+  color: var(--color-olive-700);
 }
 
 /*
@@ -1019,6 +1177,27 @@ html[lang='ar'] body * {
 
 .animate-value-swap {
   animation: value-swap 0.4s var(--ease-out-expo) both;
+}
+
+/*
+ * Novi korak u rezervaciji ulazi sa strane na koju se ide.
+ *
+ * Traje kratko i pomjera se malo: ovo nije ukras nego odgovor na pritisak
+ * dugmeta, i mora završiti prije nego gost stigne pročitati prvi red.
+ */
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--step-in));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-step-in {
+  animation: step-in 0.42s var(--ease-out-expo) both;
 }
 
 /* Poštuj sistemsku postavku — neki ljudi od animacija dobiju mučninu. */

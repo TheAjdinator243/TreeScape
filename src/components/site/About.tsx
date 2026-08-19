@@ -39,16 +39,16 @@ export async function About() {
           </Reveal>
 
           <Reveal delay={220}>
-            <dl className="mt-12 grid grid-cols-3 border-t border-sand-200">
+            <dl className="mt-12 grid grid-cols-3 border-t border-cream-200">
               {stats.map((stat) => (
                 // flex-col-reverse: u kodu prvo ide <dt> (kako HTML i traži),
                 // a na ekranu se broj vidi iznad opisa.
                 <div
                   key={stat.label}
-                  className="flex flex-col-reverse gap-1 border-e border-sand-200 py-6 pe-4 last:border-e-0"
+                  className="flex flex-col-reverse gap-1 border-e border-cream-200 py-6 pe-4 last:border-e-0"
                 >
                   <dt className="text-xs uppercase tracking-[0.14em] text-ink-400">{stat.label}</dt>
-                  <dd className="font-display text-4xl leading-none text-forest-800 md:text-5xl">
+                  <dd className="font-display text-4xl leading-none text-olive-700 md:text-5xl">
                     <Counter to={stat.value} />
                   </dd>
                 </div>

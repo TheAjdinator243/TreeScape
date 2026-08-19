@@ -1,10 +1,10 @@
 /**
  * Gdje je kuća — jedno mjesto za cijeli sajt.
  *
- * Koordinate stoje ovdje, a ne u komponenti, jer ih čitaju i karta i link na
- * Google Mape, i to u oba izgleda sajta (osnovnom i `pro`). Da su prepisane po
- * komponentama, prva izmjena bi ostavila ostale da pokazuju staru adresu —
- * a gost bi to otkrio tek kad se izgubi.
+ * Koordinate stoje ovdje, a ne u komponenti, jer ih čitaju i karta na sajtu i
+ * link na Google Mape u mailu. Da su prepisane na oba mjesta, prva izmjena bi
+ * ostavila drugo da pokazuje staru adresu — a gost bi to otkrio tek kad se
+ * izgubi.
  *
  * Mijenjaj SAMO ovdje.
  */
