@@ -232,14 +232,3 @@ export function useStayForm(context: BookingContext): StayForm {
     submit,
   };
 }
-
-/**
- * Skrol do kartice s rezervacijom, BEZ diranja adrese.
- *
- * Ranije je ovo bio `<a href="#pregled">`, pa je nakon klika u adresi ostajao
- * `#pregled`. Preglednik onda pri svakom sljedećem otvaranju ili osvježavanju
- * skoči pravo tamo umjesto na vrh stranice — a to je gost primijetio.
- */
-export function scrollToCard(): void {
-  document.getElementById('rezervacija')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}

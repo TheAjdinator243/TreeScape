@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useI18n } from '@/components/i18n/LocaleProvider';
 import { Reveal } from '@/components/motion/Reveal';
+import { calmMotion } from '@/components/motion/ticker';
 import { SectionHead } from '@/components/site/SectionHead';
 import { daysBetween, formatLong } from '@/lib/dates';
 import { count, type Dictionary } from '@/lib/i18n';
@@ -11,7 +12,7 @@ import { WEEKEND_PERIOD, formatMoney } from '@/lib/pricing';
 import type { BookingContext } from '@/lib/types';
 
 import { StayCalendar } from './StayCalendar';
-import { guestDetailsError, scrollToCard, useStayForm, type StayForm } from './useStayForm';
+import { guestDetailsError, useStayForm, type StayForm } from './useStayForm';
 
 /** Redoslijed koraka. Indeks je ujedno i broj koji gost vidi u traci. */
 const STEPS = ['dates', 'details', 'review'] as const;
@@ -55,6 +56,8 @@ export function BookingSection({ context }: { context: BookingContext }) {
    */
   const [tried, setTried] = useState(false);
 
+  const card = useRef<HTMLDivElement>(null);
+
   const datesProblem = !form.complete ? t.booking.selectDatesFirst : form.stayError;
   const detailsProblem = guestDetailsError(form, t);
   const problemOf = (from: Step) => (from === 0 ? datesProblem : from === 1 ? detailsProblem : null);
@@ -63,6 +66,25 @@ export function BookingSection({ context }: { context: BookingContext }) {
     setBack(next < step);
     setTried(false);
     setStep(next);
+
+    /*
+     * Novi korak počinje od VRHA kartice.
+     *
+     * Bez ovoga gost ostaje tamo gdje je i pritisnuo dugme — a dugme je na dnu
+     * kartice. Sljedeći korak se onda otvori iznad njegovog pogleda: umjesto
+     * naslova i prvog polja vidi dno nove kartice, pa i sljedeći odjeljak
+     * stranice. Na telefonu, gdje je kartica visoka nekoliko ekrana, to znači
+     * da gost uopće ne primijeti da je korak promijenjen.
+     *
+     * Cilja se kartica, a ne odjeljak: iznad kartice stoji zaglavlje odjeljka
+     * ("04 Rezervišite svoj termin"), a njega je gost već pročitao. Fiksnu
+     * navigaciju sklanja `scroll-padding-top` iz `globals.css`, koji
+     * `scrollIntoView` poštuje.
+     */
+    card.current?.scrollIntoView({
+      behavior: calmMotion() ? 'auto' : 'smooth',
+      block: 'start',
+    });
   };
 
   const goNext = () => {
@@ -81,7 +103,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
         <SectionHead index={4} label={t.nav.book} title={t.booking.heading} lead={t.booking.lead} />
 
         <Reveal delay={80} className="mt-14">
-          <div className="card mx-auto max-w-3xl p-5 sm:p-8">
+          <div ref={card} className="card mx-auto max-w-3xl p-5 sm:p-8">
             <Rail step={step} onGo={goTo} blockedBy={problemOf} t={t} />
 
             {/* `key` je ovdje cijeli posao: kad se korak promijeni, React pravi
@@ -189,16 +211,8 @@ export function BookingSection({ context }: { context: BookingContext }) {
                 {formatMoney(form.quote.totalCents, form.quote.currencySymbol, locale)}
               </p>
             </div>
-            {/* Vodi na sljedeći korak i vraća pogled na karticu — kalendar je
-                na telefonu dug, pa je dugme obično daleko ispod nje. */}
-            <button
-              type="button"
-              onClick={() => {
-                goNext();
-                scrollToCard();
-              }}
-              className="btn-primary shrink-0 px-6 py-2.5"
-            >
+            {/* Skrol na vrh kartice radi sam `goTo`. */}
+            <button type="button" onClick={goNext} className="btn-primary shrink-0 px-6 py-2.5">
               {t.booking.steps.next}
             </button>
           </div>
