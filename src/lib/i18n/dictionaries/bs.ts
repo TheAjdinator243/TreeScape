@@ -53,7 +53,7 @@ export const bs: Dictionary = {
     subtitle: 'Probudite se uz zvuk šume, a ne uz zvuk grada.',
     cta: 'Provjeri dostupnost',
     scroll: 'Saznaj više',
-    imageAlt: 'Vila TreeScape',
+    imageAlt: 'Bazen i terasa vile TreeScape, s pogledom na dolinu i planine',
   },
 
   about: {

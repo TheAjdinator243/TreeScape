@@ -1102,21 +1102,6 @@ html[lang='ar'] body * {
   animation: fade-rise 0.7s var(--ease-out-soft) both;
 }
 
-/* Naslovna fotografija se nakon učitavanja jednom, polako, vrati iz uvećanja —
-   slika "diše" umjesto da samo stoji. Traje dugo, pa se osjeti a ne primijeti. */
-@keyframes slow-zoom {
-  from {
-    transform: scale(1.09);
-  }
-  to {
-    transform: scale(1);
-  }
-}
-
-.animate-slow-zoom {
-  animation: slow-zoom 3s var(--ease-out-expo) both;
-}
-
 /* Mobilni meni: stavke ulaze jedna za drugom, s početka reda. */
 @keyframes menu-item {
   from {

@@ -53,7 +53,7 @@ export const ar: Dictionary = {
     subtitle: 'استيقظ على صوت الغابة، لا على صوت المدينة.',
     cta: 'تحقّق من التوفر',
     scroll: 'اعرف المزيد',
-    imageAlt: 'فيلا TreeScape',
+    imageAlt: 'المسبح والشرفة في فيلا TreeScape، بإطلالة على الوادي والجبال',
   },
 
   about: {

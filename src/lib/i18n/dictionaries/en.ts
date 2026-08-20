@@ -48,7 +48,7 @@ export const en: Dictionary = {
     subtitle: 'Wake up to the sound of the forest, not the sound of the city.',
     cta: 'Check availability',
     scroll: 'Find out more',
-    imageAlt: 'TreeScape villa',
+    imageAlt: 'The pool and terrace at TreeScape, overlooking the valley and mountains',
   },
 
   about: {
