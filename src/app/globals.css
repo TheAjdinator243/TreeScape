@@ -28,18 +28,20 @@
   /*
    * Papir — ploha kartica, polja i svega što "leži" na stranici.
    *
-   * Nije čisto bijela, i to je namjerno: bijelo na kremastoj stranici izgleda
-   * kao rupa u papiru, a ne kao list položen na sto. Ovaj ton je tek toliko
-   * topliji da se prepozna kao ista vrsta papira, a i dalje dovoljno svjetliji
-   * od podloge da se kartica jasno odvoji od nje.
+   * Nije bijela, i nije ni blizu bijele: na 89% svjetline se čita kao papir, a
+   * ne kao rupa u stranici. Cijela svijetla ljestvica je namjerno spuštena —
+   * najsvjetlija ploha na sajtu je upravo ova, pa bijelog nema nigdje.
+   *
+   * Kad se podloga potamni, potamne i slova: `ink-400`, `ink-500` i `olive-600`
+   * su spušteni tačno toliko da i na NAJTAMNIJOJ svijetloj plohi drže 4.5:1.
    */
-  --color-paper: #fbf9f4;
+  --color-paper: #f5f2e8;
 
   /* Krema — pozadine i vlas-okviri */
-  --color-cream-50: #f7f5f0;
-  --color-cream-100: #efece4;
-  --color-cream-200: #e4dfd3;
-  --color-cream-300: #d3ccbc;
+  --color-cream-50: #eee9dd;
+  --color-cream-100: #e6e1d3;
+  --color-cream-200: #d8d2c0;
+  --color-cream-300: #c6bfa9;
 
   /*
    * Maslinasta — jedina boja.
@@ -51,7 +53,7 @@
    * ispod čitljivog — na 5.0:1 prolaze oba smjera.
    */
   --color-olive-700: #4b5837;
-  --color-olive-600: #5f6f47;
+  --color-olive-600: #596941;
   --color-olive-500: #83936a;
   --color-olive-400: #a9b795;
   --color-olive-200: #dde3d1;
@@ -63,10 +65,10 @@
   /* Tekst */
   --color-ink-900: #1a1917;
   --color-ink-700: #3d3b36;
-  --color-ink-500: #6d6a61;
-  /* Sitne oznake i tekst u praznom polju. Bila je svjetlija, pa je na kremi
-     davala 3.1:1 — ispod praga za tekst. Ovo je najsvjetlije što prolazi. */
-  --color-ink-400: #767268;
+  --color-ink-500: #545148;
+  /* Sitne oznake i tekst u praznom polju. Najsvjetlije što na NAJTAMNIJOJ
+     svijetloj plohi (cream-100) još drži 4.5:1 — izmjereno, ne procijenjeno. */
+  --color-ink-400: #68645a;
 
   /* Statusi — prigušeni taman toliko da se ne otmu paleti, ali se i dalje čitaju */
   --color-success-600: #4a7a4e;
@@ -671,7 +673,7 @@ html[lang='ar'] body * {
 
   .glass-dark {
     background-color: color-mix(in oklab, var(--color-coal-950) 42%, transparent);
-    border: 1px solid color-mix(in oklab, #fff 16%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-cream-50) 16%, transparent);
     backdrop-filter: blur(20px) saturate(130%);
     -webkit-backdrop-filter: blur(20px) saturate(130%);
   }

@@ -34,7 +34,7 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }
 
   const styles = {
     light: 'rounded-full border-cream-300 bg-paper text-ink-700 hover:border-olive-600',
-    dark: 'rounded-full border-white/30 bg-white/10 text-white hover:bg-white/20',
+    dark: 'rounded-full border-cream-50/30 bg-cream-50/10 text-cream-50 hover:bg-cream-50/20',
   }[tone];
 
   return (

@@ -41,7 +41,7 @@ export async function Footer() {
           </p>
         </Reveal>
 
-        <div className="mt-16 grid gap-10 border-t border-white/10 pt-10 sm:grid-cols-2">
+        <div className="mt-16 grid gap-10 border-t border-cream-50/10 pt-10 sm:grid-cols-2">
           <Reveal delay={80}>
             <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-olive-400">
               {t.footer.contact}
@@ -86,7 +86,7 @@ export async function Footer() {
         </div>
       </div>
 
-      <div className="relative z-[2] border-t border-white/10">
+      <div className="relative z-[2] border-t border-cream-50/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-taupe-300/60 sm:px-8">
           <p>
             © {year} {t.site.name}. {t.footer.rights}

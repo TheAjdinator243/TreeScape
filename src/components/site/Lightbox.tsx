@@ -83,7 +83,7 @@ export function Lightbox({
           ref={closeRef}
           type="button"
           onClick={onClose}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-white/10"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-cream-50/10"
           aria-label={t.gallery.close}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -145,7 +145,7 @@ function LightboxArrow({
       onClick={onClick}
       className={`absolute ${
         side === 'start' ? 'start-2' : 'end-2'
-      } z-10 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:h-14 sm:w-14`}
+      } z-10 inline-flex h-12 w-12 items-center justify-center rounded-full bg-cream-50/10 text-cream-50 transition-colors hover:bg-cream-50/20 sm:h-14 sm:w-14`}
       aria-label={label}
     >
       <svg

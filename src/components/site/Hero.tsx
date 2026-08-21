@@ -64,7 +64,7 @@ export async function Hero({ fromCents, symbol }: { fromCents: number; symbol: s
             {t.hero.eyebrow}
           </p>
 
-          <h1 className="mt-6 text-[clamp(3rem,1.2rem+6vw,5.5rem)] leading-[0.94] tracking-[-0.04em] text-white">
+          <h1 className="mt-6 text-[clamp(3rem,1.2rem+6vw,5.5rem)] leading-[0.94] tracking-[-0.04em] text-cream-50">
             <Lines text={t.hero.title} delay={200} step={110} />
           </h1>
 
@@ -91,24 +91,24 @@ export async function Hero({ fromCents, symbol }: { fromCents: number; symbol: s
               {t.common.from}
             </p>
             <p className="mt-2 flex items-baseline gap-2">
-              <span className="font-display text-4xl leading-none text-white">
+              <span className="font-display text-4xl leading-none text-cream-50">
                 {formatMoney(fromCents, symbol, locale)}
               </span>
               <span className="text-sm text-cream-200/80">/ {t.common.day}</span>
             </p>
 
-            <dl className="mt-5 flex gap-6 border-t border-white/15 pt-4 text-xs text-cream-200/80">
+            <dl className="mt-5 flex gap-6 border-t border-cream-50/15 pt-4 text-xs text-cream-200/80">
               <div>
                 <dt className="sr-only">{t.about.stats.guests}</dt>
                 <dd>
-                  <span className="font-display text-lg text-white">8</span>{' '}
+                  <span className="font-display text-lg text-cream-50">8</span>{' '}
                   {t.about.stats.guests}
                 </dd>
               </div>
               <div>
                 <dt className="sr-only">{t.about.stats.bedrooms}</dt>
                 <dd>
-                  <span className="font-display text-lg text-white">2</span>{' '}
+                  <span className="font-display text-lg text-cream-50">2</span>{' '}
                   {t.about.stats.bedrooms}
                 </dd>
               </div>
@@ -121,11 +121,11 @@ export async function Hero({ fromCents, symbol }: { fromCents: number; symbol: s
 
           <a
             href="#o-kuci"
-            className="animate-fade-rise group mt-9 flex w-fit items-center gap-3 whitespace-nowrap text-xs uppercase tracking-[0.18em] text-white/70 transition-colors hover:text-white"
+            className="animate-fade-rise group mt-9 flex w-fit items-center gap-3 whitespace-nowrap text-xs uppercase tracking-[0.18em] text-cream-50/70 transition-colors hover:text-cream-50"
             style={{ animationDelay: '700ms' }}
           >
-            <span className="relative h-6 w-px overflow-hidden bg-white/25">
-              <span className="animate-scroll-hint absolute inset-x-0 top-0 h-2 bg-white" />
+            <span className="relative h-6 w-px overflow-hidden bg-cream-50/25">
+              <span className="animate-scroll-hint absolute inset-x-0 top-0 h-2 bg-cream-50" />
             </span>
             {t.hero.scroll}
           </a>

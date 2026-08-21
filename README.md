@@ -221,10 +221,16 @@ Kontrast je provjeren brojkama, ne na oko: slova na kremi drže najmanje 4.4:1,
 a maslinasta 5.0:1 — i kao slovo na kremi i kao ploha ispod nje, jer radi oba
 posla.
 
-**Nigdje nema čisto bijele.** Kartice i polja stoje na boji papira
-(`--color-paper`), koja je tek toliko toplija da se prepozna kao ista vrsta
-papira kao i stranica — bijelo na kremi izgleda kao rupa, a ne kao list položen
-na sto.
+**Bijele nema nigdje, ni čiste ni skoro čiste.** Najsvjetlija ploha na sajtu je
+boja papira (`--color-paper`, 89% svjetline) — kartice i polja. Ispod nje su
+dvije kreme za same odjeljke. Riječi `white` u kodu više nema: i ono što je
+stajalo na tamnim plohama ide kroz `cream-50`, pa se bijela ne može vratiti
+nehotice.
+
+Kad je podloga potamnjena, potamnjena su i slova: `ink-400`, `ink-500` i
+`olive-600` spušteni su tačno toliko da i na NAJTAMNIJOJ svijetloj plohi drže
+4.5:1. Provjereno i na iscrtanoj stranici, brojanjem piksela — jedino bijelo
+koje je ostalo je nebo na fotografijama.
 
 **Tekstura** ide u dva oblika, jer ista ne radi na oba kraja palete:
 tamne plohe nose zrno (`.grain`), a svijetle vlas-crte pod uglom (`.weave`).

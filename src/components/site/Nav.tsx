@@ -131,7 +131,7 @@ export function Nav() {
           <a
             href="#vrh"
             className={`font-display text-lg tracking-tight transition-colors duration-500 ${
-              solid ? 'text-coal-900' : 'text-white'
+              solid ? 'text-coal-900' : 'text-cream-50'
             }`}
           >
             {t.site.name}
@@ -144,7 +144,7 @@ export function Nav() {
                   href={link.href}
                   data-active={active === link.id}
                   className={`nav-link text-[0.8125rem] font-medium tracking-wide transition-colors duration-500 ${
-                    solid ? 'text-ink-700 hover:text-coal-900' : 'text-white/85 hover:text-white'
+                    solid ? 'text-ink-700 hover:text-coal-900' : 'text-cream-50/85 hover:text-cream-50'
                   }`}
                 >
                   {t.nav[link.key]}
@@ -171,7 +171,7 @@ export function Nav() {
               type="button"
               onClick={() => setOpen((v) => !v)}
               className={`inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors md:hidden ${
-                solid ? 'text-coal-900 hover:bg-cream-200' : 'text-white hover:bg-white/15'
+                solid ? 'text-coal-900 hover:bg-cream-200' : 'text-cream-50 hover:bg-cream-50/15'
               }`}
               aria-expanded={open}
               aria-controls="mobilni-meni"

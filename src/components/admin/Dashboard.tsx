@@ -321,7 +321,7 @@ export function Dashboard({
             >
               {item.label}
               {item.badge ? (
-                <span className="ms-2 rounded-full bg-olive-600 px-2 py-0.5 text-xs font-semibold text-white">
+                <span className="ms-2 rounded-full bg-olive-600 px-2 py-0.5 text-xs font-semibold text-cream-50">
                   {item.badge}
                 </span>
               ) : null}

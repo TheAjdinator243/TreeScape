@@ -88,11 +88,11 @@ export function Gallery() {
                   klizi, ispod je vidi samo onaj ko gleda dolje, a gost gleda
                   fotografiju. Staklo ga drži čitljivim i nad nebom i nad noći. */}
               <span
-                className="glass-dark absolute end-4 top-4 rounded-full px-3 py-1 font-display text-xs text-white tabular-nums"
+                className="glass-dark absolute end-4 top-4 rounded-full px-3 py-1 font-display text-xs text-cream-50 tabular-nums"
                 aria-hidden="true"
               >
                 {String(i + 1).padStart(2, '0')}
-                <span className="text-white/50">/{String(GALLERY.length).padStart(2, '0')}</span>
+                <span className="text-cream-50/50">/{String(GALLERY.length).padStart(2, '0')}</span>
               </span>
             </button>
 
