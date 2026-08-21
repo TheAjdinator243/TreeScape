@@ -282,11 +282,11 @@ sljedeći:
 ```bash
 ffmpeg -i original.mov -map_metadata -1 -an \
   -vf "scale=1920:-2:flags=lanczos,format=yuv420p" \
-  -c:v libx264 -preset slow -crf 30 -profile:v high -movflags +faststart \
+  -c:v libx264 -preset slow -crf 27 -profile:v high -movflags +faststart \
   public/video/pogled-iz-zraka.mp4
 
-# slika koja stoji dok snimak ne krene
-ffmpeg -i public/video/pogled-iz-zraka.mp4 -ss 6 -frames:v 1 public/video/pogled-iz-zraka.jpg
+# slika koja stoji dok snimak ne krene — iz ORIGINALA, ne iz sabijene datoteke
+ffmpeg -i original.mov -ss 6 -frames:v 1 -vf "scale=1920:1080:flags=lanczos" -q:v 2 poster.jpg
 ```
 
 `-map_metadata -1` nije kozmetika: **repozitorij je javan**, a snimci iz drona
@@ -294,6 +294,22 @@ nose GPS tačku snimanja. Sajt namjerno ne odaje tačnu adresu dok rezervacija n
 potvrđena, pa je ne smije odati ni datoteka. `-an` skida zvuk (snimak se ionako
 pušta nijemo), a `+faststart` pomjera zaglavlje na početak da snimak krene prije
 nego se cijeli skine.
+
+**Zašto baš CRF 27.** Broj nije odabran po osjećaju nego izmjeren — VMAF između
+sabijene datoteke i originala smanjenog na istu rezoluciju, da se mjeri gubitak
+od kompresije a ne od rezolucije:
+
+| CRF | veličina | VMAF prosjek | najgori kadar |
+|---|---|---|---|
+| 30 | 7,9 MiB | 84,0 | 71,8 |
+| **27** | **13,3 MiB** | **89,3** | **81,0** |
+| 24 | 21,4 MiB | 93,1 | 88,7 |
+| 21 | 33,5 MiB | 95,7 | 91,6 |
+
+Snimak iz drona je najgori mogući sadržaj za kodek — krošnje koje se svaka za
+sebe njišu nemaju ništa što bi se moglo predvidjeti iz prethodnog kadra. Zato
+CRF 30 ovdje pada niže nego što bi na običnom snimku. Od 27 naviše kriva se
+spljošti: sljedećih osam MiB kupuje još samo četiri boda.
 
 **Šta dobija onaj ko pokret ne želi.** Ko u sistemu ima „smanji animacije",
 dobija cijeli sadržaj bez ijednog pomjeranja — CSS blok na dnu `globals.css`
