@@ -13,7 +13,7 @@ export async function Location() {
         <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
           <div>
             <SectionHead
-              index={5}
+              index={6}
               label={t.nav.location}
               title={t.location.heading}
               lead={t.location.lead}

@@ -100,7 +100,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
   return (
     <section id="rezervacija" className="weave bg-cream-100">
       <div className="section">
-        <SectionHead index={4} label={t.nav.book} title={t.booking.heading} lead={t.booking.lead} />
+        <SectionHead index={5} label={t.nav.book} title={t.booking.heading} lead={t.booking.lead} />
 
         <Reveal delay={80} className="mt-14">
           <div ref={card} className="card mx-auto max-w-3xl p-5 sm:p-8">

@@ -83,6 +83,7 @@ export interface Dictionary {
   nav: {
     about: string;
     gallery: string;
+    video: string;
     amenities: string;
     location: string;
     faq: string;
@@ -127,6 +128,17 @@ export interface Dictionary {
     /** Privremeni opis dok stoje označene prazne slike (vidi `lib/gallery.ts`). */
     itemAlt: (n: number) => string;
     itemCaption: (n: number) => string;
+  };
+
+  /** Snimak imanja iz drona — odjeljak između galerije i sadržaja. */
+  video: {
+    label: string;
+    heading: string;
+    lead: string;
+    /** Dugme na slici pregleda, tamo gdje se snimak ne pušta sam. */
+    play: string;
+    /** Opis samog snimka za čitače ekrana. */
+    describe: string;
   };
 
   amenities: {

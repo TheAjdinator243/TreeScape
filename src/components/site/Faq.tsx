@@ -26,7 +26,7 @@ export async function Faq({ settings }: { settings: Settings }) {
       <div className="section">
         <div className="grid gap-14 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <SectionHead index={6} label={t.nav.faq} title={t.faq.heading} lead={t.faq.lead} />
+            <SectionHead index={7} label={t.nav.faq} title={t.faq.heading} lead={t.faq.lead} />
           </div>
 
           <div className="border-t border-cream-300">

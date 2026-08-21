@@ -32,6 +32,7 @@ export const en: Dictionary = {
   nav: {
     about: 'The house',
     gallery: 'Gallery',
+    video: 'From above',
     amenities: 'Amenities',
     location: 'Location',
     faq: 'FAQ',
@@ -105,6 +106,14 @@ export const en: Dictionary = {
           9: 'Celebrations in the yard',
         }) as Record<number, string>
       )[n] ?? 'A photo of the house',
+  },
+
+  video: {
+    label: 'Drone footage',
+    heading: 'The view from above',
+    lead: 'The house, the pool and the forest around them — as they look from the air, in one pass.',
+    play: 'Play the video',
+    describe: 'Drone footage: the house with its pool and pavilion, surrounded by forest, overlooking the valley.',
   },
 
   amenities: {

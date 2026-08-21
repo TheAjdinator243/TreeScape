@@ -1,5 +1,6 @@
 import { BookingSection } from '@/components/booking/BookingSection';
 import { About } from '@/components/site/About';
+import { AerialVideo } from '@/components/site/AerialVideo';
 import { Amenities } from '@/components/site/Amenities';
 import { Faq } from '@/components/site/Faq';
 import { Footer } from '@/components/site/Footer';
@@ -28,6 +29,7 @@ export default async function HomePage() {
         <Hero fromCents={fromCents} symbol={context.settings.currency_symbol} />
         <About />
         <Gallery />
+        <AerialVideo />
         <Marquee />
         <Amenities />
         <BookingSection context={context} />

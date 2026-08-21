@@ -23,7 +23,7 @@ export async function Amenities() {
     <section id="sadrzaji" className="grain relative bg-coal-900">
       <div className="section relative z-[2]">
         <SectionHead
-          index={3}
+          index={4}
           label={t.site.name}
           title={t.amenities.heading}
           lead={t.amenities.lead}

@@ -34,8 +34,8 @@ dobija.
 
 **Za goste**
 
-- Jednostrana prezentacija: naslovna slika, galerija sa uvećavanjem, sadržaji,
-  lokacija, česta pitanja
+- Jednostrana prezentacija: naslovna slika, galerija sa uvećavanjem, snimak iz
+  drona, sadržaji, lokacija, česta pitanja
 - Kalendar sa dva mjeseca — zauzeti datumi su prekriženi i ne mogu se kliknuti
 - **Rezervacija i za jedan jedini dan**, bez noćenja
 - Cijena se računa uživo dok se biraju datumi — osnovna, vikend i sezonska
@@ -253,6 +253,7 @@ animacijske biblioteke**, ni jednog kilobajta preuzetog zbog pokreta.
 | Zaglavlje odjeljka (broj, crta, naslov) | `site/SectionHead.tsx` + `.head-*` |
 | Koraci u rezervaciji i traka napretka | `booking/BookingSection.tsx` + `.rail-*` |
 | Traka s imenima sadržaja koja klizi | `site/Marquee.tsx` + `.marquee-*` |
+| Snimak iz drona koji krene sam (i stane) | `site/AerialVideo.tsx` |
 | Navigacija koja pluta, od stakla | `site/Nav.tsx` + `.nav-pill`, `.glass-*` |
 | Zrno preko tamnih ploha | `.grain` u globals.css |
 
@@ -266,6 +267,33 @@ njegov sadržaj je `position: sticky` — stranica naizgled stane dok slike prol
 postrance, pa se otpusti. Skrol nije otet: prst i točkić rade tačno ono što
 inače rade. Na telefonu, bez JavaScripta, i kod onih koji u sistemu imaju
 „smanji animacije", ista traka se prevlači prstom i hvata se na svaku sliku.
+
+**Snimak iz drona.** Odjeljak *Pogled iz zraka* pušta snimak sam SAMO tamo gdje
+je to pošteno prema posjetiocu: na ekranu od 1024px naviše, kad nema uključeno
+„smanji animacije" i kad preglednik ne javlja štednju podataka. Svugdje drugdje
+stoji slika s dugmetom, a dok se ne zna hoće li se snimak pustiti, ne skida se
+ni bajt (`preload="none"`). Kad izađe iz vidnog polja, `IntersectionObserver` ga
+zaustavi — video koji se vrti u kartici koju niko ne gleda troši i bateriju i
+podatke.
+
+Snimak u `public/video/` je pripremljen ovako — isti postupak vrijedi i za svaki
+sljedeći:
+
+```bash
+ffmpeg -i original.mov -map_metadata -1 -an \
+  -vf "scale=1920:-2:flags=lanczos,format=yuv420p" \
+  -c:v libx264 -preset slow -crf 30 -profile:v high -movflags +faststart \
+  public/video/pogled-iz-zraka.mp4
+
+# slika koja stoji dok snimak ne krene
+ffmpeg -i public/video/pogled-iz-zraka.mp4 -ss 6 -frames:v 1 public/video/pogled-iz-zraka.jpg
+```
+
+`-map_metadata -1` nije kozmetika: **repozitorij je javan**, a snimci iz drona
+nose GPS tačku snimanja. Sajt namjerno ne odaje tačnu adresu dok rezervacija nije
+potvrđena, pa je ne smije odati ni datoteka. `-an` skida zvuk (snimak se ionako
+pušta nijemo), a `+faststart` pomjera zaglavlje na početak da snimak krene prije
+nego se cijeli skine.
 
 **Šta dobija onaj ko pokret ne želi.** Ko u sistemu ima „smanji animacije",
 dobija cijeli sadržaj bez ijednog pomjeranja — CSS blok na dnu `globals.css`
@@ -680,7 +708,7 @@ src/
 │       ├── admin/                zaštićene rute administracije
 │       └── cron/expire-holds     oslobađanje termina s isteklim rokom
 ├── components/
-│   ├── site/                     naslovna, galerija, sadržaji, lokacija, pitanja
+│   ├── site/                     naslovna, galerija, snimak, sadržaji, lokacija
 │   ├── motion/                   pokret uz skrol — bez ijedne biblioteke
 │   ├── booking/                  kalendar, cijena, forma, podaci za uplatu
 │   ├── i18n/                     birač jezika i rječnik za klijentske komponente

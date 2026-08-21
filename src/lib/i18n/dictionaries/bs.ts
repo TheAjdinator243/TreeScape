@@ -37,6 +37,7 @@ export const bs: Dictionary = {
   nav: {
     about: 'O kući',
     gallery: 'Galerija',
+    video: 'Iz zraka',
     amenities: 'Sadržaji',
     location: 'Lokacija',
     faq: 'Pitanja',
@@ -110,6 +111,14 @@ export const bs: Dictionary = {
           9: 'Proslave u dvorištu',
         }) as Record<number, string>
       )[n] ?? 'Fotografija kuće',
+  },
+
+  video: {
+    label: 'Snimak iz drona',
+    heading: 'Pogled iz zraka',
+    lead: 'Kuća, bazen i šuma oko njih — onako kako se vide odozgo, u jednom naletu.',
+    play: 'Pusti snimak',
+    describe: 'Snimak iz drona: kuća s bazenom i sjenicom, okružena šumom, s pogledom na dolinu.',
   },
 
   amenities: {

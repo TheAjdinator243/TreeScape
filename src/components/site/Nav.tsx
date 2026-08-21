@@ -10,6 +10,7 @@ import { clamp, onScroll } from '@/components/motion/ticker';
 const LINKS = [
   { href: '#o-kuci', id: 'o-kuci', key: 'about' },
   { href: '#galerija', id: 'galerija', key: 'gallery' },
+  { href: '#video', id: 'video', key: 'video' },
   { href: '#sadrzaji', id: 'sadrzaji', key: 'amenities' },
   { href: '#lokacija', id: 'lokacija', key: 'location' },
   { href: '#pitanja', id: 'pitanja', key: 'faq' },

@@ -16,6 +16,7 @@ export const CONTACT = {
 const QUICK = [
   { href: '#o-kuci', key: 'about' },
   { href: '#galerija', key: 'gallery' },
+  { href: '#video', key: 'video' },
   { href: '#pitanja', key: 'faq' },
   { href: '#rezervacija', key: 'book' },
 ] as const;
