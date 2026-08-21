@@ -221,6 +221,18 @@ Kontrast je provjeren brojkama, ne na oko: slova na kremi drže najmanje 4.4:1,
 a maslinasta 5.0:1 — i kao slovo na kremi i kao ploha ispod nje, jer radi oba
 posla.
 
+**Nigdje nema čisto bijele.** Kartice i polja stoje na boji papira
+(`--color-paper`), koja je tek toliko toplija da se prepozna kao ista vrsta
+papira kao i stranica — bijelo na kremi izgleda kao rupa, a ne kao list položen
+na sto.
+
+**Tekstura** ide u dva oblika, jer ista ne radi na oba kraja palete:
+tamne plohe nose zrno (`.grain`), a svijetle vlas-crte pod uglom (`.weave`).
+Zrno je na kremi izmjereno praktično slijepo — i pri punoj jačini pomjeri
+piksele za manje od jednog nivoa od 255 — pa tamo stoje crte, koje se i uklapaju
+u ostatak stranice građen na vlas-crtama. Jačinu mijenjaš na jednom mjestu, u
+`.weave::after`; kartice ga same stišaju upola, jer iza njih stoji kalendar.
+
 Sve što se kreće kreće se uz skrol, i sve je pisano ovdje — **nema nijedne
 animacijske biblioteke**, ni jednog kilobajta preuzetog zbog pokreta.
 

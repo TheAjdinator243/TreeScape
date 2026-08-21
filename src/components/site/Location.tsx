@@ -8,62 +8,64 @@ export async function Location() {
   const { t } = await getServerStrings();
 
   return (
-    <section id="lokacija" className="section">
-      <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
-        <div>
-          <SectionHead
-            index={5}
-            label={t.nav.location}
-            title={t.location.heading}
-            lead={t.location.lead}
-          />
+    <section id="lokacija" className="weave bg-cream-50">
+      <div className="section">
+        <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
+          <div>
+            <SectionHead
+              index={5}
+              label={t.nav.location}
+              title={t.location.heading}
+              lead={t.location.lead}
+            />
 
-          <Reveal delay={140}>
-            {/*
+            <Reveal delay={140}>
+              {/*
               Vremena vožnje kao spisak s vlas-crtama, a ne kao kartice: ovo su
               tri broja, a tri kartice bi im dale težinu koju nemaju.
             */}
-            <dl className="mt-12 border-t border-cream-200">
-              {TRAVEL.map((row) => (
-                <div
-                  key={row.key}
-                  className="flex items-baseline justify-between gap-6 border-b border-cream-200 py-5"
-                >
-                  <dt className="text-base text-ink-700">{t.location.places[row.key]}</dt>
-                  <dd className="font-display text-lg text-olive-700 tabular-nums">
-                    {t.location.driveTime(row.minutes)}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+              <dl className="mt-12 border-t border-cream-200">
+                {TRAVEL.map((row) => (
+                  <div
+                    key={row.key}
+                    className="flex items-baseline justify-between gap-6 border-b border-cream-200 py-5"
+                  >
+                    <dt className="text-base text-ink-700">{t.location.places[row.key]}</dt>
+                    <dd className="font-display text-lg text-olive-700 tabular-nums">
+                      {t.location.driveTime(row.minutes)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
 
-            <a
-              href={GOOGLE_MAPS_URL}
-              target="_blank"
-              // `noreferrer` uz `noopener`: bez prvog Google vidi s koje je
-              // stranice gost došao, bez drugog otvorena kartica može mijenjati
-              // našu preko `window.opener`.
-              rel="noopener noreferrer"
-              className="btn-ghost mt-8"
-            >
-              <PinIcon />
-              {t.location.openInMaps}
-              <span className="sr-only"> ({t.location.opensInNewTab})</span>
-            </a>
+              <a
+                href={GOOGLE_MAPS_URL}
+                target="_blank"
+                // `noreferrer` uz `noopener`: bez prvog Google vidi s koje je
+                // stranice gost došao, bez drugog otvorena kartica može mijenjati
+                // našu preko `window.opener`.
+                rel="noopener noreferrer"
+                className="btn-ghost mt-8"
+              >
+                <PinIcon />
+                {t.location.openInMaps}
+                <span className="sr-only"> ({t.location.opensInNewTab})</span>
+              </a>
+            </Reveal>
+          </div>
+
+          <Reveal variant="mask" delay={100}>
+            <div className="h-[420px] overflow-hidden rounded-frame border border-cream-200 shadow-soft lg:h-full lg:min-h-[520px]">
+              <iframe
+                title={t.location.mapTitle}
+                src={MAP_SRC}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-full w-full border-0"
+              />
+            </div>
           </Reveal>
         </div>
-
-        <Reveal variant="mask" delay={100}>
-          <div className="h-[420px] overflow-hidden rounded-frame border border-cream-200 shadow-soft lg:h-full lg:min-h-[520px]">
-            <iframe
-              title={t.location.mapTitle}
-              src={MAP_SRC}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="h-full w-full border-0"
-            />
-          </div>
-        </Reveal>
       </div>
     </section>
   );

@@ -25,6 +25,16 @@
   --color-coal-800: #232320;
   --color-coal-700: #34332e;
 
+  /*
+   * Papir — ploha kartica, polja i svega što "leži" na stranici.
+   *
+   * Nije čisto bijela, i to je namjerno: bijelo na kremastoj stranici izgleda
+   * kao rupa u papiru, a ne kao list položen na sto. Ovaj ton je tek toliko
+   * topliji da se prepozna kao ista vrsta papira, a i dalje dovoljno svjetliji
+   * od podloge da se kartica jasno odvoji od nje.
+   */
+  --color-paper: #fbf9f4;
+
   /* Krema — pozadine i vlas-okviri */
   --color-cream-50: #f7f5f0;
   --color-cream-100: #efece4;
@@ -208,6 +218,23 @@ html[lang='ar'] body * {
  * `@apply` prihvata samo prave utility klase, pa bi ga `.btn-primary` inače
  * odbio s greškom "unknown utility class".
  */
+/*
+ * Prepletaj — tekstura svijetlih ploha.
+ *
+ * Na tamnim plohama teksturu nosi zrno (`.grain`), ali na kremi je zrno
+ * praktično slijepo: izmjereno, i pri punoj jačini pomjeri piksele za manje od
+ * jednog nivoa od 255. Zato ovdje stoje vlas-crte pod uglom, a ne šum — vide
+ * se, a i pripadaju: cijela stranica je ionako građena na vlas-crtama.
+ *
+ * Sloj stoji ISPOD teksta (`z-index: -1`), a `isolation: isolate` je uslov da
+ * to uopće radi: bez njega bi sloj s negativnim `z-index`-om propao iza
+ * vlastite pozadine elementa i nestao.
+ */
+@utility weave {
+  position: relative;
+  isolation: isolate;
+}
+
 @utility btn {
   @apply inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5
          text-sm font-semibold tracking-[0.01em]
@@ -293,7 +320,18 @@ html[lang='ar'] body * {
   }
 
   .card {
-    @apply rounded-card border border-cream-200 bg-white shadow-soft;
+    @apply weave rounded-card border border-cream-200 bg-paper shadow-soft;
+  }
+
+  /*
+   * Na kartici je prepletaj upola tiši nego na plohi ispod nje.
+   *
+   * Ploha nosi samo naslov i razmak, pa tamo šara ima mjesta. U kartici iza nje
+   * stoji kalendar — mreža brojeva u kojoj svaka dodatna linija otežava
+   * čitanje. Ovako se i dalje osjeti da je kartica od istog papira, a ne smeta.
+   */
+  .card::after {
+    opacity: 0.5;
   }
 
   .field-label {
@@ -301,7 +339,7 @@ html[lang='ar'] body * {
   }
 
   .field-input {
-    @apply w-full rounded-lg border border-cream-300 bg-white px-4 py-3 text-ink-900
+    @apply w-full rounded-lg border border-cream-300 bg-paper px-4 py-3 text-ink-900
            transition-[border-color,box-shadow] duration-300 placeholder:text-ink-400
            focus:border-olive-600 focus:outline-none
            focus:ring-4 focus:ring-olive-600/12
@@ -600,6 +638,26 @@ html[lang='ar'] body * {
     opacity: 0.32;
     mix-blend-mode: soft-light;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+
+  /*
+   * Crte su na 8px i pod 45°, a boja im je ugalj na 3.5% — dovoljno da se ploha
+   * osjeti kao tkanina, premalo da se broji. `background-attachment: fixed` bi
+   * bio pogrešan: tada bi se šara pomjerala ispod sadržaja dok se skrola.
+   */
+  .weave::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    background-image: repeating-linear-gradient(
+      45deg,
+      color-mix(in oklab, var(--color-coal-900) 3.5%, transparent) 0 1px,
+      transparent 1px 8px
+    );
   }
 
   /* ── Staklo ──────────────────────────────────────────────────────────────

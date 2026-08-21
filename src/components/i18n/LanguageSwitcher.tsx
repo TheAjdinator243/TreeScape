@@ -33,7 +33,7 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }
   }
 
   const styles = {
-    light: 'rounded-full border-cream-300 bg-white text-ink-700 hover:border-olive-600',
+    light: 'rounded-full border-cream-300 bg-paper text-ink-700 hover:border-olive-600',
     dark: 'rounded-full border-white/30 bg-white/10 text-white hover:bg-white/20',
   }[tone];
 
@@ -52,7 +52,7 @@ export function LanguageSwitcher({ tone = 'light' }: { tone?: 'light' | 'dark' }
         {LOCALES.map((option) => (
           // Nazivi jezika su uvijek na svom jeziku — "العربية", a ne "arapski".
           // Onaj ko traži svoj jezik ne razumije nužno onaj u kojem trenutno gleda sajt.
-          <option key={option} value={option} className="bg-white text-ink-900">
+          <option key={option} value={option} className="bg-paper text-ink-900">
             {t.language.names[option]}
           </option>
         ))}

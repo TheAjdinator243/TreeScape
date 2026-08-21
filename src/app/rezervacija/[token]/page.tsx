@@ -59,7 +59,7 @@ export default async function ConfirmationPage({ params }: { params: Promise<{ t
           Nakon odluke nema šta više da se mijenja, pa se ni ne sluša. */}
       {isPending && <LiveStatus bookingId={booking.id} token={token} status={booking.status} />}
 
-      <main className="flex min-h-dvh flex-col items-center justify-center bg-cream-100 px-5 py-16">
+      <main className="weave flex min-h-dvh flex-col items-center justify-center bg-cream-100 px-5 py-16">
         <div className="card w-full max-w-lg p-8 sm:p-10">
           <Link
             href="/"

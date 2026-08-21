@@ -98,7 +98,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
   const blocked = tried ? problemOf(step) : null;
 
   return (
-    <section id="rezervacija" className="bg-cream-100">
+    <section id="rezervacija" className="weave bg-cream-100">
       <div className="section">
         <SectionHead index={4} label={t.nav.book} title={t.booking.heading} lead={t.booking.lead} />
 
@@ -196,7 +196,7 @@ export function BookingSection({ context }: { context: BookingContext }) {
       {/* Na telefonu cijena prati gosta dok bira datume — kartica je duga, a
           iznos je pri njenom dnu. */}
       {form.quote && !form.stayError && step === 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-cream-200 bg-white/95 px-5 py-3 shadow-lift backdrop-blur-xl lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-cream-200 bg-paper/95 px-5 py-3 shadow-lift backdrop-blur-xl lg:hidden">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="truncate text-[0.7rem] uppercase tracking-[0.14em] text-ink-400">

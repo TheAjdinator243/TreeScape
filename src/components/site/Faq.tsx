@@ -22,7 +22,7 @@ export async function Faq({ settings }: { settings: Settings }) {
   });
 
   return (
-    <section id="pitanja" className="bg-cream-100">
+    <section id="pitanja" className="weave bg-cream-100">
       <div className="section">
         <div className="grid gap-14 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">

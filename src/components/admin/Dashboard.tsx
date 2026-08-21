@@ -292,7 +292,7 @@ export function Dashboard({
 
   return (
     <main className="min-h-dvh bg-cream-50">
-      <header className="border-b border-cream-200 bg-white">
+      <header className="border-b border-cream-200 bg-paper">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4 sm:px-8">
           <div>
             <p className="font-display text-lg text-coal-900">{t.site.name}</p>

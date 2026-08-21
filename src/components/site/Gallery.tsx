@@ -47,7 +47,7 @@ export function Gallery() {
     // pretku pretvara taj element u okvir za `position: sticky`, pa se traka ne
     // bi zalijepila nego bi samo prošla. Ono što treba odsjeći odsijeca sama
     // traka, na elementu koji se lijepi (vidi `.track-pin` u globals.css).
-    <section id="galerija" className="bg-cream-100 pb-12 pt-24 md:pb-16 md:pt-32">
+    <section id="galerija" className="weave bg-cream-100 pb-12 pt-24 md:pb-16 md:pt-32">
       <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
         <SectionHead index={2} label={t.site.name} title={t.gallery.heading} lead={t.gallery.lead} />
       </div>
