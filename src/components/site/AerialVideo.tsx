@@ -29,15 +29,14 @@ const NARROW = '/video/pogled-iz-zraka-720.mp4';
  * kao da je neko zabunom ostavio player na stranici.
  *
  * ── Kad se ipak pojavi dugme ──────────────────────────────────────────────
- * U dva slučaja snimak namjerno NE krene sam, i samo tada se pojavi dugme:
+ * Samo u jednom slučaju snimak namjerno NE krene sam: kad je posjetilac u
+ * sistemu uključio „smanji animacije". Snimak iz drona je upravo ono zbog čega
+ * ta postavka postoji — kamera koja se obrušava preko krošnji nekim ljudima
+ * izaziva mučninu, i to im se ne smije desiti samo zato što su skrolali do
+ * odjeljka. Štednja podataka se namjerno NE gleda: vlasnik je odlučio da snimak
+ * treba da krene i tada.
  *
- *   1. Posjetilac je u sistemu uključio „smanji animacije". Snimak iz drona je
- *      upravo ono zbog čega ta postavka postoji — kamera koja se obrušava preko
- *      krošnji nekim ljudima izaziva mučninu. To im se ne smije desiti samo zato
- *      što su skrolali do odjeljka.
- *   2. Preglednik javlja da posjetilac štedi podatke.
- *
- * Dugme se pojavi i ako preglednik odbije da pusti snimak sam (na iPhoneu to
+ * Dugme se pojavi i ako preglednik sam odbije da pusti snimak (na iPhoneu to
  * radi štedljivi režim). Tada je ono jedini način da se snimak uopšte vidi, pa
  * je bolje da postoji nego da ostane slika koja se ne miče.
  *
@@ -68,10 +67,7 @@ export function AerialVideo() {
     // tako se čita širina koju ekran ima U TOM TRENUTKU, pa okretanje telefona
     // usput ne ostavi pogrešnu datoteku.
     const decide = () => {
-      // `saveData` postoji samo u dijelu preglednika; gdje ga nema, `?? false`
-      // znači „ne štedi", što je i tačno — nije nam rečeno suprotno.
-      const connection = (navigator as { connection?: { saveData?: boolean } }).connection;
-      setNeedsTap(calmMotion() || (connection?.saveData ?? false));
+      setNeedsTap(calmMotion());
       setSrc(window.matchMedia('(min-width: 1024px)').matches ? WIDE : NARROW);
     };
 

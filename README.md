@@ -280,11 +280,12 @@ da skida. Prvi `IntersectionObserver` gleda široko (400px izvan ekrana) i služ
 samo da skidanje krene malo prije nego što snimak zatreba; drugi ga pušta i
 zaustavlja na trećini kartice.
 
-Dugme se pojavi u tačno tri slučaja, i tada je jedini način da se snimak vidi:
+Dugme se pojavi u samo dva slučaja, i tada je jedini način da se snimak vidi:
 posjetilac je u sistemu uključio „smanji animacije" (kamera koja se obrušava
 preko krošnji nekim ljudima izaziva mučninu — to je upravo ono zbog čega ta
-postavka postoji), preglednik javlja štednju podataka, ili je preglednik odbio
-da pusti snimak sam (na iPhoneu to radi štedljivi režim).
+postavka postoji), ili je preglednik sam odbio da pusti snimak (na iPhoneu to
+radi štedljivi režim). Štednja podataka se namjerno **ne** gleda — snimak kreće
+i tada.
 
 Snimak u `public/video/` je pripremljen ovako — isti postupak vrijedi i za svaki
 sljedeći:
