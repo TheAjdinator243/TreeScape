@@ -9,76 +9,118 @@ import { calmMotion } from '@/components/motion/ticker';
 import { SectionHead } from './SectionHead';
 
 /**
+ * Dvije datoteke istog snimka, isti kvalitet (CRF 21), različita rezolucija.
+ *
+ * Kartica sa snimkom je na telefonu široka oko 350 tačaka, što je i na ekranu s
+ * trostrukom gustinom oko 1050 stvarnih tačaka — dakle ispod 1280 koliko ima
+ * uža datoteka. Drugim riječima, na telefonu se veća datoteka NE BI vidjela kao
+ * veća: ista slika, dva i po puta više podataka. Zato telefon dobija užu.
+ */
+const WIDE = '/video/pogled-iz-zraka.mp4';
+const NARROW = '/video/pogled-iz-zraka-720.mp4';
+
+/**
  * Snimak imanja iz drona.
  *
- * ── Zašto se ne pušta uvijek sam ──────────────────────────────────────────
- * Snimak je 8 MB. Na širokom ekranu je to obično wi-fi i snimak koji krene sam
- * djeluje kao da je kuća živa; na telefonu je to nečiji paket podataka, potrošen
- * na nešto što nije ni tražio. Zato se sam pušta SAMO tamo gdje je to pošteno:
- * na ekranu od 1024px naviše, kad posjetilac nema uključeno "smanji animacije"
- * i kad preglednik ne javlja štednju podataka. Svugdje drugdje stoji slika s
- * dugmetom, pa snimak krene tek kad ga neko zaista zatraži.
+ * Snimak kreće sam čim uđe u kadar, bez ijednog klika, i staje čim iz kadra
+ * izađe — video koji se vrti u kartici koju niko ne gleda troši i bateriju i
+ * podatke. Nema nikakvih dugmadi preglednika preko slike: ovo nije snimak koji
+ * se „gleda" nego kuća koja se pomjera, pa traka za premotavanje na njoj izgleda
+ * kao da je neko zabunom ostavio player na stranici.
  *
- * Zbog istog razloga `preload` nije uvijek isti: dok se ne zna hoće li se
- * snimak pustiti, ne skida se ni bajt.
+ * ── Kad se ipak pojavi dugme ──────────────────────────────────────────────
+ * U dva slučaja snimak namjerno NE krene sam, i samo tada se pojavi dugme:
  *
- * ── I kad se pušta sam, staje ─────────────────────────────────────────────
- * Video koji se vrti u kartici koju niko ne gleda troši i bateriju i podatke.
- * `IntersectionObserver` ga zaustavi čim izađe iz vidnog polja i vrati kad se
- * gost vrati na njega.
+ *   1. Posjetilac je u sistemu uključio „smanji animacije". Snimak iz drona je
+ *      upravo ono zbog čega ta postavka postoji — kamera koja se obrušava preko
+ *      krošnji nekim ljudima izaziva mučninu. To im se ne smije desiti samo zato
+ *      što su skrolali do odjeljka.
+ *   2. Preglednik javlja da posjetilac štedi podatke.
+ *
+ * Dugme se pojavi i ako preglednik odbije da pusti snimak sam (na iPhoneu to
+ * radi štedljivi režim). Tada je ono jedini način da se snimak uopšte vidi, pa
+ * je bolje da postoji nego da ostane slika koja se ne miče.
+ *
+ * ── Dok se ne priđe, ne skida se ni bajt ──────────────────────────────────
+ * Prvi posmatrač gleda široko (400px izvan ekrana) i služi samo da skidanje
+ * krene malo prije nego što snimak zatreba, da ne kasni. Ko nikad ne dođe do
+ * ovog odjeljka, ne plati ništa.
  */
 export function AerialVideo() {
   const { t } = useI18n();
   const video = useRef<HTMLVideoElement>(null);
 
   /**
-   * Pušta li se snimak sam.
-   *
-   * `null` znači "još se ne zna" — tako je i pri prvom iscrtavanju na serveru,
-   * gdje ni širina ekrana ni postavke posjetioca nisu poznate. Dok je `null`,
-   * ništa se ne skida.
+   * Koja se datoteka skida. `null` znači „još se nije prišlo odjeljku", i tako
+   * je i pri prvom iscrtavanju na serveru, gdje se širina ekrana ionako ne zna.
+   * Dok je `null`, u `<video>` nema `src` — pa preglednik nema šta ni da skida.
    */
-  const [ambient, setAmbient] = useState<boolean | null>(null);
-  const [started, setStarted] = useState(false);
+  const [src, setSrc] = useState<string | null>(null);
+
+  /** Snimak neće krenuti sam — bilo zato što je tako pošteno, bilo zato što preglednik nije dao. */
+  const [needsTap, setNeedsTap] = useState(false);
 
   useEffect(() => {
-    const wide = window.matchMedia('(min-width: 1024px)');
+    const node = video.current;
+    if (!node) return;
 
-    // `saveData` postoji samo u dijelu preglednika; gdje ga nema, `?? false`
-    // znači "ne štedi", što je i tačno — nije nam rečeno suprotno.
-    const connection = (navigator as { connection?: { saveData?: boolean } }).connection;
-    const thrifty = connection?.saveData ?? false;
+    // Odluka se donosi tek kad se odjeljku priđe, a ne pri učitavanju stranice:
+    // tako se čita širina koju ekran ima U TOM TRENUTKU, pa okretanje telefona
+    // usput ne ostavi pogrešnu datoteku.
+    const decide = () => {
+      // `saveData` postoji samo u dijelu preglednika; gdje ga nema, `?? false`
+      // znači „ne štedi", što je i tačno — nije nam rečeno suprotno.
+      const connection = (navigator as { connection?: { saveData?: boolean } }).connection;
+      setNeedsTap(calmMotion() || (connection?.saveData ?? false));
+      setSrc(window.matchMedia('(min-width: 1024px)').matches ? WIDE : NARROW);
+    };
 
-    const decide = () => setAmbient(wide.matches && !calmMotion() && !thrifty);
-    decide();
-    wide.addEventListener('change', decide);
-    return () => wide.removeEventListener('change', decide);
+    if (typeof IntersectionObserver === 'undefined') {
+      decide();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          decide();
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '400px 0px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
     const node = video.current;
-    if (!node || ambient !== true || typeof IntersectionObserver === 'undefined') return;
+    if (!node || !src || needsTap || typeof IntersectionObserver === 'undefined') return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
           // `play()` vraća obećanje koje odbije ako preglednik ipak ne dozvoli
           // automatsko puštanje. To nije greška u kodu nego njegova odluka, pa
-          // se ne prijavljuje — samo ostane slika s dugmetom.
-          void node.play().then(() => setStarted(true)).catch(() => setStarted(false));
+          // se ne prijavljuje — samo se pojavi dugme.
+          void node.play().catch(() => setNeedsTap(true));
         } else {
           node.pause();
         }
       },
-      { threshold: 0.35 }
+      // Prag je trećina kartice, a ne prva tačka: inače bi snimak krenuo dok mu
+      // se vidi samo rub, a stao bi na svaki sitni pomjeraj prsta pri dnu.
+      { threshold: 0.3 }
     );
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [ambient]);
+  }, [src, needsTap]);
 
   const start = () => {
-    void video.current?.play().then(() => setStarted(true));
+    setNeedsTap(false);
+    void video.current?.play().catch(() => setNeedsTap(true));
   };
 
   return (
@@ -97,25 +139,25 @@ export function AerialVideo() {
             <video
               ref={video}
               // Bez `playsInline` iOS otvori snimak preko cijelog ekrana umjesto
-              // da ga pusti u kartici — a onda gost izgubi stranicu.
+              // da ga pusti u kartici — a onda gost izgubi stranicu. Isti atribut
+              // je i uslov da iOS uopšte pusti snimak bez klika.
               playsInline
+              // Nijedan preglednik ne pušta snimak sam ako nije nijem. `muted`
+              // ovdje nije ukras nego uslov da se sve ostalo desi.
               muted
               loop
+              // Nema trake za premotavanje, nema dugmeta za sliku-u-slici, nema
+              // ničega. `disablePictureInPicture` je tu jer Safari ponudi to
+              // dugme i kad `controls` nema.
+              disablePictureInPicture
               poster="/video/pogled-iz-zraka.jpg"
-              preload={ambient === true ? 'auto' : 'none'}
-              controls={started && ambient !== true}
+              src={src ?? undefined}
+              preload="none"
               aria-label={t.video.describe}
               className="aspect-video w-full object-cover"
-            >
-              <source src="/video/pogled-iz-zraka.mp4" type="video/mp4" />
-            </video>
+            />
 
-            {/*
-              Dugme stoji preko slike sve dok snimak ne krene. Kad se pušta sam,
-              nikad se i ne pojavi — `ambient` je tada `true`, a `started`
-              postane `true` u istom trenutku.
-            */}
-            {!started && (
+            {needsTap && (
               <button
                 type="button"
                 onClick={start}

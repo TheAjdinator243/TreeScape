@@ -268,13 +268,23 @@ postrance, pa se otpusti. Skrol nije otet: prst i točkić rade tačno ono što
 inače rade. Na telefonu, bez JavaScripta, i kod onih koji u sistemu imaju
 „smanji animacije", ista traka se prevlači prstom i hvata se na svaku sliku.
 
-**Snimak iz drona.** Odjeljak *Pogled iz zraka* pušta snimak sam SAMO tamo gdje
-je to pošteno prema posjetiocu: na ekranu od 1024px naviše, kad nema uključeno
-„smanji animacije" i kad preglednik ne javlja štednju podataka. Svugdje drugdje
-stoji slika s dugmetom, a dok se ne zna hoće li se snimak pustiti, ne skida se
-ni bajt (`preload="none"`). Kad izađe iz vidnog polja, `IntersectionObserver` ga
-zaustavi — video koji se vrti u kartici koju niko ne gleda troši i bateriju i
-podatke.
+**Snimak iz drona.** Odjeljak *Pogled iz zraka* kreće sam čim uđe u kadar, bez
+ijednog klika i na telefonu jednako kao na računaru, i staje čim iz kadra izađe.
+Preko slike nema nijednog dugmeta preglednika — ni trake za premotavanje, ni
+slike-u-slici (`disablePictureInPicture`, jer Safari to dugme ponudi i kad
+`controls` nema). Ovo nije snimak koji se „gleda" nego kuća koja se pomjera, pa
+bi player na njoj izgledao kao da ga je neko zabunom ostavio.
+
+Dok se odjeljku ne priđe, u `<video>` nema ni `src` — pa preglednik nema šta ni
+da skida. Prvi `IntersectionObserver` gleda široko (400px izvan ekrana) i služi
+samo da skidanje krene malo prije nego što snimak zatreba; drugi ga pušta i
+zaustavlja na trećini kartice.
+
+Dugme se pojavi u tačno tri slučaja, i tada je jedini način da se snimak vidi:
+posjetilac je u sistemu uključio „smanji animacije" (kamera koja se obrušava
+preko krošnji nekim ljudima izaziva mučninu — to je upravo ono zbog čega ta
+postavka postoji), preglednik javlja štednju podataka, ili je preglednik odbio
+da pusti snimak sam (na iPhoneu to radi štedljivi režim).
 
 Snimak u `public/video/` je pripremljen ovako — isti postupak vrijedi i za svaki
 sljedeći:
@@ -282,8 +292,14 @@ sljedeći:
 ```bash
 ffmpeg -i original.mov -map_metadata -1 -an \
   -vf "scale=1920:-2:flags=lanczos,format=yuv420p" \
-  -c:v libx264 -preset slow -crf 27 -profile:v high -movflags +faststart \
+  -c:v libx264 -preset slow -crf 21 -profile:v high -movflags +faststart \
   public/video/pogled-iz-zraka.mp4
+
+# uža datoteka za telefone i tablete — ista kvaliteta, manja rezolucija
+ffmpeg -i original.mov -map_metadata -1 -an \
+  -vf "scale=1280:-2:flags=lanczos,format=yuv420p" \
+  -c:v libx264 -preset slow -crf 21 -profile:v high -movflags +faststart \
+  public/video/pogled-iz-zraka-720.mp4
 
 # slika koja stoji dok snimak ne krene — iz ORIGINALA, ne iz sabijene datoteke
 ffmpeg -i original.mov -ss 6 -frames:v 1 -vf "scale=1920:1080:flags=lanczos" -q:v 2 poster.jpg
@@ -295,21 +311,31 @@ potvrđena, pa je ne smije odati ni datoteka. `-an` skida zvuk (snimak se ionako
 pušta nijemo), a `+faststart` pomjera zaglavlje na početak da snimak krene prije
 nego se cijeli skine.
 
-**Zašto baš CRF 27.** Broj nije odabran po osjećaju nego izmjeren — VMAF između
+**Zašto baš CRF 21.** Broj nije odabran po osjećaju nego izmjeren — VMAF između
 sabijene datoteke i originala smanjenog na istu rezoluciju, da se mjeri gubitak
 od kompresije a ne od rezolucije:
 
 | CRF | veličina | VMAF prosjek | najgori kadar |
 |---|---|---|---|
 | 30 | 7,9 MiB | 84,0 | 71,8 |
-| **27** | **13,3 MiB** | **89,3** | **81,0** |
+| 27 | 13,3 MiB | 89,3 | 81,0 |
 | 24 | 21,4 MiB | 93,1 | 88,7 |
-| 21 | 33,5 MiB | 95,7 | 91,6 |
+| **21** | **33,5 MiB** | **95,7** | **91,6** |
 
 Snimak iz drona je najgori mogući sadržaj za kodek — krošnje koje se svaka za
 sebe njišu nemaju ništa što bi se moglo predvidjeti iz prethodnog kadra. Zato
-CRF 30 ovdje pada niže nego što bi na običnom snimku. Od 27 naviše kriva se
-spljošti: sljedećih osam MiB kupuje još samo četiri boda.
+niži CRF ovdje vrijedi više nego na mirnijem snimku.
+
+**Zašto dvije datoteke.** Kartica sa snimkom je na telefonu široka oko 350
+tačaka, što je i na ekranu s trostrukom gustinom oko 1050 stvarnih tačaka —
+ispod 1280 koliko ima uža datoteka. Na telefonu se, dakle, veća datoteka ne bi
+ni VIDJELA kao veća: ista slika, dva i po puta više podataka. Zato je podjela po
+širini ekrana, a ne po kvalitetu:
+
+| ekran | datoteka | veličina |
+|---|---|---|
+| od 1024px | 1920×1080 | 33,5 MiB |
+| ispod 1024px | 1280×720 | 13,5 MiB |
 
 **Šta dobija onaj ko pokret ne želi.** Ko u sistemu ima „smanji animacije",
 dobija cijeli sadržaj bez ijednog pomjeranja — CSS blok na dnu `globals.css`
