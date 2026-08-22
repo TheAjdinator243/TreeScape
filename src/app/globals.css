@@ -180,6 +180,17 @@
     border-radius: 4px;
   }
 
+  /*
+   * Osim na odjeljcima, koje `CleanAnchors` fokusira umjesto preglednika kad se
+   * klikne na sidro. Njima `tabindex="-1"` služi samo da mogu primiti žarište —
+   * u red za `Tab` ne ulaze i sami po sebi nisu ništa što se „koristi". Okvir
+   * oko cijelog ekrana tu ne bi govorio ništa osim „stigao si", što se ionako
+   * vidi po tome što se stranica pomjerila.
+   */
+  section[tabindex='-1']:focus-visible {
+    outline: none;
+  }
+
   ::selection {
     background-color: var(--color-taupe-300);
     color: var(--color-coal-900);

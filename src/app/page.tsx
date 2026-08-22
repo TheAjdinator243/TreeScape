@@ -2,6 +2,7 @@ import { BookingSection } from '@/components/booking/BookingSection';
 import { About } from '@/components/site/About';
 import { AerialVideo } from '@/components/site/AerialVideo';
 import { Amenities } from '@/components/site/Amenities';
+import { CleanAnchors } from '@/components/site/CleanAnchors';
 import { Faq } from '@/components/site/Faq';
 import { Footer } from '@/components/site/Footer';
 import { Gallery } from '@/components/site/Gallery';
@@ -24,6 +25,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <CleanAnchors />
       <Nav />
       <main>
         <Hero fromCents={fromCents} symbol={context.settings.currency_symbol} />

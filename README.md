@@ -254,6 +254,7 @@ animacijske biblioteke**, ni jednog kilobajta preuzetog zbog pokreta.
 | Koraci u rezervaciji i traka napretka | `booking/BookingSection.tsx` + `.rail-*` |
 | Traka s imenima sadržaja koja klizi | `site/Marquee.tsx` + `.marquee-*` |
 | Snimak iz drona koji krene sam (i stane) | `site/AerialVideo.tsx` |
+| Sidra koja ne pišu po adresnoj traci | `site/CleanAnchors.tsx` |
 | Navigacija koja pluta, od stakla | `site/Nav.tsx` + `.nav-pill`, `.glass-*` |
 | Zrno preko tamnih ploha | `.grain` u globals.css |
 
@@ -337,6 +338,21 @@ ni VIDJELA kao veća: ista slika, dva i po puta više podataka. Zato je podjela 
 |---|---|---|
 | od 1024px | 1920×1080 | 33,5 MiB |
 | ispod 1024px | 1280×720 | 13,5 MiB |
+
+**Čista adresa.** Stavke u meniju i dugmad „Rezerviši" vode na odjeljke iste
+stranice, pa bi preglednik na svaki klik upisao sidro u adresu —
+`treescape.ba/#rezervacija` umjesto `treescape.ba`, i to bi ostalo tu i kad gost
+odskrola dalje. `CleanAnchors` presreće te klikove i skrol odradi sam.
+
+Jedan osluškivač na cijeloj stranici, a ne `onClick` na svakom linku: sidara ima
+jedanaest na četiri mjesta, a dvanaesto — dodano za pola godine — sigurno bi se
+zaboravilo. Uz to se ručno vraća ono što preglednik inače uradi sam: **premješta
+se žarište** na odredište. Bez toga bi link „preskoči na rezervaciju", koji
+postoji isključivo zbog tastature, odveo pogled dolje a tastaturu ostavio gore.
+
+Linkovi koji sidro nose izvana (nečija zabilješka, `#rezervacija` podijeljen na
+WhatsAppu) i dalje rade normalno — čisti se samo ono što nastaje klikanjem po
+sajtu.
 
 **Šta dobija onaj ko pokret ne želi.** Ko u sistemu ima „smanji animacije",
 dobija cijeli sadržaj bez ijednog pomjeranja — CSS blok na dnu `globals.css`
